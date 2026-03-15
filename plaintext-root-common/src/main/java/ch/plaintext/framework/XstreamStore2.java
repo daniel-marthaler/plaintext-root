@@ -1,4 +1,4 @@
-package ch.emad.framework;
+package ch.plaintext.framework;
 
 import com.thoughtworks.xstream.XStream;
 import jakarta.annotation.PostConstruct;
@@ -27,12 +27,12 @@ public class XstreamStore2<T extends Xstream2Storable> {
     private TextRepository2 repo;
 
     @Autowired
-    private EmadSecWrapper sec;
+    private PlaintextSecWrapper sec;
 
     @PostConstruct
     private void init(){
         xstream.allowTypesByWildcard(new String[] {
-                "ch.emad.**"
+                "ch.plaintext.**"
         });
     }
 

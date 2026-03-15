@@ -1,7 +1,7 @@
 /*
  * Copyright (C) eMad, 2017.
  */
-package ch.emad.framework;
+package ch.plaintext.framework;
 
 import ch.plaintext.boot.plugins.security.PlaintextSecurityHolder;
 import jakarta.persistence.*;
@@ -31,7 +31,7 @@ import java.util.*;
 public class SuperModel implements XstreamStorable {
 
     @Id
-    @GenericGenerator(name = "UseExistingIdOtherwiseGenerateUsingIdentity", strategy = "ch.emad.framework.UseExistingIdOtherwiseGenerateUsingIdentity")
+    @GenericGenerator(name = "UseExistingIdOtherwiseGenerateUsingIdentity", strategy = "ch.plaintext.framework.UseExistingIdOtherwiseGenerateUsingIdentity")
     @GeneratedValue(generator = "UseExistingIdOtherwiseGenerateUsingIdentity")
     private Long id;
 

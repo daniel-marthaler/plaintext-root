@@ -1,4 +1,4 @@
-package ch.emad.framework;
+package ch.plaintext.framework;
 
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.HibernateException;

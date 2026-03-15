@@ -1,6 +1,6 @@
 package ch.plaintext.discovery.entity;
 
-import ch.emad.framework.SuperModel;
+import ch.plaintext.framework.SuperModel;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;

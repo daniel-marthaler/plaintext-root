@@ -3,7 +3,7 @@
  */
 package ch.plaintext.jpa.service;
 
-import ch.emad.framework.EmadRepository;
+import ch.plaintext.framework.PlaintextRepository;
 import ch.plaintext.PlaintextSecurity;
 import ch.plaintext.jpa.model.FieldMetadata;
 import lombok.RequiredArgsConstructor;
@@ -46,8 +46,8 @@ public class JpaEntityService {
     public List<?> findByMandat(String entityName, String mandat) {
         Object repository = registryService.getRepository(entityName);
 
-        if (repository instanceof EmadRepository) {
-            return ((EmadRepository<?>) repository).findByMandat(mandat);
+        if (repository instanceof PlaintextRepository) {
+            return ((PlaintextRepository<?>) repository).findByMandat(mandat);
         }
 
         try {

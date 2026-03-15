@@ -1,4 +1,4 @@
-package ch.emad.framework;/*
+package ch.plaintext.framework;/*
   Copyright (C) eMad, 2016.
  */
 
@@ -9,9 +9,9 @@ import java.util.List;
  * @author Author: info@emad.ch
  * @since 0.0.1
  */
-public interface EmadMailReceiver {
+public interface PlaintextMailReceiver {
 
-    List<EmadMailModel> checkMail(Boolean onlyNotSeen);
+    List<PlaintextMailModel> checkMail(Boolean onlyNotSeen);
 
     Boolean connectionUp();
 

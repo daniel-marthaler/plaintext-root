@@ -1,4 +1,4 @@
-package ch.emad.framework;
+package ch.plaintext.framework;
 
 
 import com.sun.mail.util.BASE64DecoderStream;
@@ -26,7 +26,7 @@ import java.util.Properties;
 @Scope("prototype")
 @Slf4j
 @Data
-public class EmadMailReceiverPrototype implements EmadMailReceiver {
+public class PlaintextMailReceiverPrototype implements PlaintextMailReceiver {
 
     Folder inbox;
     private String host;
@@ -36,9 +36,9 @@ public class EmadMailReceiverPrototype implements EmadMailReceiver {
     private Boolean connectionUp = Boolean.FALSE;
 
     @Override
-    public List<EmadMailModel> checkMail(Boolean onlyNotSeen) {
+    public List<PlaintextMailModel> checkMail(Boolean onlyNotSeen) {
 
-        List<EmadMailModel> res = new ArrayList<>();
+        List<PlaintextMailModel> res = new ArrayList<>();
 
         Properties props = new Properties();
         props.setProperty("mail.imaps.port", "993");
@@ -79,7 +79,7 @@ public class EmadMailReceiverPrototype implements EmadMailReceiver {
                     continue;
                 }
 
-                EmadMailModel mail = new EmadMailModel();
+                PlaintextMailModel mail = new PlaintextMailModel();
 
                 Address[] from = message.getFrom();
 

@@ -1,4 +1,4 @@
-package ch.emad.framework;
+package ch.plaintext.framework;
 
 import jakarta.persistence.Converter;
 

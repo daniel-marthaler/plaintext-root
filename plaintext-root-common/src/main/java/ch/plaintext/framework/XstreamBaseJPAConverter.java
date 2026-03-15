@@ -1,4 +1,4 @@
-package ch.emad.framework;
+package ch.plaintext.framework;
 
 import com.thoughtworks.xstream.XStream;
 import jakarta.persistence.AttributeConverter;

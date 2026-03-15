@@ -1,8 +1,8 @@
-package ch.emad.framework;/*
+package ch.plaintext.framework;/*
   Copyright (C) eMad, 2017.
  */
 
-import ch.emad.framework.SuperModel;
+import ch.plaintext.framework.SuperModel;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,15 +27,15 @@ public class RepoMaster extends SuperModel {
     public static RepoMaster instance;
 
     @Autowired
-    private List<EmadRepository> repos = new ArrayList<>();
+    private List<PlaintextRepository> repos = new ArrayList<>();
 
-    private Map<String, EmadRepository> map = new HashMap<>();
+    private Map<String, PlaintextRepository> map = new HashMap<>();
 
     @PostConstruct
     private void init() {
         // log.info("*** init(); " + this.getClass().getCanonicalName());
 
-        for (EmadRepository repo : repos) {
+        for (PlaintextRepository repo : repos) {
             String name = repo.getEntityName().toLowerCase();
             map.put(name, repo);
         }

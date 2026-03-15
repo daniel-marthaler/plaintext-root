@@ -1,4 +1,4 @@
-package ch.emad.framework;/*
+package ch.plaintext.framework;/*
  * Copyright (C) eMad, 2017.
  */
 import jakarta.persistence.Column;

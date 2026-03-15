@@ -45,7 +45,7 @@ public class MenuDebugController {
 
         html.append("<h1>🔍 Menu Annotation Debug Information</h1>");
 
-        String[] packages = {"ch.plaintext", "ch.emad"};
+        String[] packages = {"ch.plaintext"};
         int totalScanned = 0;
 
         for (String pkg : packages) {

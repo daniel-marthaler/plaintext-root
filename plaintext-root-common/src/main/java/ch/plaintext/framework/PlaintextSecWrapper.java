@@ -1,4 +1,4 @@
-package ch.emad.framework;/*
+package ch.plaintext.framework;/*
   Copyright (C) eMad, 2016.
  */
 
@@ -19,22 +19,22 @@ import java.util.*;
  */
 @Component
 @Slf4j
-public class EmadSecWrapper {
+public class PlaintextSecWrapper {
 
     @Getter
-    private static EmadSecWrapper instance = null;
+    private static PlaintextSecWrapper instance = null;
 
     @Autowired(required = false)
-    private EmadAuthentication sec;
+    private PlaintextAuthentication sec;
 
     @Autowired(required = false)
-    private List<EmadRoleProvider> roleProviders;
+    private List<PlaintextRoleProvider> roleProviders;
 
     @Autowired
     private Environment environment;
 
     //@Autowired(required = false)
-    //private List<EmadUserSaveListener> saveListeners;
+    //private List<PlaintextUserSaveListener> saveListeners;
 
     public static String getMandat() {
         if (instance == null) {
@@ -58,7 +58,7 @@ public class EmadSecWrapper {
     @PostConstruct
     private void init() {
         // log.info("*** init(); " + this.getClass().getCanonicalName());
-        EmadSecWrapper.instance = this;
+        PlaintextSecWrapper.instance = this;
     }
 
     public Boolean isSecurityEnabled() {
@@ -91,36 +91,36 @@ public class EmadSecWrapper {
         }
     }
 
-    public List<EmadUser> getAllUsers() {
+    public List<PlaintextUser> getAllUsers() {
         if (!isSecurityEnabled()) {
             return new ArrayList<>();
         }
         return sec.getAllUsers();
     }
 
-    public Map<Long, EmadUser> getAllUsersOrigMap() {
-        Map<Long, EmadUser> ret = new HashMap<>();
+    public Map<Long, PlaintextUser> getAllUsersOrigMap() {
+        Map<Long, PlaintextUser> ret = new HashMap<>();
         if (!isSecurityEnabled()) {
             return ret;
         }
-        for (EmadUser user : getAllUsers()) {
+        for (PlaintextUser user : getAllUsers()) {
             ret.put(user.getOrigId(), user);
         }
         return ret;
     }
 
-    public Map<String, EmadUser> getAllUsersEmailMap() {
-        Map<String, EmadUser> ret = new HashMap<>();
+    public Map<String, PlaintextUser> getAllUsersEmailMap() {
+        Map<String, PlaintextUser> ret = new HashMap<>();
         if (!isSecurityEnabled()) {
             return ret;
         }
-        for (EmadUser user : getAllUsers()) {
+        for (PlaintextUser user : getAllUsers()) {
             ret.put(user.getMail(), user);
         }
         return ret;
     }
 
-    public void saveUser(EmadUser user, String template) {
+    public void saveUser(PlaintextUser user, String template) {
 
         if (user.getId() == 0 || user.getId() < 1) {
             log.info(" ** New User");
@@ -138,7 +138,7 @@ public class EmadSecWrapper {
     }
 
     @Deprecated
-    public EmadUser createNewUser() {
+    public PlaintextUser createNewUser() {
         return sec.createNewUser();
     }
 
@@ -149,12 +149,12 @@ public class EmadSecWrapper {
         return "no-user";
     }
 
-    public EmadUser getUser(boolean... force) {
+    public PlaintextUser getUser(boolean... force) {
         return sec.getUser(force);
 
     }
 
-    public EmadUser getUser() {
+    public PlaintextUser getUser() {
         if (sec == null) {
             return null;
         }
@@ -164,7 +164,7 @@ public class EmadSecWrapper {
 
     public Set<String> getAllRoles() {
         Set<String> ret = new HashSet<>();
-        for (EmadRoleProvider pr : roleProviders) {
+        for (PlaintextRoleProvider pr : roleProviders) {
             ret.addAll(pr.getRoles());
         }
 
@@ -190,7 +190,7 @@ public class EmadSecWrapper {
         return "";
     }
 
-    public void saveUser(EmadUser user) {
+    public void saveUser(PlaintextUser user) {
         log.warn("ACHTUNG:45");
 
 

@@ -46,11 +46,11 @@
                 <!-- Methodensignatur -->
                 <p:column headerText="Methode"
                           style="width:40%"
-                          filterBy="#{row[1].replace(', ms.','').replace('ch.emad.','')}"
+                          filterBy="#{row[1].replace(', ms.','').replace('ch.plaintext.','')}"
                           filterMatchMode="contains"
                           sortBy="#{row[1]}"
                           priority="1">
-                    <h:outputText value="#{row[1].replace(', ms.','').replace('ch.emad.','')}"/>
+                    <h:outputText value="#{row[1].replace(', ms.','').replace('ch.plaintext.','')}"/>
                 </p:column>
 
                 <!-- Hits -->

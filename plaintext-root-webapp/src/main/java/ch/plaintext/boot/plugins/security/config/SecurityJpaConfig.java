@@ -5,9 +5,9 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * JPA configuration for all entities.
- * Scans all packages for JPA entities including ch.plaintext, ch.emad, and ch packages.
+ * Scans all packages for JPA entities including ch.plaintext and ch packages.
  */
 @Configuration
-@EntityScan(basePackages = {"ch.plaintext", "ch.emad", "ch"})
+@EntityScan(basePackages = {"ch.plaintext", "ch"})
 public class SecurityJpaConfig {
 }

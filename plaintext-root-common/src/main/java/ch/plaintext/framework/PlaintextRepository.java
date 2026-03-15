@@ -1,7 +1,7 @@
 /*
  * Copyright (C) eMad, 2017.
  */
-package ch.emad.framework;
+package ch.plaintext.framework;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -15,7 +15,7 @@ import java.util.Set;
  * @since 2017
  */
 @NoRepositoryBean
-public interface EmadRepository<T> extends JpaRepository<T, Long> {
+public interface PlaintextRepository<T> extends JpaRepository<T, Long> {
 
     @Query("select distinct o.id from #{#entityName} o")
     public Set<String> getIds();

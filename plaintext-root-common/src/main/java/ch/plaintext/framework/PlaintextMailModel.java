@@ -1,7 +1,7 @@
 /*
  * Copyright (C) eMad, 2015.
  */
-package ch.emad.framework;
+package ch.plaintext.framework;
 
 import lombok.Data;
 import lombok.ToString;
@@ -20,7 +20,7 @@ import java.util.Set;
  */
 @Data
 @ToString
-public class EmadMailModel {
+public class PlaintextMailModel {
 
     private String mandat = "default";
     private String sender = "";
@@ -29,7 +29,7 @@ public class EmadMailModel {
     private Set<String> receiverBCC = new HashSet<>();
     private String subject;
     private String body;
-    private List<EmadEmailAttachment> attachments = new ArrayList<>();
+    private List<PlaintextEmailAttachment> attachments = new ArrayList<>();
     private Boolean html = Boolean.FALSE;
 
     public void addTo(String to) {
@@ -75,7 +75,7 @@ public class EmadMailModel {
     }
 
     public void addAttachment(String name, byte[] content) {
-        EmadEmailAttachment at = new EmadEmailAttachment();
+        PlaintextEmailAttachment at = new PlaintextEmailAttachment();
         at.setAttachement(content);
         at.setName(name);
         attachments.add(at);

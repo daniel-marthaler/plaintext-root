@@ -1,9 +1,9 @@
-package ch.emad.framework;
+package ch.plaintext.framework;
 
 import java.util.List;
 import java.util.Map;
 
-public interface EmadUser {
+public interface PlaintextUser {
 
     String getUsername();
 
