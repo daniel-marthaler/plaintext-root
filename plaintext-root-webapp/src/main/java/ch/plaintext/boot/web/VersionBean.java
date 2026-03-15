@@ -23,6 +23,9 @@ public class VersionBean {
     @Value("${spring.profiles.active:dev}")
     private String activeProfile;
 
+    @Value("${plaintext.root.version:unknown}")
+    private String rootVersion;
+
     private String version;
     private String buildTimestamp;
 

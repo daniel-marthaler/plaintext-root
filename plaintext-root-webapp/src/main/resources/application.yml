@@ -52,6 +52,8 @@ mad:
 
 plaintext:
   stage: ${PLAINTEXT_ENV:dev}
+  root:
+    version: '@project.version@'
   menu:
     scan-package: ch.plaintext
 
