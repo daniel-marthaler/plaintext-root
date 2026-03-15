@@ -9,5 +9,12 @@ DELETE FROM discovery_app WHERE id NOT IN (
     SELECT MIN(id) FROM discovery_app GROUP BY app_id
 );
 
--- Add unique constraint
-ALTER TABLE discovery_app ADD CONSTRAINT uk_discovery_app_app_id UNIQUE (app_id);
+-- Add unique constraint (idempotent)
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conname = 'uk_discovery_app_app_id'
+    ) THEN
+        ALTER TABLE discovery_app ADD CONSTRAINT uk_discovery_app_app_id UNIQUE (app_id);
+    END IF;
+END $$;
