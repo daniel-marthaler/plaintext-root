@@ -11,6 +11,8 @@ concurrency:
 jobs:
   build:
     uses: daniel-marthaler/plaintext-scripts/.github/workflows/maven-build-deploy.yaml@master
+    with:
+      build-command: '5'
     secrets:
       TWINGATE_SERVICE_KEY: ${{ secrets.TWINGATE_SERVICE_KEY }}
       MVN_DEPLOY_TOKEN: ${{ secrets.MVN_DEPLOY_TOKEN }}
