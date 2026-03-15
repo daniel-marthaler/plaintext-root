@@ -7,7 +7,7 @@ package ch.plaintext.boot.menu;
     title = "Admin",
     link = "index.html",
     parent = "",
-    order = 20,
+    order = 2,
     icon = "pi pi-cog",
     roles = {"ADMIN"}
 )
