@@ -2,10 +2,7 @@ name: Build & Deploy
 
 on:
   push:
-    branches:
-      - master
-
-permissions: write-all
+    branches: [master]
 
 concurrency:
   group: plaintext-root
@@ -13,44 +10,6 @@ concurrency:
 
 jobs:
   build:
-    runs-on: ubuntu-24.04
-
-    steps:
-      - name: Connect to Twingate
-        uses: twingate/github-action@v1
-        with:
-          service-key: ${{ secrets.TWINGATE_SERVICE_KEY }}
-
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Checkout plaintext-scripts
-        uses: actions/checkout@v4
-        with:
-          repository: daniel-marthaler/plaintext-scripts
-          token: ${{ secrets.GITHUB_TOKEN }}
-          path: ../plaintext-scripts
-
-      - name: Setup JDK 21
-        uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-
-      - name: Configure Maven settings
-        run: |
-          mkdir -p ~/.m2
-          cat > ~/.m2/settings.xml << 'EOF'
-          <settings>
-            <servers>
-              <server>
-                <id>plaintext</id>
-                <username>${{ github.actor }}</username>
-                <password>${{ secrets.GITHUB_TOKEN }}</password>
-              </server>
-            </servers>
-          </settings>
-          EOF
-
-      - name: Build & Deploy
-        run: mvn clean deploy -DskipTests -B
+    uses: daniel-marthaler/plaintext-scripts/.github/workflows/maven-build-deploy.yaml@master
+    secrets:
+      TWINGATE_SERVICE_KEY: ${{ secrets.TWINGATE_SERVICE_KEY }}
