@@ -1,0 +1,103 @@
+package ch.plaintext.sessions.web;
+
+import ch.plaintext.PlaintextSecurity;
+import ch.plaintext.sessions.entity.UserSession;
+import ch.plaintext.sessions.service.SessionAuditServiceImpl;
+import jakarta.annotation.PostConstruct;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Named;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
+
+import java.io.Serializable;
+import java.util.List;
+
+@Named
+@ViewScoped
+@Getter
+@Setter
+@Slf4j
+public class SessionsBackingBean implements Serializable {
+
+    private final SessionAuditServiceImpl sessionService;
+    private final PlaintextSecurity security;
+
+    private List<UserSession> sessions;
+    private UserSession selected;
+    private boolean root;
+
+    public SessionsBackingBean(SessionAuditServiceImpl sessionService, PlaintextSecurity security) {
+        this.sessionService = sessionService;
+        this.security = security;
+    }
+
+    @PostConstruct
+    public void init() {
+        root = security.ifGranted("ROLE_ROOT");
+        loadData();
+    }
+
+    public void checkAccess() {
+        if (!security.ifGranted("ROLE_ADMIN") && !root) {
+            try {
+                FacesContext.getCurrentInstance().getExternalContext().redirect("/index.xhtml");
+            } catch (Exception e) {
+                log.error("Redirect failed", e);
+            }
+        }
+    }
+
+    private void loadData() {
+        try {
+            if (root) {
+                // Root sees all active sessions
+                sessions = sessionService.getAllActiveSessions();
+            } else {
+                // Admin sees only sessions from their mandat
+                sessions = sessionService.getActiveSessionsByMandat(security.getMandat());
+            }
+            log.debug("Loaded {} active sessions", sessions != null ? sessions.size() : 0);
+        } catch (Exception e) {
+            log.error("Error loading sessions", e);
+            addMessage(FacesMessage.SEVERITY_ERROR, "Fehler", "Sitzungen konnten nicht geladen werden");
+        }
+    }
+
+    public void select() {
+        // Selected in UI
+    }
+
+    public void clearSelection() {
+        selected = null;
+    }
+
+    public void refresh() {
+        loadData();
+        selected = null;
+        addMessage(FacesMessage.SEVERITY_INFO, "Aktualisiert", "Sitzungsliste wurde aktualisiert");
+    }
+
+    public void forceLogout() {
+        if (selected == null) {
+            addMessage(FacesMessage.SEVERITY_WARN, "Warnung", "Keine Sitzung ausgewählt");
+            return;
+        }
+
+        try {
+            sessionService.forceLogout(selected.getSessionId());
+            addMessage(FacesMessage.SEVERITY_INFO, "Erfolg", "Benutzer wurde abgemeldet");
+            loadData();
+            selected = null;
+        } catch (Exception e) {
+            log.error("Error forcing logout", e);
+            addMessage(FacesMessage.SEVERITY_ERROR, "Fehler", "Abmeldung fehlgeschlagen");
+        }
+    }
+
+    private void addMessage(FacesMessage.Severity severity, String summary, String detail) {
+        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(severity, summary, detail));
+    }
+}

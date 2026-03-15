@@ -1,0 +1,233 @@
+<ui:composition
+        xmlns:ui="http://java.sun.com/jsf/facelets"
+        xmlns:p="http://primefaces.org/ui"
+        xmlns:h="http://java.sun.com/jsf/html"
+        xmlns="http://www.w3.org/1999/xhtml" template="includes/template.xhtml">
+
+    <ui:define name="content">
+        <style>
+            .vision-board-2026 {
+                max-width: 1200px;
+                margin: 0 auto;
+                padding: 20px;
+                background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            }
+
+            .vision-grid {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 15px;
+                margin-top: 20px;
+            }
+
+            .vision-item {
+                position: relative;
+                overflow: hidden;
+                border-radius: 12px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
+                background: white;
+                min-height: 250px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .vision-item:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            }
+
+            .vision-item.large {
+                grid-column: span 2;
+            }
+
+            .vision-item.tall {
+                grid-row: span 2;
+            }
+
+            .vision-content {
+                padding: 30px;
+                text-align: center;
+                width: 100%;
+            }
+
+            .vision-year {
+                font-size: 120px;
+                font-weight: 900;
+                color: rgba(255, 255, 255, 0.9);
+                text-shadow: 3px 3px 6px rgba(0,0,0,0.2);
+                line-height: 1;
+                margin: 0;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+            }
+
+            .vision-text {
+                font-family: 'Georgia', serif;
+                font-size: 24px;
+                font-weight: 300;
+                color: #333;
+                line-height: 1.4;
+                padding: 20px;
+            }
+
+            .vision-text.bold {
+                font-weight: 700;
+                font-family: 'Arial Black', sans-serif;
+                text-transform: uppercase;
+                letter-spacing: 2px;
+            }
+
+            .vision-highlight {
+                background: linear-gradient(135deg, #FFB6C1 0%, #FFC0CB 100%);
+                color: white;
+                padding: 15px 30px;
+                border-radius: 50px;
+                font-size: 20px;
+                font-weight: 600;
+                display: inline-block;
+                box-shadow: 0 4px 15px rgba(255, 182, 193, 0.4);
+            }
+
+            .motivation-text {
+                font-size: 18px;
+                color: #555;
+                font-style: italic;
+                margin: 10px 0;
+            }
+
+            .bg-pink {
+                background: linear-gradient(135deg, #ffeef8 0%, #ffe0f0 100%);
+            }
+
+            .bg-cream {
+                background: linear-gradient(135deg, #fff9e6 0%, #fff0d4 100%);
+            }
+
+            .bg-blue {
+                background: linear-gradient(135deg, #e8f4ff 0%, #d4e8ff 100%);
+            }
+
+            .bg-green {
+                background: linear-gradient(135deg, #e8f8f0 0%, #d4f0e4 100%);
+            }
+
+            .bg-purple {
+                background: linear-gradient(135deg, #f0e8ff 0%, #e4d4ff 100%);
+            }
+
+            @media (max-width: 768px) {
+                .vision-grid {
+                    grid-template-columns: 1fr;
+                }
+                .vision-item.large {
+                    grid-column: span 1;
+                }
+                .vision-year {
+                    font-size: 80px;
+                }
+            }
+        </style>
+
+        <div class="vision-board-2026">
+            <div style="text-align: center; margin-bottom: 10px;">
+                <span style="font-size: 0.85em; color: #999; font-family: Georgia, serif; letter-spacing: 1px;">(c) by Elin Marthaler 2026</span>
+            </div>
+            <div class="vision-grid">
+                <!-- Row 1 -->
+                <div class="vision-item bg-pink">
+                    <div class="vision-content">
+                        <div class="vision-text">🏃‍♀️<br/>Active Lifestyle</div>
+                    </div>
+                </div>
+
+                <div class="vision-item bg-cream">
+                    <div class="vision-content">
+                        <div class="vision-text">📚☕<br/>Learning &amp; Growth</div>
+                    </div>
+                </div>
+
+                <div class="vision-item bg-blue">
+                    <div class="vision-content">
+                        <div class="vision-text">💪<br/>Fitness Goals</div>
+                    </div>
+                </div>
+
+                <!-- Row 2 -->
+                <div class="vision-item bg-green">
+                    <div class="vision-content">
+                        <div class="vision-text">🌅<br/>Happy Moments</div>
+                    </div>
+                </div>
+
+                <div class="vision-item bg-pink large">
+                    <div class="vision-content">
+                        <div class="vision-highlight">Put the phone down</div>
+                    </div>
+                </div>
+
+                <!-- Row 3 - Year centered -->
+                <div class="vision-item large bg-purple">
+                    <div class="vision-content">
+                        <h1 class="vision-year">2026</h1>
+                    </div>
+                </div>
+
+                <div class="vision-item bg-cream">
+                    <div class="vision-content">
+                        <div class="vision-text">🏃‍♀️<br/>Running</div>
+                    </div>
+                </div>
+
+                <!-- Row 4 -->
+                <div class="vision-item bg-blue">
+                    <div class="vision-content">
+                        <div class="vision-text">💆‍♀️<br/>Self Care</div>
+                    </div>
+                </div>
+
+                <div class="vision-item bg-pink">
+                    <div class="vision-content">
+                        <div class="vision-text">📖<br/>Reading Time</div>
+                    </div>
+                </div>
+
+                <div class="vision-item bg-green">
+                    <div class="vision-content">
+                        <div class="vision-text">🧘‍♀️<br/>Mindfulness</div>
+                    </div>
+                </div>
+
+                <!-- Row 5 -->
+                <div class="vision-item large bg-cream">
+                    <div class="vision-content">
+                        <div class="vision-text bold">Liebe dich so, wie du<br/>andere liebst.</div>
+                    </div>
+                </div>
+
+                <div class="vision-item bg-purple">
+                    <div class="vision-content">
+                        <div class="vision-text">✨<br/>A better me<br/>is coming</div>
+                    </div>
+                </div>
+
+                <!-- Row 6 -->
+                <div class="vision-item bg-pink">
+                    <div class="vision-content">
+                        <div class="vision-text">👯‍♀️<br/>Friends &amp; Joy</div>
+                    </div>
+                </div>
+
+                <div class="vision-item bg-blue large">
+                    <div class="vision-content">
+                        <div class="vision-text">❤️ 👨‍👩‍👧<br/>Family &amp; Love</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </ui:define>
+</ui:composition>

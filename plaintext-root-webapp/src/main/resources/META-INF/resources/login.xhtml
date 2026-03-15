@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+<h:head>
+    <title>Plaintext - Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <f:facet name="first">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
+        <meta name="apple-mobile-web-app-capable" content="yes"/>
+    </f:facet>
+
+    <style type="text/css">
+        :root {
+            --primary-color: #2c84d8;
+            --primary-dark: #1976D2;
+            --primary-light: #BBDEFB;
+            --text-color: #333333;
+            --text-secondary: #6c757d;
+            --surface-ground: #f8f9fa;
+            --surface-card: #ffffff;
+            --border-color: #dee2e6;
+            --bg-gradient-start: #f8fbff;
+            --bg-gradient-end: #e8f4fd;
+        }
+
+        /* Dark Mode Variables */
+        [data-theme="dark"] {
+            --primary-color: #5eb3f6;
+            --primary-dark: #1E88E5;
+            --primary-light: #1565C0;
+            --text-color: #e0e0e0;
+            --text-secondary: #a0a0a0;
+            --surface-ground: #1e1e2f;
+            --surface-card: #2a2b3d;
+            --border-color: #3c3d4f;
+            --bg-gradient-start: #1a1a2e;
+            --bg-gradient-end: #16213e;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            font-size: 14px;
+            height: 100%;
+        }
+
+        body {
+            font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-size: 1rem;
+            font-weight: normal;
+            padding: 0;
+            margin: 0;
+            min-height: 100%;
+            background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+            color: var(--text-color);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .login-body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 2rem;
+            position: relative;
+        }
+
+        .login-panel {
+            background-color: var(--surface-card);
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 450px;
+            padding: 3rem;
+            position: relative;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .login-header h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            margin: 0 0 0.5rem 0;
+            color: var(--text-color);
+        }
+
+        .login-header p {
+            color: var(--text-secondary);
+            margin: 0;
+            font-size: 0.95rem;
+        }
+
+        .login-form {
+            margin-top: 2rem;
+        }
+
+        .field {
+            margin-bottom: 1.5rem;
+        }
+
+        .field label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        .ui-inputfield {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: all 0.2s;
+            background-color: var(--surface-card);
+            color: var(--text-color);
+        }
+
+        .ui-inputfield:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+        }
+
+        .ui-button {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            font-weight: 500;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .remember-forgot {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .ui-chkbox-label {
+            margin-left: 0.5rem;
+            color: var(--text-color);
+            font-size: 0.9rem;
+        }
+
+        .forgot-password {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+
+        .forgot-password:hover {
+            color: var(--primary-dark);
+        }
+
+        .theme-toggle {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+        }
+
+        .theme-toggle-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1.2rem;
+        }
+
+        .theme-toggle-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        .error-message {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            border-radius: 6px;
+            padding: 0.75rem 1rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        [data-theme="dark"] .error-message {
+            background-color: #5a1a1a;
+            color: #f8d7da;
+            border-color: #721c24;
+        }
+
+        .success-message {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            border-radius: 6px;
+            padding: 0.75rem 1rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        [data-theme="dark"] .success-message {
+            background-color: #1a4d2e;
+            color: #d4edda;
+            border-color: #155724;
+        }
+
+        @media (max-width: 576px) {
+            .login-panel {
+                padding: 2rem;
+            }
+
+            .login-header h1 {
+                font-size: 1.5rem;
+            }
+
+            .remember-forgot {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+
+        /* Custom PrimeFaces Checkbox Styling */
+        .ui-chkbox {
+            display: inline-flex;
+            align-items: center;
+        }
+
+        /* Password Toggle */
+        .ui-password {
+            width: 100%;
+        }
+
+        .ui-password input {
+            width: 100%;
+        }
+    </style>
+
+    <script type="text/javascript">
+        //<![CDATA[
+        // Theme Management
+        function initTheme() {
+            const savedTheme = getCookie('plaintext-theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const theme = savedTheme || (prefersDark ? 'dark' : 'light');
+            applyTheme(theme);
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            applyTheme(newTheme);
+            setCookie('plaintext-theme', newTheme, 365);
+        }
+
+        function applyTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            const icon = document.getElementById('theme-icon');
+            if (icon) {
+                icon.className = theme === 'dark' ? 'pi pi-sun' : 'pi pi-moon';
+            }
+        }
+
+        function setCookie(name, value, days) {
+            const expires = new Date();
+            expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
+            document.cookie = name + '=' + value + ';expires=' + expires.toUTCString() + ';path=/';
+        }
+
+        function getCookie(name) {
+            const nameEQ = name + '=';
+            const ca = document.cookie.split(';');
+            for (let i = 0; i < ca.length; i++) {
+                let c = ca[i];
+                while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+                if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+            }
+            return null;
+        }
+
+        // Clean up URL parameters (remove ?logout=true, ?error=true)
+        function cleanUrl() {
+            if (window.history.replaceState && (window.location.search.indexOf('logout') !== -1 || window.location.search.indexOf('error') !== -1)) {
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        }
+
+        // Initialize theme on page load
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() { initTheme(); cleanUrl(); });
+        } else {
+            initTheme();
+            cleanUrl();
+        }
+        //]]>
+    </script>
+</h:head>
+
+<h:body styleClass="login-body">
+    <!-- Theme Toggle Button -->
+    <div class="theme-toggle">
+        <button class="theme-toggle-btn" onclick="toggleTheme()" type="button" title="Theme wechseln">
+            <i id="theme-icon" class="pi pi-moon"></i>
+        </button>
+    </div>
+
+    <div class="login-panel">
+        <div class="login-header">
+            <h1>Willkommen</h1>
+            <p>Melden Sie sich an, um fortzufahren</p>
+        </div>
+
+        <!-- Error Message -->
+        <div class="error-message" style="display: #{param.error != null ? 'flex' : 'none'}">
+            <i class="pi pi-exclamation-circle"></i>
+            <span>Ungültiger Benutzername oder Passwort</span>
+        </div>
+
+        <!-- Logout Success Message -->
+        <div class="success-message" style="display: #{param.logout != null ? 'flex' : 'none'}">
+            <i class="pi pi-check-circle"></i>
+            <span>Sie wurden erfolgreich abgemeldet</span>
+        </div>
+
+        <form action="#{request.contextPath}/login" method="post" class="login-form">
+            <!-- CSRF Token -->
+            <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+
+            <div class="field">
+                <label for="username">Benutzername</label>
+                <input type="text"
+                       id="username"
+                       name="username"
+                       class="ui-inputfield"
+                       placeholder="Benutzername eingeben"
+                       required="required"
+                       autofocus="autofocus"/>
+            </div>
+
+            <div class="field">
+                <label for="password">Passwort</label>
+                <input type="password"
+                       id="password"
+                       name="password"
+                       class="ui-inputfield"
+                       placeholder="Passwort eingeben"
+                       required="required"/>
+            </div>
+
+            <div class="remember-forgot">
+                <div style="display: flex; align-items: center;">
+                    <input type="checkbox"
+                           id="remember-me"
+                           name="remember-me"
+                           style="margin-right: 0.5rem;"/>
+                    <label for="remember-me" style="margin: 0; font-weight: normal; cursor: pointer;">
+                        Angemeldet bleiben
+                    </label>
+                </div>
+            </div>
+
+            <button type="submit"
+                    class="ui-button ui-button-primary"
+                    style="width: 100%; padding: 0.75rem 1rem; font-size: 1rem; font-weight: 500; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; background-color: #4CAF50; color: white; border: none;">
+                <i class="pi pi-sign-in"></i> Anmelden
+            </button>
+        </form>
+    </div>
+
+</h:body>
+</html>

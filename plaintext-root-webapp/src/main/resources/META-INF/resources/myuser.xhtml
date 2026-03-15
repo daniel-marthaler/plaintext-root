@@ -1,0 +1,218 @@
+<ui:composition xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:pe="http://primefaces.org/ui/extensions"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml" template="includes/template.xhtml">
+
+    <ui:define name="content">
+        <h:form id="fm">
+            <input type="hidden" name="_csrf" value="#{_csrf.token}"/>
+
+        <script type="text/javascript">
+            //<![CDATA[
+            // Advanced mode toggle via Ctrl+Shift+D
+            document.addEventListener('keydown', function(event) {
+                if (event.ctrlKey && event.shiftKey && event.key === 'D') {
+                    event.preventDefault();
+                    remoteToggleAdvancedMode();
+                }
+            });
+            //]]>
+        </script>
+
+        <p:growl id="growl" widgetVar="growl" showDetail="true" life="3000"/>
+
+        <!-- Remote command for advanced mode toggle -->
+        <p:remoteCommand name="remoteToggleAdvancedMode"
+                         action="#{myUserInfoBackingBean.toggleAdvancedMode}"
+                         update="dynamicContentPanel"
+                         oncomplete="if (args &amp;&amp; args.advancedModeEnabled !== undefined) { PF('growl').renderMessage({ 'summary': 'Entwickler-Modus', 'detail': args.advancedModeEnabled ? 'Entwickler-Modus aktiviert (Ctrl+Shift+D)' : 'Entwickler-Modus deaktiviert', 'severity': 'info' }); }"/>
+
+        <style>
+            .user-info-grid td {
+                padding: 12px 8px;
+            }
+            .info-label {
+                font-weight: bold;
+                color: var(--text-color, #495057);
+            }
+            .status-badge {
+                padding: 4px 12px;
+                border-radius: 12px;
+                font-size: 0.85em;
+                font-weight: 500;
+            }
+            .status-active {
+                background-color: var(--green-100, #d4edda);
+                color: var(--green-700, #155724);
+            }
+            .status-inactive {
+                background-color: var(--red-100, #f8d7da);
+                color: var(--red-700, #721c24);
+            }
+            .role-tag {
+                display: inline-block;
+                padding: 4px 10px;
+                margin: 2px;
+                background-color: var(--blue-100, #e3f2fd);
+                color: var(--blue-700, #1976d2);
+                border-radius: 8px;
+                font-size: 0.9em;
+            }
+        </style>
+
+        <p:fieldset legend="Benutzerinformationen">
+
+            <div style="padding: 20px;">
+
+                <p:outputPanel id="dynamicContentPanel">
+
+                <!-- Basis Informationen -->
+                <h3 style="margin-top: 0; margin-bottom: 20px; color: var(--text-color, #333);">Basis Informationen</h3>
+                <p:panelGrid columns="2" styleClass="user-info-grid" style="margin-bottom: 30px; width: 100%; max-width: 800px;">
+
+                    <h:outputText value="Benutzername:" styleClass="info-label"/>
+                    <h:outputText value="#{myUserInfoBackingBean.username}" style="font-size: 1.1em;"/>
+
+                    <h:outputText value="User ID:" styleClass="info-label"/>
+                    <h:outputText value="#{myUserInfoBackingBean.myUserId}"/>
+
+                    <h:outputText value="Mandat:" styleClass="info-label"/>
+                    <h:outputText value="#{myUserInfoBackingBean.mandat}"/>
+
+                    <h:outputText value="Startseite:" styleClass="info-label"/>
+                    <h:outputText value="#{myUserInfoBackingBean.startpage}"/>
+
+                </p:panelGrid>
+
+                <!-- Passwort ändern -->
+                <h3 style="margin-bottom: 20px; color: var(--text-color, #333);">Passwort ändern</h3>
+                <p:outputPanel id="passwordPanel">
+                    <p:messages id="passwordMessages" showDetail="true" closable="true"/>
+                    <p:panelGrid columns="2" styleClass="user-info-grid" style="margin-bottom: 30px; width: 100%; max-width: 800px;">
+
+                        <h:outputText value="Aktuelles Passwort:" styleClass="info-label"/>
+                        <p:password id="currentPassword"
+                                    value="#{myUserInfoBackingBean.currentPassword}"
+                                    feedback="false"
+                                    toggleMask="true"
+                                    style="width: 300px;"/>
+
+                        <h:outputText value="Neues Passwort:" styleClass="info-label"/>
+                        <p:password id="newPassword"
+                                    value="#{myUserInfoBackingBean.newPassword}"
+                                    feedback="true"
+                                    toggleMask="true"
+                                    style="width: 300px;"/>
+
+                        <h:outputText value="Passwort bestätigen:" styleClass="info-label"/>
+                        <p:password id="confirmPassword"
+                                    value="#{myUserInfoBackingBean.confirmPassword}"
+                                    feedback="false"
+                                    toggleMask="true"
+                                    style="width: 300px;"/>
+
+                        <h:outputText value=""/>
+                        <p:commandButton value="Passwort ändern"
+                                         icon="pi pi-key"
+                                         styleClass="ui-button-warning"
+                                         action="#{myUserInfoBackingBean.changePassword}"
+                                         update="passwordPanel"
+                                         process="@this currentPassword newPassword confirmPassword"
+                                         ajax="true"/>
+                    </p:panelGrid>
+                </p:outputPanel>
+
+                <!-- Account Status (only visible in advanced mode) -->
+                <p:outputPanel rendered="#{myUserInfoBackingBean.advancedMode}">
+                <h3 style="margin-bottom: 20px; color: var(--text-color, #333);">Account Status</h3>
+                <p:panelGrid columns="2" styleClass="user-info-grid" style="margin-bottom: 30px; width: 100%; max-width: 800px;">
+
+                    <h:outputText value="Authentifiziert:" styleClass="info-label"/>
+                    <h:outputText value="#{myUserInfoBackingBean.authenticated ? 'Ja' : 'Nein'}"
+                                  styleClass="status-badge #{myUserInfoBackingBean.authenticated ? 'status-active' : 'status-inactive'}"/>
+
+                    <h:outputText value="Account aktiv:" styleClass="info-label"/>
+                    <h:outputText value="#{myUserInfoBackingBean.enabled ? 'Ja' : 'Nein'}"
+                                  styleClass="status-badge #{myUserInfoBackingBean.enabled ? 'status-active' : 'status-inactive'}"/>
+
+                    <h:outputText value="Account nicht abgelaufen:" styleClass="info-label"/>
+                    <h:outputText value="#{myUserInfoBackingBean.accountNonExpired ? 'Ja' : 'Nein'}"
+                                  styleClass="status-badge #{myUserInfoBackingBean.accountNonExpired ? 'status-active' : 'status-inactive'}"/>
+
+                    <h:outputText value="Account nicht gesperrt:" styleClass="info-label"/>
+                    <h:outputText value="#{myUserInfoBackingBean.accountNonLocked ? 'Ja' : 'Nein'}"
+                                  styleClass="status-badge #{myUserInfoBackingBean.accountNonLocked ? 'status-active' : 'status-inactive'}"/>
+
+                    <h:outputText value="Passwort nicht abgelaufen:" styleClass="info-label"/>
+                    <h:outputText value="#{myUserInfoBackingBean.credentialsNonExpired ? 'Ja' : 'Nein'}"
+                                  styleClass="status-badge #{myUserInfoBackingBean.credentialsNonExpired ? 'status-active' : 'status-inactive'}"/>
+
+                </p:panelGrid>
+                </p:outputPanel>
+
+                <!-- Rollen -->
+                <h3 style="margin-bottom: 15px; color: var(--text-color, #333);">Zugewiesene Rollen</h3>
+                <div style="margin-bottom: 30px;">
+                    <ui:repeat value="#{myUserInfoBackingBean.roles}" var="role">
+                        <span class="role-tag">#{role}</span>
+                    </ui:repeat>
+                    <h:outputText value="Keine Rollen zugewiesen" rendered="#{empty myUserInfoBackingBean.roles}"
+                                  style="color: var(--text-color-secondary, #6c757d); font-style: italic;"/>
+                </div>
+
+                <!-- Properties (nur in advanced mode sichtbar) -->
+                <p:outputPanel rendered="#{myUserInfoBackingBean.advancedMode}">
+                <h3 style="margin-bottom: 15px; color: var(--text-color, #333);">Weitere Eigenschaften</h3>
+                <div style="margin-bottom: 30px;">
+                    <ui:repeat value="#{myUserInfoBackingBean.properties}" var="property">
+                        <span class="role-tag" style="background-color: #fff3cd; color: #856404;">#{property}</span>
+                    </ui:repeat>
+                    <h:outputText value="Keine weiteren Eigenschaften" rendered="#{empty myUserInfoBackingBean.properties}"
+                                  style="color: var(--text-color-secondary, #6c757d); font-style: italic;"/>
+                </div>
+                </p:outputPanel>
+
+                <!-- Auto-Login Link -->
+                <p:outputPanel rendered="#{myUserInfoBackingBean.autologinKeyAvailable}">
+                    <h3 style="margin-bottom: 15px; color: var(--text-color, #333);">Auto-Login Link</h3>
+                    <p:messages id="autologinMessages" showDetail="true" closable="true"/>
+                    <p:outputPanel id="autologinPanel">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap;">
+                            <p:commandButton value="#{myUserInfoBackingBean.autologinUrl}"
+                                             styleClass="ui-button-text ui-button-info"
+                                             style="font-family: 'Courier New', monospace; text-decoration: underline; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 800px;"
+                                             type="button">
+                                <pe:clipboard text="#{myUserInfoBackingBean.autologinUrl}"/>
+                            </p:commandButton>
+                            <p:commandButton icon="pi pi-copy"
+                                             styleClass="ui-button-rounded ui-button-info"
+                                             title="Link in Zwischenablage kopieren"
+                                             type="button">
+                                <pe:clipboard text="#{myUserInfoBackingBean.autologinUrl}"/>
+                            </p:commandButton>
+                            <p:commandButton value="Erneuern"
+                                             icon="pi pi-refresh"
+                                             styleClass="ui-button-rounded ui-button-warning"
+                                             title="Auto-Login Link erneuern"
+                                             action="#{myUserInfoBackingBean.regenerateAutologinKey}"
+                                             update="autologinPanel autologinMessages"
+                                             process="@this"
+                                             ajax="true"/>
+                        </div>
+                        <small style="display: block; color: var(--text-color-secondary, #6c757d);">
+                            Klicken Sie auf den Link oder das Kopier-Icon, um ihn in die Zwischenablage zu kopieren.
+                        </small>
+                    </p:outputPanel>
+                </p:outputPanel>
+
+                </p:outputPanel>
+
+            </div>
+
+        </p:fieldset>
+
+        </h:form>
+    </ui:define>
+</ui:composition>

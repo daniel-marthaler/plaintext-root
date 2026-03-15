@@ -1,0 +1,426 @@
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                template="/includes/template.xhtml">
+
+    <ui:define name="title">Email-Verwaltung</ui:define>
+
+    <ui:define name="page">
+        <h:form id="fm">
+            <input type="hidden" name="_csrf" value="#{_csrf.token}"/>
+        <f:metadata>
+            <f:event type="preRenderView" listener="#{emailListBackingBean.initThis()}"/>
+        </f:metadata>
+
+        <style>
+            .email-table .ui-datatable-header {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                padding: 15px;
+                border-radius: 8px 8px 0 0;
+            }
+
+            .email-row:hover {
+                background-color: var(--surface-100, #f8f9fa) !important;
+            }
+
+            .action-buttons {
+                margin-bottom: 15px;
+                padding: 10px;
+                background: var(--surface-0);
+                border: 1px solid var(--surface-border);
+                border-radius: 8px;
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+                gap: 10px;
+                align-items: center;
+            }
+
+            .stats-panel {
+                margin-bottom: 15px;
+            }
+
+            /* Mobile optimizations */
+            @media screen and (max-width: 768px) {
+                .action-buttons {
+                    grid-template-columns: 1fr;
+                }
+
+                .action-buttons .ui-button {
+                    width: 100% !important;
+                }
+            }
+        </style>
+
+        <h:outputScript>
+            history.pushState(null, null, '/emails.html');
+        </h:outputScript>
+
+        <p:growl id="messages" showDetail="true" life="3000"/>
+
+        <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+            <p:commandButton value="Ja" type="button" styleClass="ui-confirmdialog-yes"/>
+            <p:commandButton value="Nein" type="button" styleClass="ui-confirmdialog-no"/>
+        </p:confirmDialog>
+
+        <!-- Statistics -->
+        <div class="stats-panel">
+            <div class="grid">
+                <div class="col-12 md:col-4">
+                    <div class="surface-card shadow-2 p-3 border-round">
+                        <div class="flex justify-content-between mb-3">
+                            <div>
+                                <span class="block text-500 font-medium mb-3">Warteschlange</span>
+                                <div class="text-900 font-medium text-xl">#{emailListBackingBean.queuedCount}</div>
+                            </div>
+                            <div class="flex align-items-center justify-content-center bg-orange-100 border-round" style="width:2.5rem;height:2.5rem">
+                                <i class="pi pi-clock text-orange-500 text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 md:col-4">
+                    <div class="surface-card shadow-2 p-3 border-round">
+                        <div class="flex justify-content-between mb-3">
+                            <div>
+                                <span class="block text-500 font-medium mb-3">Gesendet</span>
+                                <div class="text-900 font-medium text-xl">#{emailListBackingBean.sentCount}</div>
+                            </div>
+                            <div class="flex align-items-center justify-content-center bg-green-100 border-round" style="width:2.5rem;height:2.5rem">
+                                <i class="pi pi-check text-green-500 text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 md:col-4">
+                    <div class="surface-card shadow-2 p-3 border-round">
+                        <div class="flex justify-content-between mb-3">
+                            <div>
+                                <span class="block text-500 font-medium mb-3">Fehlgeschlagen</span>
+                                <div class="text-900 font-medium text-xl">#{emailListBackingBean.failedCount}</div>
+                            </div>
+                            <div class="flex align-items-center justify-content-center bg-red-100 border-round" style="width:2.5rem;height:2.5rem">
+                                <i class="pi pi-times text-red-500 text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <p:commandButton value="Neue Email"
+                             icon="pi pi-plus"
+                             actionListener="#{emailListBackingBean.newEmail()}"
+                             oncomplete="PF('dlgEmail').show()"
+                             update="dlgEmail"
+                             process="@this"
+                             styleClass="ui-button-success"/>
+
+            <p:commandButton value="Anzeigen"
+                             icon="pi pi-eye"
+                             actionListener="#{emailListBackingBean.selectEmail()}"
+                             oncomplete="PF('dlgEmail').show()"
+                             update="dlgEmail"
+                             process="@this"
+                             disabled="#{emailListBackingBean.selectedEmail == null}"/>
+
+            <p:commandButton value="Zur Warteschlange"
+                             icon="pi pi-send"
+                             actionListener="#{emailListBackingBean.queueEmail()}"
+                             update="messages,tblEmails"
+                             process="@this"
+                             disabled="#{emailListBackingBean.selectedEmail == null or emailListBackingBean.selectedEmail.status != 'DRAFT'}">
+                <p:confirm header="Bestätigung" message="Email zur Warteschlange hinzufügen und versenden?" icon="pi pi-question-circle"/>
+            </p:commandButton>
+
+            <p:commandButton value="Löschen"
+                             icon="pi pi-trash"
+                             styleClass="ui-button-danger"
+                             actionListener="#{emailListBackingBean.deleteEmail()}"
+                             update="messages,tblEmails"
+                             process="@this"
+                             disabled="#{emailListBackingBean.selectedEmail == null}">
+                <p:confirm header="Bestätigung" message="Email wirklich löschen?" icon="pi pi-exclamation-triangle"/>
+            </p:commandButton>
+
+            <p:commandButton value="Aktualisieren"
+                             icon="pi pi-refresh"
+                             actionListener="#{emailListBackingBean.loadEmails()}"
+                             update="tblEmails,messages"
+                             process="@this"
+                             styleClass="ui-button-outlined"/>
+        </div>
+
+        <p:dataTable emptyMessage="Keine Emails vorhanden"
+                     widgetVar="tblEmails"
+                     id="tblEmails"
+                     selectionMode="single"
+                     selection="#{emailListBackingBean.selectedEmail}"
+                     var="obj"
+                     rowKey="#{obj.id}"
+                     value="#{emailListBackingBean.emails}"
+                     styleClass="email-table"
+                     rowStyleClass="email-row"
+                     paginator="true"
+                     rows="20"
+                     rowsPerPageTemplate="20,50,100"
+                     paginatorPosition="bottom"
+                     reflow="true">
+
+            <p:ajax event="rowSelect" listener="#{emailListBackingBean.selectEmail()}" update=":fm"/>
+            <p:ajax event="rowUnselect" listener="#{emailListBackingBean.clearSelection()}" update=":fm"/>
+
+            <f:facet name="header">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 1.2em;">
+                        <i class="pi pi-envelope" style="margin-right: 8px;"></i>
+                        Email-Liste
+                    </span>
+                    <p:commandButton value="Filter zurücksetzen"
+                                   icon="pi pi-filter-slash"
+                                   update="tblEmails"
+                                   process="@this"
+                                   onclick="PF('tblEmails').clearFilters()"
+                                   styleClass="ui-button-outlined"
+                                   style="color: white; border-color: white;"/>
+                </div>
+            </f:facet>
+
+            <p:column headerText="ID" sortBy="#{obj.id}" filterBy="#{obj.id}" width="60" priority="6">
+                <h:outputText value="#{obj.id}"/>
+            </p:column>
+
+            <p:column headerText="Richtung" sortBy="#{obj.direction}" filterBy="#{obj.direction}" width="100" priority="4">
+                <h:outputText value="#{obj.direction == 'INCOMING' ? '📥 Eingehend' : '📤 Ausgehend'}"/>
+            </p:column>
+
+            <p:column headerText="Konfiguration" sortBy="#{obj.configName}" filterBy="#{obj.configName}" width="150" priority="3">
+                <h:outputText value="#{obj.configName}"/>
+            </p:column>
+
+            <p:column headerText="Von" sortBy="#{obj.fromAddress}" filterBy="#{obj.fromAddress}" priority="2">
+                <h:outputText value="#{obj.fromAddress}"/>
+            </p:column>
+
+            <p:column headerText="An" sortBy="#{obj.toAddress}" filterBy="#{obj.toAddress}" priority="2">
+                <h:outputText value="#{obj.toAddress}"/>
+            </p:column>
+
+            <p:column headerText="Betreff" sortBy="#{obj.subject}" filterBy="#{obj.subject}" priority="1">
+                <h:outputText value="#{obj.subject}"/>
+            </p:column>
+
+            <p:column headerText="Status" sortBy="#{obj.status}" filterBy="#{obj.status}" width="120" priority="2">
+                <h:outputText value="#{obj.status}" styleClass="badge #{obj.status == 'SENT' ? 'badge-success' : (obj.status == 'FAILED' ? 'badge-danger' : 'badge-info')}"/>
+            </p:column>
+
+            <p:column headerText="Erstellt" sortBy="#{obj.createdAt}" width="160" priority="3">
+                <h:outputText value="#{emailListBackingBean.formatDateTime(obj.createdAt)}"/>
+            </p:column>
+
+        </p:dataTable>
+
+        <!-- Email Dialog -->
+        <p:dialog header="Email Details" widgetVar="dlgEmail" id="dlgEmail" modal="true" width="900" height="700" responsive="true">
+            <p:scrollPanel style="width: 100%; height: 550px;" rendered="#{emailListBackingBean.selectedEmail != null}">
+                <h:panelGrid columns="2" cellpadding="8" style="width: 100%;" columnClasses="label-column,value-column">
+
+                    <!-- Basic Info Section -->
+                    <h:outputText value="ID:" styleClass="font-bold"/>
+                    <h:outputText value="#{emailListBackingBean.selectedEmail.id}"/>
+
+                    <h:outputText value="Mandant:" styleClass="font-bold"/>
+                    <h:outputText value="#{emailListBackingBean.selectedEmail.mandat}"/>
+
+                    <h:outputText value="Konfiguration:" styleClass="font-bold"/>
+                    <h:outputText value="#{emailListBackingBean.selectedEmail.configName}"/>
+
+                    <h:outputText value="Richtung:" styleClass="font-bold"/>
+                    <h:outputText value="#{emailListBackingBean.selectedEmail.direction == 'INCOMING' ? '📥 Eingehend' : '📤 Ausgehend'}"/>
+
+                    <h:outputText value="Status:" styleClass="font-bold"/>
+                    <h:outputText value="#{emailListBackingBean.selectedEmail.status}"
+                                  styleClass="badge #{emailListBackingBean.selectedEmail.status == 'SENT' ? 'badge-success' : (emailListBackingBean.selectedEmail.status == 'FAILED' ? 'badge-danger' : 'badge-info')}"/>
+
+                    <!-- Separator -->
+                    <p:divider layout="horizontal" style="grid-column: 1 / -1; margin: 10px 0;"/>
+
+                    <!-- Address Fields -->
+                    <p:outputLabel for="emailFrom" value="Von:" styleClass="font-bold"/>
+                    <p:inputText id="emailFrom" value="#{emailListBackingBean.selectedEmail.fromAddress}"
+                                 style="width: 100%;" disabled="true"/>
+
+                    <p:outputLabel for="emailTo" value="An:" styleClass="font-bold"/>
+                    <p:inputText id="emailTo" value="#{emailListBackingBean.selectedEmail.toAddress}"
+                                 style="width: 100%;" disabled="#{emailListBackingBean.selectedEmail.status != 'DRAFT'}"/>
+
+                    <p:outputLabel for="emailCc" value="CC:" styleClass="font-bold"/>
+                    <p:inputText id="emailCc" value="#{emailListBackingBean.selectedEmail.ccAddress}"
+                                 style="width: 100%;" disabled="#{emailListBackingBean.selectedEmail.status != 'DRAFT'}"/>
+
+                    <p:outputLabel for="emailBcc" value="BCC:" styleClass="font-bold"/>
+                    <p:inputText id="emailBcc" value="#{emailListBackingBean.selectedEmail.bccAddress}"
+                                 style="width: 100%;" disabled="#{emailListBackingBean.selectedEmail.status != 'DRAFT'}"/>
+
+                    <!-- Separator -->
+                    <p:divider layout="horizontal" style="grid-column: 1 / -1; margin: 10px 0;"/>
+
+                    <!-- Content Fields -->
+                    <p:outputLabel for="emailSubject" value="Betreff:" styleClass="font-bold"/>
+                    <p:inputText id="emailSubject" value="#{emailListBackingBean.selectedEmail.subject}"
+                                 style="width: 100%;" disabled="#{emailListBackingBean.selectedEmail.status != 'DRAFT'}"/>
+
+                    <p:outputLabel for="emailHtml" value="HTML:" styleClass="font-bold"/>
+                    <p:selectBooleanCheckbox id="emailHtml" value="#{emailListBackingBean.selectedEmail.html}"
+                                             disabled="#{emailListBackingBean.selectedEmail.status != 'DRAFT'}"/>
+
+                </h:panelGrid>
+
+                <!-- Nachricht Section - volle Breite -->
+                <div style="padding: 0 8px; margin-top: 10px;">
+                    <p:outputLabel for="emailBody" value="Nachricht:" styleClass="font-bold" style="display: block; margin-bottom: 8px;"/>
+
+                    <!-- Wenn es ein Entwurf ist, zeige Textarea zum Bearbeiten -->
+                    <p:inputTextarea id="emailBody" value="#{emailListBackingBean.selectedEmail.body}"
+                                     rows="12" style="width: 100%;"
+                                     rendered="#{emailListBackingBean.selectedEmail.status == 'DRAFT'}"/>
+
+                    <!-- Wenn es KEINE HTML Email ist und kein Entwurf, zeige als Text -->
+                    <p:inputTextarea value="#{emailListBackingBean.selectedEmail.body}"
+                                     rows="12" style="width: 100%;" disabled="true"
+                                     rendered="#{emailListBackingBean.selectedEmail.status != 'DRAFT' and !emailListBackingBean.selectedEmail.html}"/>
+
+                    <!-- Wenn es eine HTML Email ist und kein Entwurf, zeige als gerenderten HTML -->
+                    <div style="width: 100%; max-height: 400px; overflow: auto; border: 1px solid #ccc; padding: 10px; background: white; border-radius: 4px;"
+                         rendered="#{emailListBackingBean.selectedEmail.status != 'DRAFT' and emailListBackingBean.selectedEmail.html}">
+                        <h:outputText value="#{emailListBackingBean.selectedEmail.body}" escape="false"/>
+                    </div>
+                </div>
+
+                <!-- Separator -->
+                <p:divider layout="horizontal" style="margin: 15px 0;"/>
+
+                <h:panelGrid columns="2" cellpadding="8" style="width: 100%;" columnClasses="label-column,value-column">
+
+                    <!-- Technical Fields -->
+                    <h:outputText value="Message ID:" styleClass="font-bold"/>
+                    <h:outputText value="#{emailListBackingBean.selectedEmail.messageId}" style="font-family: monospace; font-size: 0.9em;"/>
+
+                    <h:outputText value="Wiederholungsversuche:" styleClass="font-bold"/>
+                    <h:outputText value="#{emailListBackingBean.selectedEmail.retryCount} / #{emailListBackingBean.selectedEmail.maxRetries}"/>
+
+                    <h:outputText value="Erstellt am:" styleClass="font-bold"/>
+                    <h:outputText value="#{emailListBackingBean.formatDateTime(emailListBackingBean.selectedEmail.createdAt)}"/>
+
+                    <h:outputText value="Gesendet am:" styleClass="font-bold"
+                                  rendered="#{emailListBackingBean.selectedEmail.sentAt != null}"/>
+                    <h:outputText value="#{emailListBackingBean.formatDateTime(emailListBackingBean.selectedEmail.sentAt)}"
+                                  rendered="#{emailListBackingBean.selectedEmail.sentAt != null}"/>
+
+                    <h:outputText value="Empfangen am:" styleClass="font-bold"
+                                  rendered="#{emailListBackingBean.selectedEmail.receivedAt != null}"/>
+                    <h:outputText value="#{emailListBackingBean.formatDateTime(emailListBackingBean.selectedEmail.receivedAt)}"
+                                  rendered="#{emailListBackingBean.selectedEmail.receivedAt != null}"/>
+
+                    <!-- Error Message if present -->
+                    <h:outputText value="Fehlermeldung:" styleClass="font-bold" style="vertical-align: top; padding-top: 8px;"
+                                  rendered="#{emailListBackingBean.selectedEmail.errorMessage != null}"/>
+                    <p:inputTextarea value="#{emailListBackingBean.selectedEmail.errorMessage}"
+                                     rows="4" style="width: 100%; font-family: monospace; font-size: 0.9em;"
+                                     disabled="true"
+                                     rendered="#{emailListBackingBean.selectedEmail.errorMessage != null}"/>
+
+                </h:panelGrid>
+
+                <!-- Attachments Section - volle Breite -->
+                <div style="padding: 0 8px; margin-top: 15px;"
+                     rendered="#{emailListBackingBean.selectedEmail.attachments != null and emailListBackingBean.selectedEmail.attachments.size() > 0}">
+                    <p:divider layout="horizontal" style="margin: 15px 0;"/>
+
+                    <h:outputText value="Anhänge:" styleClass="font-bold" style="display: block; margin-bottom: 8px;"/>
+
+                    <p:dataTable value="#{emailListBackingBean.selectedEmail.attachments}"
+                                 var="attachment"
+                                 style="width: 100%;">
+                        <p:column headerText="Dateiname">
+                            <h:outputText value="#{attachment.filename}"/>
+                        </p:column>
+                        <p:column headerText="Typ" width="200">
+                            <h:outputText value="#{attachment.contentType}"/>
+                        </p:column>
+                        <p:column headerText="Größe" width="100">
+                            <h:outputText value="#{attachment.sizeBytes} Bytes"/>
+                        </p:column>
+                        <p:column headerText="Aktion" width="100" style="text-align: center;">
+                            <p:commandButton value="Download"
+                                             icon="pi pi-download"
+                                             actionListener="#{emailListBackingBean.downloadAttachment(attachment)}"
+                                             ajax="false"
+                                             styleClass="ui-button-sm ui-button-outlined"/>
+                        </p:column>
+                    </p:dataTable>
+                </div>
+            </p:scrollPanel>
+
+            <f:facet name="footer">
+                <p:commandButton value="Speichern"
+                                 icon="pi pi-check"
+                                 actionListener="#{emailListBackingBean.saveEmail()}"
+                                 update="messages,tblEmails"
+                                 process="dlgEmail"
+                                 oncomplete="if (args &amp;&amp; !args.validationFailed) PF('dlgEmail').hide()"
+                                 styleClass="ui-button-success"
+                                 rendered="#{emailListBackingBean.selectedEmail.status == 'DRAFT'}"/>
+
+                <p:commandButton value="Schließen"
+                                 icon="pi pi-times"
+                                 onclick="PF('dlgEmail').hide()"
+                                 styleClass="ui-button-secondary"/>
+            </f:facet>
+        </p:dialog>
+
+        <style>
+            .label-column {
+                width: 180px;
+                vertical-align: top;
+                padding-top: 8px;
+            }
+
+            .value-column {
+                width: auto;
+            }
+
+            .font-bold {
+                font-weight: bold;
+            }
+
+            .badge {
+                padding: 4px 12px;
+                border-radius: 12px;
+                font-size: 0.9em;
+                font-weight: 500;
+                display: inline-block;
+            }
+
+            .badge-success {
+                background-color: #d4edda;
+                color: #155724;
+            }
+
+            .badge-danger {
+                background-color: #f8d7da;
+                color: #721c24;
+            }
+
+            .badge-info {
+                background-color: #d1ecf1;
+                color: #0c5460;
+            }
+        </style>
+
+        </h:form>
+    </ui:define>
+</ui:composition>

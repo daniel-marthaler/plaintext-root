@@ -1,0 +1,170 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml" 
+                xmlns:h="http://java.sun.com/jsf/html" 
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets" 
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:fr="http://primefaces.org/freya">
+
+<div class="menu-wrapper">
+    <div class="sidebar-logo">
+        <!-- Logo hidden as requested
+        <a href="index.xhtml">
+            <p:graphicImage name="images/#{ userPreferencesBackingBean.lightLogo ? 'logo-small-light.png' : 'logo-small-dark.png'}" library="freya-layout" />
+        </a>
+        -->
+        <h:form id="pinForm">
+            <input type="hidden" name="_csrf" value="#{_csrf.token}"/>
+            <h:inputHidden id="menuStaticValue" value="#{userPreferencesBackingBean.menuStatic}" />
+            <p:commandLink styleClass="sidebar-pin" title="Toggle Menu"
+                           actionListener="#{userPreferencesBackingBean.toggleMenuStatic()}"
+                           update="pinForm:menuStaticValue"
+                           process="@this"
+                           oncomplete="handleMenuPinToggle();">
+                <span class="pin"></span>
+            </p:commandLink>
+        </h:form>
+        <script>
+            function handleMenuPinToggle() {
+                var menuStaticValue = document.getElementById('pinForm:menuStaticValue').value;
+                var wrapper = document.querySelector('.layout-wrapper');
+                if (menuStaticValue === 'true') {
+                    wrapper.classList.add('layout-static');
+                } else {
+                    wrapper.classList.remove('layout-static');
+                }
+            }
+        </script>
+
+    </div>
+    <div class="layout-menu-container">
+        <h:form id="menuform">
+            <!-- Programmatic menu using MenuBean -->
+            <fr:menu widgetVar="FreyaMenuWidget" model="#{menuBean.model}">
+            </fr:menu>
+        </h:form>
+        <style>
+            /* CSS-only submenu animation - override any existing styles */
+            .layout-menu > li > ul {
+                display: block !important;
+                max-height: 0;
+                overflow: hidden;
+                opacity: 0;
+            }
+
+            /* Add transitions only after page load to avoid animation on initial render */
+            .layout-menu.transitions-enabled > li > ul {
+                transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+            }
+
+            /* Show submenu when parent has active class */
+            .layout-menu > li.active-menuitem > ul {
+                max-height: 500px;
+                opacity: 1;
+            }
+
+            .layout-menu.transitions-enabled > li.active-menuitem > ul {
+                transition: max-height 0.3s ease-in, opacity 0.3s ease-in;
+            }
+        </style>
+        <script>
+            //<![CDATA[
+            // Restore state immediately (before DOM ready) to avoid animation
+            (function() {
+                var openSubmenuLabel = sessionStorage.getItem('openSubmenuLabel');
+                if (openSubmenuLabel) {
+                    console.debug('Pre-restore submenu:', openSubmenuLabel);
+                    // Set a flag that we can check in setupSubmenuHandlers
+                    window.submenuToRestore = openSubmenuLabel;
+                }
+            })();
+
+            // Simple submenu toggle - CSS-only animation with state persistence
+            function setupSubmenuHandlers() {
+                console.debug('=== Submenu Fix (CSS-only) ===');
+
+                // Restore submenu state from sessionStorage
+                var openSubmenuLabel = window.submenuToRestore || sessionStorage.getItem('openSubmenuLabel');
+                console.debug('Stored submenu label:', openSubmenuLabel);
+
+                // First: Save state when submenu items are clicked (before navigation)
+                $('.layout-menu > li > ul a').off('click.submenu-item').on('click.submenu-item', function(e) {
+                    // Find the parent menu item and save its label
+                    var parentMenuItem = $(this).closest('.layout-menu > li');
+                    var parentLabel = parentMenuItem.children('a').first().text().trim();
+
+                    console.debug('Saving submenu state before navigation:', parentLabel);
+                    sessionStorage.setItem('openSubmenuLabel', parentLabel);
+
+                    // Allow navigation but stop propagation to parent
+                    e.stopPropagation();
+                    console.debug('Submenu item clicked (navigation allowed):', $(this).text().trim());
+                });
+
+                // Second: Setup toggle handlers for menu items with submenus
+                $('.layout-menu > li').each(function(index) {
+                    var item = $(this);
+                    var link = item.children('a').first();
+                    var submenu = item.children('ul').first();
+                    var label = link.text().trim();
+
+                    if (submenu.length > 0) {
+                        console.debug('Found submenu:', label);
+
+                        // Restore state if this is the open submenu
+                        if (openSubmenuLabel && label === openSubmenuLabel) {
+                            console.debug('Restoring open state for:', label);
+                            item.addClass('active-menuitem');
+                        }
+
+                        // Remove ALL existing click handlers on the parent link
+                        link.off('click');
+
+                        // Add simple toggle handler
+                        link.on('click', function(e) {
+                            e.preventDefault();
+                            e.stopImmediatePropagation();
+
+                            console.debug('Toggle submenu:', label);
+
+                            // Close all other submenus
+                            $('.layout-menu > li').not(item).removeClass('active-menuitem');
+
+                            // Toggle this submenu
+                            item.toggleClass('active-menuitem');
+
+                            // Save or remove state
+                            if (item.hasClass('active-menuitem')) {
+                                sessionStorage.setItem('openSubmenuLabel', label);
+                                console.debug('Saved open submenu:', label);
+                            } else {
+                                sessionStorage.removeItem('openSubmenuLabel');
+                                console.debug('Removed submenu state');
+                            }
+
+                            return false;
+                        });
+                    }
+                });
+
+                console.debug('Handlers attached!');
+
+                // Enable transitions after handlers are attached (to avoid initial animation)
+                setTimeout(function() {
+                    $('.layout-menu').addClass('transitions-enabled');
+                    console.debug('Transitions enabled');
+                }, 100);
+            }
+
+            // Setup immediately
+            $(function() {
+                setupSubmenuHandlers();
+            });
+
+            // Override any widget handlers after delay
+            setTimeout(setupSubmenuHandlers, 1500);
+            //]]>
+        </script>
+    </div>
+</div>
+
+</ui:composition>

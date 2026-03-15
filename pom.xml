@@ -1,0 +1,422 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.5.9</version>
+    </parent>
+
+    <groupId>ch.plaintext</groupId>
+    <artifactId>plaintext-root-parent</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <name>plaintext-root-parent</name>
+    <description>Plaintext Root Framework - Security, Menu, JPA, Admin, Discovery</description>
+
+    <properties>
+        <java.version>21</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!-- Build Tools -->
+        <build-helper-maven-plugin.version>3.6.1</build-helper-maven-plugin.version>
+
+        <!-- Interne Module -->
+        <plaintext.version>${project.version}</plaintext.version>
+
+        <!-- JSF & Primefaces -->
+        <primefaces-spring-boot-starter.version>5.5.8</primefaces-spring-boot-starter.version>
+        <primefaces.version>15.0.10</primefaces.version>
+        <jakarta.faces.version>4.1.4</jakarta.faces.version>
+
+        <!-- Cron & Scheduling -->
+        <cron4j.version>2.2.5</cron4j.version>
+
+        <!-- Mail -->
+        <jakarta.mail.version>2.0.2</jakarta.mail.version>
+
+        <!-- Common Utilities -->
+        <xstream.version>1.4.21</xstream.version>
+        <joda-time.version>2.14.0</joda-time.version>
+        <commons-beanutils.version>1.11.0</commons-beanutils.version>
+        <guava.version>33.5.0-jre</guava.version>
+        <commons-lang3.version>3.20.0</commons-lang3.version>
+        <commons-io.version>2.21.0</commons-io.version>
+        <lombok.version>1.18.42</lombok.version>
+
+        <!-- Web -->
+        <jsoup.version>1.21.2</jsoup.version>
+        <unirest-java.version>3.14.5</unirest-java.version>
+
+        <!-- Misc -->
+        <prettytime.version>5.0.9.Final</prettytime.version>
+        <json.version>20250517</json.version>
+        <j2html.version>1.6.0</j2html.version>
+        <browscap-java.version>1.5.1</browscap-java.version>
+        <java-object-diff.version>0.95</java-object-diff.version>
+
+        <!-- Security -->
+        <jakarta.enterprise.cdi-api.version>4.0.1</jakarta.enterprise.cdi-api.version>
+        <bcprov-jdk18on.version>1.83</bcprov-jdk18on.version>
+        <jjwt.version>0.12.6</jjwt.version>
+        <springdoc-openapi.version>2.8.15</springdoc-openapi.version>
+
+        <!-- Reporting -->
+        <jodreports.version>3.0.0</jodreports.version>
+
+        <!-- Apache POI -->
+        <poi.version>5.5.0</poi.version>
+
+        <!-- Misc -->
+        <juniversalchardet.version>1.0.3</juniversalchardet.version>
+        <unirest-java-legacy.version>1.4.9</unirest-java-legacy.version>
+        <commons-compress.version>1.28.0</commons-compress.version>
+        <htmlcompressor.version>1.5.2</htmlcompressor.version>
+    </properties>
+
+    <modules>
+        <!-- root -->
+        <module>plaintext-root-interfaces</module>
+        <module>plaintext-root-common</module>
+        <module>plaintext-root-email</module>
+        <module>plaintext-root-flyway</module>
+        <module>plaintext-root-jpa</module>
+        <module>plaintext-root-menu</module>
+        <module>plaintext-root-menuesteuerung</module>
+        <module>plaintext-root-rollenzuteilung</module>
+        <module>plaintext-root-discovery</module>
+        <module>plaintext-root-webapp</module>
+
+        <!-- admin -->
+        <module>plaintext-admin-anforderungen</module>
+        <module>plaintext-admin-cron</module>
+        <module>plaintext-admin-filelist</module>
+        <module>plaintext-admin-sessions</module>
+        <module>plaintext-admin-settings</module>
+        <module>plaintext-admin-wertelisten</module>
+    </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- Interne Module -->
+            <dependency>
+                <groupId>ch.plaintext</groupId>
+                <artifactId>plaintext-root-interfaces</artifactId>
+                <version>${plaintext.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.plaintext</groupId>
+                <artifactId>plaintext-root-common</artifactId>
+                <version>${plaintext.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.plaintext</groupId>
+                <artifactId>plaintext-root-menu</artifactId>
+                <version>${plaintext.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.plaintext</groupId>
+                <artifactId>plaintext-root-menuesteuerung</artifactId>
+                <version>${plaintext.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.plaintext</groupId>
+                <artifactId>plaintext-root-email</artifactId>
+                <version>${plaintext.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.plaintext</groupId>
+                <artifactId>plaintext-root-jpa</artifactId>
+                <version>${plaintext.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.plaintext</groupId>
+                <artifactId>plaintext-root-flyway</artifactId>
+                <version>${plaintext.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.plaintext</groupId>
+                <artifactId>plaintext-root-rollenzuteilung</artifactId>
+                <version>${plaintext.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.plaintext</groupId>
+                <artifactId>plaintext-root-discovery</artifactId>
+                <version>${plaintext.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.plaintext</groupId>
+                <artifactId>plaintext-root-webapp</artifactId>
+                <version>${plaintext.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.plaintext</groupId>
+                <artifactId>plaintext-admin-cron</artifactId>
+                <version>${plaintext.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.plaintext</groupId>
+                <artifactId>plaintext-admin-sessions</artifactId>
+                <version>${plaintext.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.plaintext</groupId>
+                <artifactId>plaintext-admin-settings</artifactId>
+                <version>${plaintext.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.plaintext</groupId>
+                <artifactId>plaintext-admin-wertelisten</artifactId>
+                <version>${plaintext.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.plaintext</groupId>
+                <artifactId>plaintext-admin-anforderungen</artifactId>
+                <version>${plaintext.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.plaintext</groupId>
+                <artifactId>plaintext-admin-filelist</artifactId>
+                <version>${plaintext.version}</version>
+            </dependency>
+
+            <!-- JSF & Primefaces -->
+            <dependency>
+                <groupId>org.joinfaces</groupId>
+                <artifactId>primefaces-spring-boot-starter</artifactId>
+                <version>${primefaces-spring-boot-starter.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.primefaces</groupId>
+                <artifactId>primefaces</artifactId>
+                <version>${primefaces.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.primefaces</groupId>
+                <artifactId>primefaces</artifactId>
+                <version>${primefaces.version}</version>
+                <classifier>jakarta</classifier>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish</groupId>
+                <artifactId>jakarta.faces</artifactId>
+                <version>${jakarta.faces.version}</version>
+            </dependency>
+
+            <!-- Serialization -->
+            <dependency>
+                <groupId>com.thoughtworks.xstream</groupId>
+                <artifactId>xstream</artifactId>
+                <version>${xstream.version}</version>
+            </dependency>
+
+            <!-- Common Utilities -->
+            <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>${commons-io.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>${commons-lang3.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-beanutils</groupId>
+                <artifactId>commons-beanutils</artifactId>
+                <version>${commons-beanutils.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>${guava.version}</version>
+            </dependency>
+
+            <!-- Date/Time -->
+            <dependency>
+                <groupId>joda-time</groupId>
+                <artifactId>joda-time</artifactId>
+                <version>${joda-time.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.ocpsoft.prettytime</groupId>
+                <artifactId>prettytime</artifactId>
+                <version>${prettytime.version}</version>
+            </dependency>
+
+            <!-- Scheduling -->
+            <dependency>
+                <groupId>it.sauronsoftware.cron4j</groupId>
+                <artifactId>cron4j</artifactId>
+                <version>${cron4j.version}</version>
+            </dependency>
+
+            <!-- Mail -->
+            <dependency>
+                <groupId>com.sun.mail</groupId>
+                <artifactId>jakarta.mail</artifactId>
+                <version>${jakarta.mail.version}</version>
+            </dependency>
+
+            <!-- Reporting -->
+            <dependency>
+                <groupId>org.jodreports</groupId>
+                <artifactId>jodreports-library</artifactId>
+                <version>${jodreports.version}</version>
+            </dependency>
+
+            <!-- Web -->
+            <dependency>
+                <groupId>org.jsoup</groupId>
+                <artifactId>jsoup</artifactId>
+                <version>${jsoup.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.konghq</groupId>
+                <artifactId>unirest-java</artifactId>
+                <version>${unirest-java.version}</version>
+            </dependency>
+
+            <!-- HTML/JSON -->
+            <dependency>
+                <groupId>com.j2html</groupId>
+                <artifactId>j2html</artifactId>
+                <version>${j2html.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.json</groupId>
+                <artifactId>json</artifactId>
+                <version>${json.version}</version>
+            </dependency>
+
+            <!-- Security -->
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcprov-jdk18on</artifactId>
+                <version>${bcprov-jdk18on.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.enterprise</groupId>
+                <artifactId>jakarta.enterprise.cdi-api</artifactId>
+                <version>${jakarta.enterprise.cdi-api.version}</version>
+            </dependency>
+
+            <!-- JWT -->
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-api</artifactId>
+                <version>${jjwt.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-impl</artifactId>
+                <version>${jjwt.version}</version>
+                <scope>runtime</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-jackson</artifactId>
+                <version>${jjwt.version}</version>
+                <scope>runtime</scope>
+            </dependency>
+
+            <!-- Browser Detection -->
+            <dependency>
+                <groupId>com.blueconic</groupId>
+                <artifactId>browscap-java</artifactId>
+                <version>${browscap-java.version}</version>
+            </dependency>
+
+            <!-- Object Diff -->
+            <dependency>
+                <groupId>de.danielbechler</groupId>
+                <artifactId>java-object-diff</artifactId>
+                <version>${java-object-diff.version}</version>
+            </dependency>
+
+            <!-- SpringDoc -->
+            <dependency>
+                <groupId>org.springdoc</groupId>
+                <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+                <version>${springdoc-openapi.version}</version>
+            </dependency>
+
+            <!-- Apache POI -->
+            <dependency>
+                <groupId>org.apache.poi</groupId>
+                <artifactId>poi</artifactId>
+                <version>${poi.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.poi</groupId>
+                <artifactId>poi-ooxml</artifactId>
+                <version>${poi.version}</version>
+            </dependency>
+
+            <!-- Misc -->
+            <dependency>
+                <groupId>com.googlecode.juniversalchardet</groupId>
+                <artifactId>juniversalchardet</artifactId>
+                <version>${juniversalchardet.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.mashape.unirest</groupId>
+                <artifactId>unirest-java</artifactId>
+                <version>${unirest-java-legacy.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-compress</artifactId>
+                <version>${commons-compress.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.googlecode.htmlcompressor</groupId>
+                <artifactId>htmlcompressor</artifactId>
+                <version>${htmlcompressor.version}</version>
+            </dependency>
+
+            <!-- Lombok -->
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>${lombok.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <configuration>
+                        <annotationProcessorPaths>
+                            <path>
+                                <groupId>org.projectlombok</groupId>
+                                <artifactId>lombok</artifactId>
+                                <version>${lombok.version}</version>
+                            </path>
+                        </annotationProcessorPaths>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>build-helper-maven-plugin</artifactId>
+                    <version>${build-helper-maven-plugin.version}</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+</project>

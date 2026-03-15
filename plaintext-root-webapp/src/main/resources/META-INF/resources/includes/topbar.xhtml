@@ -1,0 +1,240 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:p="http://primefaces.org/ui"
+>
+
+    <div class="layout-topbar">
+        <div class="layout-topbar-wrapper">
+            <div class="layout-topbar-left">
+                <a href="#" class="menu-button">
+                    <i class="pi pi-bars"/>
+                </a>
+                <!-- Logo hidden as requested
+                <h:link id="logolink" url="/index.html" styleClass="layout-topbar-logo">
+                    <p:graphicImage name="images/#{ userPreferencesBackingBean.lightLogo ? 'logo-top-dark.png' : 'logo-top-dark.png'}" library="freya-layout"/>
+                </h:link>
+                -->
+            </div>
+
+            <ui:include src="/menu.xhtml"/>
+
+            <div class="layout-topbar-right">
+                <ul class="layout-topbar-actions">
+
+                    <!-- Discovery Remote Apps Globe Icon (ganz links) -->
+                    <ui:fragment rendered="#{discoveryTopbarBackingBean.hasRemoteApps()}">
+                        <li class="topbar-item" style="position: relative;">
+                            <a href="#" id="discovery-apps-button" title="Verbundene Apps">
+                                <i class="topbar-icon pi pi-globe" style="font-size: 1.5rem"></i>
+                            </a>
+                            <ul id="discovery-apps-dropdown" style="display: none; position: absolute; right: 0; top: 100%; min-width: 200px; background: var(--surface-overlay); border-radius: 6px; box-shadow: 0 2px 12px rgba(0,0,0,0.1); z-index: 1000; list-style: none; padding: 0.5rem 0; margin: 0;">
+                                <ui:repeat value="#{discoveryTopbarBackingBean.remoteApps}" var="remoteApp">
+                                    <li>
+                                        <a href="#{discoveryTopbarBackingBean.getLoginUrl(remoteApp)}" target="_blank" style="display: flex; align-items: center; padding: 0.75rem 1rem; color: var(--text-color); text-decoration: none; transition: background-color 0.2s;">
+                                            <i class="pi pi-globe" style="margin-right: 0.75rem; font-size: 1rem;"></i>
+                                            <span style="flex-grow: 1;">#{remoteApp.appName}</span>
+                                            <span style="font-size: 0.7rem; opacity: 0.6; text-transform: uppercase; margin-left: 0.5rem;">#{remoteApp.environment}</span>
+                                        </a>
+                                    </li>
+                                </ui:repeat>
+                                <ui:fragment rendered="#{p:ifGranted('ROLE_ROOT')}">
+                                    <li style="border-top: 1px solid var(--surface-border); margin: 0.25rem 0;"></li>
+                                    <li>
+                                        <a href="discoveryStats.xhtml" style="display: flex; align-items: center; padding: 0.75rem 1rem; color: var(--text-color); text-decoration: none; transition: background-color 0.2s;">
+                                            <i class="pi pi-chart-line" style="margin-right: 0.75rem; font-size: 1rem;"></i>
+                                            <span>Discovery Stats</span>
+                                        </a>
+                                    </li>
+                                </ui:fragment>
+                            </ul>
+                            <script>
+                                (function() {
+                                    var btn = document.getElementById('discovery-apps-button');
+                                    var menu = document.getElementById('discovery-apps-dropdown');
+                                    if (btn &amp;&amp; menu) {
+                                        btn.addEventListener('click', function(e) {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+                                        });
+                                        document.addEventListener('click', function(e) {
+                                            if (!btn.contains(e.target) &amp;&amp; !menu.contains(e.target)) {
+                                                menu.style.display = 'none';
+                                            }
+                                        });
+                                        menu.querySelectorAll('a').forEach(function(link) {
+                                            link.addEventListener('mouseenter', function() {
+                                                this.style.backgroundColor = 'var(--surface-hover)';
+                                            });
+                                            link.addEventListener('mouseleave', function() {
+                                                this.style.backgroundColor = 'transparent';
+                                            });
+                                        });
+                                    }
+                                })();
+                            </script>
+                        </li>
+                    </ui:fragment>
+
+                    <ui:fragment rendered="#{plaintextSecurity.impersonating}">
+                        <li class="topbar-item">
+                            <h:form id="impersonationFm" style="margin: 0; padding: 0; display: inline;">
+                                <p:commandLink actionListener="#{myUserBackingBean.stopImpersonation()}"
+                                               update="@none"
+                                               process="@this"
+                                               title="Impersonation beenden - Zurück zum ursprünglichen Benutzer"
+                                               style="text-decoration: none;">
+                                    <i class="topbar-icon pi pi-circle-fill" style="font-size: 1.5rem"></i>
+                                </p:commandLink>
+                                <input type="hidden" name="_csrf" value="#{_csrf.token}"/>
+                            </h:form>
+                        </li>
+                    </ui:fragment>
+
+                    <ui:fragment rendered="#{p:ifGranted('ROLE_ROOT')}">
+                        <li class="topbar-item">
+                            <a href="javascript:PF('mandantBeml').show()" title="Mein Mandat Wechseln">
+                                <i class="topbar-icon pi pi-prime" style="font-size: 1.5rem"></i>
+                            </a>
+                        </li>
+                    </ui:fragment>
+
+                    <ui:fragment rendered="#{p:ifGranted('ROLE_ADMIN') or p:ifGranted('ROLE_ROOT')}">
+                        <li class="topbar-item">
+                            <a href="useradmin.xhtml" title="Benutzer verwalten">
+                                <i class="topbar-icon pi pi-users" style="font-size: 1.5rem"></i>
+                            </a>
+                        </li>
+                    </ui:fragment>
+
+                    <li class="topbar-item">
+                        <a href="#" id="layout-config-button">
+                            <i class="topbar-icon pi pi-cog" style="font-size: 1.5rem"></i>
+                        </a>
+                    </li>
+
+                    <!-- Chat Direct Messages Notification with Auto-Polling -->
+                    <h:form id="notificationPollingForm" style="display: inline;">
+                        <p:poll interval="2" update="chatNotificationPanel" />
+
+                        <h:panelGroup id="chatNotificationPanel">
+                            <ui:fragment rendered="#{directMessageNotificationBackingBean.hasUnreadMessages()}">
+                                <li class="topbar-item">
+                                    <a href="chats.html" title="Sie haben #{directMessageNotificationBackingBean.unreadMessageCount} ungelesene Direktnachricht(en)">
+                                        <i class="topbar-icon pi pi-comments" style="font-size: 1.5rem; color: #dc3545;"></i>
+                                        <span style="position: absolute; top: 8px; right: 8px; background-color: #dc3545; color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 0.7rem; display: flex; align-items: center; justify-content: center; font-weight: bold;">
+                                            #{directMessageNotificationBackingBean.unreadMessageCount}
+                                        </span>
+                                    </a>
+                                </li>
+                            </ui:fragment>
+                        </h:panelGroup>
+                        <input type="hidden" name="_csrf" value="#{_csrf.token}"/>
+                    </h:form>
+
+                    <li class="topbar-item" style="position: relative;">
+                        <a href="#" id="user-menu-button" tabindex="0" style="display: flex; align-items: center; justify-content: center;">
+                            <i class="topbar-icon pi pi-user" style="font-size: 1.5rem"></i>
+                        </a>
+                        <ul class="fadeInDown" id="user-menu-dropdown" style="display: none; position: absolute; left: 0; top: 100%; min-width: 180px; background: var(--surface-overlay); border-radius: 6px; box-shadow: 0 2px 12px rgba(0,0,0,0.1); z-index: 1000; list-style: none; padding: 0.5rem 0; margin: 0;">
+                            <li>
+                                <a href="myuser.xhtml" style="display: flex; align-items: center; padding: 0.75rem 1rem; color: var(--text-color); text-decoration: none; transition: background-color 0.2s;">
+                                    <i class="pi pi-user" style="margin-right: 0.75rem; font-size: 1rem;"></i>
+                                    <span>Mein Profil</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="api-token.xhtml" style="display: flex; align-items: center; padding: 0.75rem 1rem; color: var(--text-color); text-decoration: none; transition: background-color 0.2s;">
+                                    <i class="pi pi-key" style="margin-right: 0.75rem; font-size: 1rem;"></i>
+                                    <span>API Token</span>
+                                </a>
+                            </li>
+                        </ul>
+                        <script>
+                            (function() {
+                                var btn = document.getElementById('user-menu-button');
+                                var menu = document.getElementById('user-menu-dropdown');
+                                if (btn &amp;&amp; menu) {
+                                    btn.addEventListener('click', function(e) {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        var isHidden = menu.style.display === 'none';
+                                        menu.style.display = isHidden ? 'block' : 'none';
+                                        if (isHidden) {
+                                            menu.style.left = '0';
+                                            menu.style.right = 'auto';
+                                            var rect = menu.getBoundingClientRect();
+                                            if (rect.right > window.innerWidth) {
+                                                var overflow = rect.right - window.innerWidth + 8;
+                                                menu.style.left = (-overflow) + 'px';
+                                            }
+                                        }
+                                    });
+                                    document.addEventListener('click', function(e) {
+                                        if (!btn.contains(e.target) &amp;&amp; !menu.contains(e.target)) {
+                                            menu.style.display = 'none';
+                                        }
+                                    });
+                                    menu.querySelectorAll('a').forEach(function(link) {
+                                        link.addEventListener('mouseenter', function() {
+                                            this.style.backgroundColor = 'var(--surface-hover)';
+                                        });
+                                        link.addEventListener('mouseleave', function() {
+                                            this.style.backgroundColor = 'transparent';
+                                        });
+                                    });
+                                }
+                            })();
+                        </script>
+                    </li>
+
+                    <li class="topbar-item">
+                        <form method="post" action="#{request.contextPath}/logout" style="margin: 0; padding: 0; display: inline;">
+                            <button type="submit" title="Abmelden" style="background: none; border: none; cursor: pointer; padding: 6px; display: flex; align-items: center; justify-content: center;">
+                                <i class="topbar-icon pi pi-sign-out" style="font-size: 1.5rem"></i>
+                            </button>
+                            <input type="hidden" name="_csrf" value="#{_csrf.token}"/>
+                        </form>
+                    </li>
+
+                </ul>
+
+                <p:dialog header="Mandat einstellen"
+                          widgetVar="mandantBeml"
+                          id="mandantBeml"
+                          resizable="true"
+                          modal="false">
+
+                    <h:form id="mandatFm">
+                        <h:panelGrid columns="1" cellpadding="3">
+
+                            <p:selectOneMenu value="#{plaintextSecurity.mandat}"
+                                             style="width:200px;">
+
+                                <f:selectItems value="#{plaintextSecurity.getAllMandate()}"
+                                               var="dt"
+                                               itemLabel="#{dt}"
+                                               itemValue="#{dt}"/>
+
+                                <!-- Hier passiert die Magie -->
+                                <p:ajax event="change"
+                                        listener="#{myUserBackingBean.init()}"
+                                        update="@none"
+                                        process="@this"
+                                        oncomplete="PF('mandantBeml').hide(); window.location.reload();" rendered="#{p:ifGranted('ROLE_ROOT')}"/>
+                            </p:selectOneMenu>
+                            <input type="hidden" name="_csrf" value="#{_csrf.token}" rendered="#{p:ifGranted('ROLE_ROOT')}"/>
+
+                        </h:panelGrid>
+                    </h:form>
+                </p:dialog>
+
+
+            </div>
+        </div>
+
+    </div>
+
+</ui:composition>

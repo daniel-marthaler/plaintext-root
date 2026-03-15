@@ -1,0 +1,111 @@
+package ch.plaintext.rechnungen;
+
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * Service-Interface für Rechnungs-Operationen.
+ * Ermöglicht die Erstellung von Rechnungen aus der Zeiterfassung.
+ */
+public interface IRechnungService {
+
+    /**
+     * Prüft ob der Service verfügbar ist
+     */
+    boolean isAvailable();
+
+    /**
+     * Erstellt eine neue Rechnung
+     *
+     * @param kontaktId ID des Kontakts (Rechnungsempfänger)
+     * @param betreff Betreffzeile der Rechnung
+     * @param preisProStunde Preis pro Stunde in CHF
+     * @param gesamtStunden Gesamtanzahl der Stunden
+     * @param zeitraum Zeitraum-Beschreibung (z.B. "Januar 2026")
+     * @return Die ID der erstellten Rechnung
+     */
+    Long createRechnung(Long kontaktId, String betreff, double preisProStunde, double gesamtStunden, String zeitraum);
+
+    /**
+     * Erstellt eine neue Rechnung mit Kopftext
+     *
+     * @param kontaktId ID des Kontakts (Rechnungsempfänger)
+     * @param betreff Betreffzeile der Rechnung
+     * @param preisProStunde Preis pro Stunde in CHF
+     * @param gesamtStunden Gesamtanzahl der Stunden
+     * @param zeitraum Zeitraum-Beschreibung (z.B. "Januar 2026")
+     * @param kopftext Zusätzlicher Kopftext für die Rechnung
+     * @return Die ID der erstellten Rechnung
+     */
+    Long createRechnung(Long kontaktId, String betreff, double preisProStunde, double gesamtStunden, String zeitraum, String kopftext);
+
+    /**
+     * Gibt den zuletzt verwendeten Preis pro Stunde für einen Kontakt zurück
+     *
+     * @param kontaktId ID des Kontakts
+     * @return Preis pro Stunde oder empty wenn keine vorherige Rechnung existiert
+     */
+    Optional<Double> getLastPreisProStunde(Long kontaktId);
+
+    /**
+     * Gibt die zuletzt verwendete Betreffzeile für einen Kontakt zurück
+     *
+     * @param kontaktId ID des Kontakts
+     * @return Betreffzeile oder empty wenn keine vorherige Rechnung existiert
+     */
+    Optional<String> getLastBetreff(Long kontaktId);
+
+    /**
+     * Gibt alle Rechnungen für einen bestimmten Kontakt zurück
+     *
+     * @param kontaktId ID des Kontakts
+     * @return Liste der Rechnungen
+     */
+    List<? extends IRechnung> findByKontakt(Long kontaktId);
+
+    /**
+     * Gibt eine Rechnung anhand ihrer ID zurück
+     *
+     * @param rechnungId ID der Rechnung
+     * @return Rechnung oder empty
+     */
+    Optional<? extends IRechnung> findById(Long rechnungId);
+
+    /**
+     * Gibt alle verfügbaren Kontakte für Rechnungen zurück
+     *
+     * @return Liste der Kontakte
+     */
+    List<? extends IKontaktOption> getAvailableKontakte();
+
+    /**
+     * Gibt alle bisher verwendeten Kopftexte zurück (für Autocomplete)
+     *
+     * @return Liste der Kopftexte
+     */
+    List<String> getAvailableKopftexte();
+
+    /**
+     * Erstellt eine Pauschalrechnung (ohne MwSt, Menge 1, Einheit Pauschal)
+     *
+     * @param kontaktId ID des Kontakts (Rechnungsempfänger)
+     * @param beschreibung Beschreibung der Position
+     * @param betrag Pauschalbetrag in CHF
+     * @return Die ID der erstellten Rechnung
+     */
+    default Long createPauschalRechnung(Long kontaktId, String beschreibung, double betrag) {
+        return createRechnung(kontaktId, beschreibung, betrag, 1.0, "");
+    }
+
+    /**
+     * Generiert ein Rechnungs-PDF mit individuellem Absender, Beleg-Bild und Empfänger-IBAN für QR-Bill
+     *
+     * @param rechnungId ID der Rechnung
+     * @param options Optionen für die PDF-Generierung
+     * @return PDF als byte-Array
+     */
+    default byte[] generateInvoicePDFWithOptions(Long rechnungId, InvoicePDFOptions options) {
+        throw new UnsupportedOperationException("PDF generation not supported");
+    }
+}
