@@ -402,17 +402,6 @@
     </distributionManagement>
 
     <build>
-        <plugins>
-            <!-- Parent POM nicht deployen (GitHub Packages unterstützt kein pom-packaging SNAPSHOT) -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <inherited>false</inherited>
-                <configuration>
-                    <skip>true</skip>
-                </configuration>
-            </plugin>
-        </plugins>
         <pluginManagement>
             <plugins>
                 <plugin>
