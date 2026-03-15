@@ -25,10 +25,7 @@
             <groupId>ch.plaintext</groupId>
             <artifactId>plaintext-root-menuesteuerung</artifactId>
         </dependency>
-        <dependency>
-            <groupId>ch.plaintext</groupId>
-            <artifactId>plaintext-root-flyway</artifactId>
-        </dependency>
+        <!-- root-flyway enthält api_token Migrationen - nur in plaintext-app mit z-apitoken verwenden -->
         <dependency>
             <groupId>ch.plaintext</groupId>
             <artifactId>plaintext-root-email</artifactId>
@@ -201,6 +198,17 @@
                 </includes>
             </resource>
         </resources>
+
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>ch.RootBootApplication</mainClass>
+                    <classifier>exec</classifier>
+                </configuration>
+            </plugin>
+        </plugins>
     </build>
 
 </project>

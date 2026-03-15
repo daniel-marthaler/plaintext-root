@@ -13,7 +13,7 @@ RUN addgroup -g 1000 appgroup && adduser -u 1000 -G appgroup -s /bin/sh -D appus
 WORKDIR /app
 
 # Copy pre-built JAR (built locally with Maven)
-COPY plaintext-root-webapp/target/*.jar app.jar
+COPY plaintext-root-webapp/target/*-exec.jar app.jar
 
 # Copy version files for version display (with graceful fallback)
 COPY --chown=1000:1000 version.txt versionRelease.txt ./
