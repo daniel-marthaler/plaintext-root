@@ -5,7 +5,7 @@ on:
     branches: [master]
 
 concurrency:
-  group: plaintext-root
+  group: ${{ github.repository }}
   cancel-in-progress: false
 
 jobs:
@@ -13,3 +13,4 @@ jobs:
     uses: daniel-marthaler/plaintext-scripts/.github/workflows/maven-build-deploy.yaml@master
     secrets:
       TWINGATE_SERVICE_KEY: ${{ secrets.TWINGATE_SERVICE_KEY }}
+      MVN_DEPLOY_TOKEN: ${{ secrets.MVN_DEPLOY_TOKEN }}
