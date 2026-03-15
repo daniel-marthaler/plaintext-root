@@ -45,7 +45,7 @@ execute_command() {
             ;;
         7)
             do_release "deploy-healthcheck"
-            deploy_to_prod "true"
+            deploy_to_prod "true" || exit 1
             ;;
         *)
             echo -e "${RED}Invalid option: ${CMD}${NC}"
@@ -129,7 +129,7 @@ if [ -n "$COMMAND" ]; then
 
         7)
             do_release "deploy-healthcheck"
-            deploy_to_prod "true"
+            deploy_to_prod "true" || exit 1
             ;;
 
         help|-h|--help)
@@ -138,27 +138,27 @@ if [ -n "$COMMAND" ]; then
             ;;
 
         run)
-            do_run
+            do_run || exit 1
             ;;
 
         build)
-            do_build_snapshot "$2"
+            do_build_snapshot "$2" || exit 1
             ;;
 
         release)
-            do_release "$2" "$3"
+            do_release "$2" "$3" || exit 1
             ;;
 
         deploy-prod)
-            deploy_to_prod
+            deploy_to_prod || exit 1
             ;;
 
         deploy-prod-healthcheck)
-            deploy_to_prod "true"
+            deploy_to_prod "true" || exit 1
             ;;
 
         setup-bluegreen)
-            setup_blue_green
+            setup_blue_green || exit 1
             ;;
 
         *)
