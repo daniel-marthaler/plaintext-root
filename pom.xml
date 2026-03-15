@@ -69,7 +69,7 @@
         <jodreports.version>3.0.0</jodreports.version>
 
         <!-- Apache POI -->
-        <poi.version>5.5.0</poi.version>
+        <poi.version>5.5.1</poi.version>
 
         <!-- Misc -->
         <juniversalchardet.version>1.0.3</juniversalchardet.version>
