@@ -5,15 +5,12 @@ on:
     branches: [master]
 
 concurrency:
-  group: ${{ github.repository }}
+  group: plaintext-root-build
   cancel-in-progress: false
 
 jobs:
   build:
     uses: daniel-marthaler/plaintext-scripts/.github/workflows/maven-build-deploy.yaml@master
     with:
-      build-command: '5'
-    secrets:
-      TWINGATE_SERVICE_KEY: ${{ secrets.TWINGATE_SERVICE_KEY }}
-      MVN_DEPLOY_TOKEN: ${{ secrets.MVN_DEPLOY_TOKEN }}
-      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      build-command: "5"
+    secrets: inherit
