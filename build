@@ -5,11 +5,10 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$SCRIPT_DIR"
 
 # ── Load shared libraries ────────────────────────────────────
-SCRIPTS_DIR="${SCRIPT_DIR}/../plaintext-scripts"
+SCRIPTS_DIR="$HOME/.plaintext-scripts"
 if [ ! -f "$SCRIPTS_DIR/tui-common.sh" ]; then
-    echo "ERROR: plaintext-scripts not found at $SCRIPTS_DIR"
-    echo "Clone it: git clone git@github.com:daniel-marthaler/plaintext-scripts.git ../plaintext-scripts"
-    exit 1
+    echo "plaintext-scripts not found, cloning to $SCRIPTS_DIR..."
+    git clone git@github.com:daniel-marthaler/plaintext-scripts.git "$SCRIPTS_DIR"
 fi
 source "$SCRIPTS_DIR/tui-common.sh"
 source "$SCRIPTS_DIR/tui-build-logic.sh"
