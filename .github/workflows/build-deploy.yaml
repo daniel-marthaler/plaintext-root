@@ -14,3 +14,4 @@ jobs:
     secrets:
       TWINGATE_SERVICE_KEY: ${{ secrets.TWINGATE_SERVICE_KEY }}
       MVN_DEPLOY_TOKEN: ${{ secrets.MVN_DEPLOY_TOKEN }}
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
