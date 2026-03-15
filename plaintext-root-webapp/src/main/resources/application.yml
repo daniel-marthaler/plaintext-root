@@ -60,7 +60,7 @@ plaintext:
 discovery:
   enabled: true
   app:
-    id: plaintext-root
+    id: ${DISCOVERY_APP_ID:plaintext-root}
     name: ${PLAINTEXT_APP_NAME:Plaintext Root}
     url: ${PLAINTEXT_APP_URL:http://localhost:8080}
   mqtt:
