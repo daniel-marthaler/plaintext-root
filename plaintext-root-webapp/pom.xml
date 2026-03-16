@@ -107,7 +107,7 @@
         <dependency>
             <groupId>org.glassfish</groupId>
             <artifactId>jakarta.faces</artifactId>
-            <version>4.0.10</version>
+            <version>4.1.6</version>
         </dependency>
 
         <!-- === Database === -->
