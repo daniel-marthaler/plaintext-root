@@ -302,9 +302,9 @@
             return null;
         }
 
-        // Clean up URL parameters (remove ?logout=true, ?error=true)
+        // Clean up URL parameters (remove ?logout=true, ?error=true but keep discovery errors visible)
         function cleanUrl() {
-            if (window.history.replaceState && (window.location.search.indexOf('logout') !== -1 || window.location.search.indexOf('error') !== -1)) {
+            if (window.history.replaceState && window.location.search.indexOf('logout') !== -1) {
                 window.history.replaceState({}, document.title, window.location.pathname);
             }
         }
@@ -337,7 +337,12 @@
         <!-- Error Message -->
         <div class="error-message" style="display: #{param.error != null ? 'flex' : 'none'}">
             <i class="pi pi-exclamation-circle"></i>
-            <span>Ungültiger Benutzername oder Passwort</span>
+            <span>#{param.error == 'invalid_discovery_token' ? 'Discovery Auto-Login fehlgeschlagen (ungültiger Token)'
+                : param.error == 'expired_discovery_token' ? 'Discovery Auto-Login fehlgeschlagen (Token abgelaufen)'
+                : param.error == 'unknown_source_app' ? 'Discovery Auto-Login fehlgeschlagen (unbekannte Quell-App)'
+                : param.error == 'user_not_found' ? 'Discovery Auto-Login fehlgeschlagen (Benutzer nicht gefunden)'
+                : param.error == 'discovery_login_failed' ? 'Discovery Auto-Login fehlgeschlagen'
+                : 'Ungültiger Benutzername oder Passwort'}</span>
         </div>
 
         <!-- Logout Success Message -->

@@ -127,9 +127,13 @@ public class DiscoveryLoginController {
             SecurityContext context = SecurityContextHolder.createEmptyContext();
             context.setAuthentication(authToken);
             SecurityContextHolder.setContext(context);
+
+            // Ensure HTTP session exists before saving security context
+            request.getSession(true);
             securityContextRepository.saveContext(context, request, response);
 
-            log.info("Discovery auto-login successful for user: {} from app: {}", userEmail, sourceAppName);
+            log.info("Discovery auto-login successful for user: {} from app: {} (session: {})",
+                userEmail, sourceAppName, request.getSession().getId());
 
             // Publish login event for discovery announcement
             publishLoginEvent(userEmail, userDetails, request);

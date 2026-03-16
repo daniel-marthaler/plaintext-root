@@ -63,6 +63,9 @@ public class PlaintextSecurityConfig {
         String[] permitAllArray = permitAll.toArray(new String[0]);
 
         http
+                .securityContext(ctx -> ctx
+                        .securityContextRepository(securityContextRepository())
+                )
                 .csrf(csrf -> csrf
                         .ignoringRequestMatchers(csrfIgnoreArray)
                 )
