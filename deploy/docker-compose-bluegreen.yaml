@@ -3,7 +3,7 @@ services:
   # ── Nginx Reverse Proxy (Blue-Green Router) ──────────────
   nginx-proxy:
     container_name: plaintext-root-nginx
-    image: nginx:1.27-alpine
+    image: nginx:1.29-alpine
     restart: always
     ports:
       - published: 1123
