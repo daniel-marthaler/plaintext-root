@@ -1,7 +1,7 @@
 # Dockerfile for plaintext-root
 # Build JAR locally with Maven, then copy into container
 
-FROM eclipse-temurin:25.0.1_8-jre-alpine
+FROM eclipse-temurin:25.0.2_10-jre-alpine
 
 # Install bash and wget for healthcheck
 RUN apk add --no-cache bash wget
