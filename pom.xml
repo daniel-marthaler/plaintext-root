@@ -62,7 +62,7 @@
 
         <!-- Misc -->
         <prettytime.version>5.0.9.Final</prettytime.version>
-        <json.version>20250517</json.version>
+        <json.version>20251224</json.version>
         <j2html.version>1.6.0</j2html.version>
         <browscap-java.version>1.5.1</browscap-java.version>
         <java-object-diff.version>0.95</java-object-diff.version>
