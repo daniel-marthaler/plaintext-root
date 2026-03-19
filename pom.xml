@@ -99,7 +99,7 @@
         <module>plaintext-root-discovery</module>
 
         <!-- templates -->
-        <module>plaintext-root-template-freya</module>
+        <!-- <module>plaintext-root-template-freya</module> -->
         <module>plaintext-root-template-plaintext</module>
 
         <module>plaintext-root-webapp</module>
@@ -198,11 +198,13 @@
             </dependency>
 
             <!-- Templates -->
+            <!--
             <dependency>
                 <groupId>ch.plaintext</groupId>
                 <artifactId>plaintext-root-template-freya</artifactId>
                 <version>${plaintext.version}</version>
             </dependency>
+            -->
             <dependency>
                 <groupId>ch.plaintext</groupId>
                 <artifactId>plaintext-root-template-plaintext</artifactId>
