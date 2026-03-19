@@ -3,315 +3,551 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 package ch.plaintext.boot.menu;
 
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.primefaces.model.menu.MenuElement;
 import org.primefaces.model.menu.MenuModel;
 import org.springframework.context.ApplicationContext;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-/**
- * Unit tests for MenuModelBuilder
- */
 @ExtendWith(MockitoExtension.class)
 class MenuModelBuilderTest {
-
-    @Mock
-    private ApplicationContext applicationContext;
 
     @InjectMocks
     private MenuModelBuilder menuModelBuilder;
 
-    @BeforeEach
-    void setUp() {
-        // Setup
+    @Mock
+    private ApplicationContext applicationContext;
+
+    @Nested
+    class EmptyMenu {
+
+        @Test
+        void shouldReturnEmptyMenuModelWhenNoBeansRegistered() {
+            when(applicationContext.getBeansOfType(MenuItemImpl.class)).thenReturn(Collections.emptyMap());
+            when(applicationContext.getBean("chatMenuBadgeProvider")).thenThrow(new RuntimeException("not found"));
+
+            MenuModel model = menuModelBuilder.buildMenuModel();
+
+            assertNotNull(model);
+            assertTrue(model.getElements().isEmpty());
+            verify(applicationContext, times(1)).getBeansOfType(MenuItemImpl.class);
+        }
+
+        @Test
+        void shouldReturnEmptyMenuModelWhenAllItemsAreHidden() {
+            MenuItemImpl hiddenItem = createVisibleMenuItem("Hidden", "", 10, "/hidden.xhtml", "", false);
+
+            Map<String, MenuItemImpl> beans = Map.of("hidden", hiddenItem);
+            when(applicationContext.getBeansOfType(MenuItemImpl.class)).thenReturn(beans);
+            when(applicationContext.getBean("chatMenuBadgeProvider")).thenThrow(new RuntimeException("not found"));
+
+            MenuModel model = menuModelBuilder.buildMenuModel();
+
+            assertNotNull(model);
+            assertTrue(model.getElements().isEmpty());
+        }
     }
 
-    @Test
-    void testBuildMenuModel_WhenNoMenuItems_ShouldReturnEmptyModel() {
-        // Given
-        when(applicationContext.getBeansOfType(MenuItemImpl.class))
-            .thenReturn(Collections.emptyMap());
+    @Nested
+    class FlatMenu {
 
-        // When
-        MenuModel result = menuModelBuilder.buildMenuModel();
+        @Test
+        void shouldBuildSingleRootMenuItem() {
+            MenuItemImpl item = createMenuItem("Home", "", 10, "/home.xhtml", "pi pi-home");
 
-        // Then
-        assertNotNull(result);
-        assertTrue(result.getElements().isEmpty());
-        verify(applicationContext, times(1)).getBeansOfType(MenuItemImpl.class);
+            Map<String, MenuItemImpl> beans = Map.of("home", item);
+            when(applicationContext.getBeansOfType(MenuItemImpl.class)).thenReturn(beans);
+            when(applicationContext.getBean("chatMenuBadgeProvider")).thenThrow(new RuntimeException("not found"));
+
+            MenuModel model = menuModelBuilder.buildMenuModel();
+
+            assertEquals(1, model.getElements().size());
+            MenuElement element = model.getElements().get(0);
+            assertInstanceOf(PrimefacesMenuItem.class, element);
+            PrimefacesMenuItem menuItem = (PrimefacesMenuItem) element;
+            assertEquals("Home", menuItem.getValue());
+        }
+
+        @Test
+        void shouldBuildMultipleRootMenuItems() {
+            MenuItemImpl home = createMenuItem("Home", "", 10, "/home.xhtml", "pi pi-home");
+            MenuItemImpl about = createMenuItem("About", "", 20, "/about.xhtml", "pi pi-info");
+
+            Map<String, MenuItemImpl> beans = new LinkedHashMap<>();
+            beans.put("home", home);
+            beans.put("about", about);
+            when(applicationContext.getBeansOfType(MenuItemImpl.class)).thenReturn(beans);
+            when(applicationContext.getBean("chatMenuBadgeProvider")).thenThrow(new RuntimeException("not found"));
+
+            MenuModel model = menuModelBuilder.buildMenuModel();
+
+            assertEquals(2, model.getElements().size());
+        }
+
+        @Test
+        void shouldTreatNullParentAsRoot() {
+            MenuItemImpl item = createMenuItem("Home", null, 10, "/home.xhtml", "");
+
+            Map<String, MenuItemImpl> beans = Map.of("home", item);
+            when(applicationContext.getBeansOfType(MenuItemImpl.class)).thenReturn(beans);
+            when(applicationContext.getBean("chatMenuBadgeProvider")).thenThrow(new RuntimeException("not found"));
+
+            MenuModel model = menuModelBuilder.buildMenuModel();
+
+            assertEquals(1, model.getElements().size());
+            assertInstanceOf(PrimefacesMenuItem.class, model.getElements().get(0));
+        }
+
+        @Test
+        void shouldTreatBlankParentAsRoot() {
+            MenuItemImpl item = createMenuItem("Home", "   ", 10, "/home.xhtml", "");
+
+            Map<String, MenuItemImpl> beans = Map.of("home", item);
+            when(applicationContext.getBeansOfType(MenuItemImpl.class)).thenReturn(beans);
+            when(applicationContext.getBean("chatMenuBadgeProvider")).thenThrow(new RuntimeException("not found"));
+
+            MenuModel model = menuModelBuilder.buildMenuModel();
+
+            assertEquals(1, model.getElements().size());
+            assertInstanceOf(PrimefacesMenuItem.class, model.getElements().get(0));
+        }
     }
 
-    @Test
-    void testBuildMenuModel_WithSingleRootItem_ShouldAddToModel() {
-        // Given
-        MenuItemImpl item = createMenuItem("Home", null, 1, true);
-        Map<String, MenuItemImpl> beans = Map.of("home", item);
+    @Nested
+    class HierarchicalMenu {
 
-        when(applicationContext.getBeansOfType(MenuItemImpl.class)).thenReturn(beans);
+        @Test
+        void shouldBuildParentChildHierarchy() {
+            MenuItemImpl parent = createMenuItem("Admin", "", 10, "/admin.xhtml", "pi pi-cog");
+            MenuItemImpl child = createMenuItem("Users", "Admin", 20, "/admin/users.xhtml", "pi pi-users");
 
-        // When
-        MenuModel result = menuModelBuilder.buildMenuModel();
+            Map<String, MenuItemImpl> beans = new LinkedHashMap<>();
+            beans.put("admin", parent);
+            beans.put("users", child);
+            when(applicationContext.getBeansOfType(MenuItemImpl.class)).thenReturn(beans);
+            when(applicationContext.getBean("chatMenuBadgeProvider")).thenThrow(new RuntimeException("not found"));
 
-        // Then
-        assertNotNull(result);
-        assertEquals(1, result.getElements().size());
+            MenuModel model = menuModelBuilder.buildMenuModel();
+
+            assertEquals(1, model.getElements().size());
+            MenuElement rootElement = model.getElements().get(0);
+            assertInstanceOf(PrimefacesSubmenu.class, rootElement);
+
+            PrimefacesSubmenu submenu = (PrimefacesSubmenu) rootElement;
+            assertEquals("Admin", submenu.getLabel());
+            assertEquals(1, submenu.getElements().size());
+            assertInstanceOf(PrimefacesMenuItem.class, submenu.getElements().get(0));
+        }
+
+        @Test
+        void shouldBuildMultipleChildrenUnderOneParent() {
+            MenuItemImpl parent = createMenuItem("Admin", "", 10, "/admin.xhtml", "pi pi-cog");
+            MenuItemImpl child1 = createMenuItem("Users", "Admin", 20, "/admin/users.xhtml", "pi pi-users");
+            MenuItemImpl child2 = createMenuItem("Roles", "Admin", 30, "/admin/roles.xhtml", "pi pi-shield");
+
+            Map<String, MenuItemImpl> beans = new LinkedHashMap<>();
+            beans.put("admin", parent);
+            beans.put("users", child1);
+            beans.put("roles", child2);
+            when(applicationContext.getBeansOfType(MenuItemImpl.class)).thenReturn(beans);
+            when(applicationContext.getBean("chatMenuBadgeProvider")).thenThrow(new RuntimeException("not found"));
+
+            MenuModel model = menuModelBuilder.buildMenuModel();
+
+            assertEquals(1, model.getElements().size());
+            PrimefacesSubmenu submenu = (PrimefacesSubmenu) model.getElements().get(0);
+            assertEquals(2, submenu.getElements().size());
+        }
+
+        @Test
+        void shouldBuildNestedSubmenus() {
+            MenuItemImpl root = createMenuItem("Admin", "", 10, "/admin.xhtml", "pi pi-cog");
+            MenuItemImpl mid = createMenuItem("Settings", "Admin", 20, "/settings.xhtml", "pi pi-wrench");
+            MenuItemImpl leaf = createMenuItem("Advanced", "Settings", 30, "/settings/advanced.xhtml", "");
+
+            Map<String, MenuItemImpl> beans = new LinkedHashMap<>();
+            beans.put("admin", root);
+            beans.put("settings", mid);
+            beans.put("advanced", leaf);
+            when(applicationContext.getBeansOfType(MenuItemImpl.class)).thenReturn(beans);
+            when(applicationContext.getBean("chatMenuBadgeProvider")).thenThrow(new RuntimeException("not found"));
+
+            MenuModel model = menuModelBuilder.buildMenuModel();
+
+            assertEquals(1, model.getElements().size());
+            PrimefacesSubmenu rootSubmenu = (PrimefacesSubmenu) model.getElements().get(0);
+            assertEquals("Admin", rootSubmenu.getLabel());
+            assertEquals(1, rootSubmenu.getElements().size());
+
+            PrimefacesSubmenu midSubmenu = (PrimefacesSubmenu) rootSubmenu.getElements().get(0);
+            assertEquals("Settings", midSubmenu.getLabel());
+            assertEquals(1, midSubmenu.getElements().size());
+
+            assertInstanceOf(PrimefacesMenuItem.class, midSubmenu.getElements().get(0));
+        }
+
+        @Test
+        void shouldSkipChildrenWithMissingParent() {
+            MenuItemImpl orphan = createMenuItem("Orphan", "NonExistent", 10, "/orphan.xhtml", "");
+
+            Map<String, MenuItemImpl> beans = Map.of("orphan", orphan);
+            when(applicationContext.getBeansOfType(MenuItemImpl.class)).thenReturn(beans);
+            when(applicationContext.getBean("chatMenuBadgeProvider")).thenThrow(new RuntimeException("not found"));
+
+            MenuModel model = menuModelBuilder.buildMenuModel();
+
+            assertTrue(model.getElements().isEmpty());
+        }
+
+        @Test
+        void shouldHandleChildOrderLowerThanParentOrder() {
+            MenuItemImpl child = createMenuItem("Eingabe", "Zeiterfassung", 10, "/eingabe.xhtml", "");
+            MenuItemImpl parent = createMenuItem("Zeiterfassung", "", 100, "/zeit.xhtml", "");
+
+            Map<String, MenuItemImpl> beans = new LinkedHashMap<>();
+            beans.put("child", child);
+            beans.put("parent", parent);
+            when(applicationContext.getBeansOfType(MenuItemImpl.class)).thenReturn(beans);
+            when(applicationContext.getBean("chatMenuBadgeProvider")).thenThrow(new RuntimeException("not found"));
+
+            MenuModel model = menuModelBuilder.buildMenuModel();
+
+            assertEquals(1, model.getElements().size());
+            assertInstanceOf(PrimefacesSubmenu.class, model.getElements().get(0));
+        }
     }
 
-    @Test
-    void testBuildMenuModel_WithMultipleRootItems_ShouldAddAllInOrder() {
-        // Given
-        MenuItemImpl item1 = createMenuItem("Home", null, 1, true);
-        MenuItemImpl item2 = createMenuItem("About", null, 2, true);
-        MenuItemImpl item3 = createMenuItem("Contact", null, 3, true);
+    @Nested
+    class Sorting {
 
-        Map<String, MenuItemImpl> beans = new HashMap<>();
-        beans.put("home", item1);
-        beans.put("about", item2);
-        beans.put("contact", item3);
+        @Test
+        void shouldSortMenuItemsByOrder() {
+            MenuItemImpl high = createMenuItem("Second", "", 20, "/second.xhtml", "");
+            MenuItemImpl low = createMenuItem("First", "", 10, "/first.xhtml", "");
 
-        when(applicationContext.getBeansOfType(MenuItemImpl.class)).thenReturn(beans);
+            Map<String, MenuItemImpl> beans = new LinkedHashMap<>();
+            beans.put("high", high);
+            beans.put("low", low);
+            when(applicationContext.getBeansOfType(MenuItemImpl.class)).thenReturn(beans);
+            when(applicationContext.getBean("chatMenuBadgeProvider")).thenThrow(new RuntimeException("not found"));
 
-        // When
-        MenuModel result = menuModelBuilder.buildMenuModel();
+            MenuModel model = menuModelBuilder.buildMenuModel();
 
-        // Then
-        assertNotNull(result);
-        assertEquals(3, result.getElements().size());
+            assertEquals(2, model.getElements().size());
+            PrimefacesMenuItem first = (PrimefacesMenuItem) model.getElements().get(0);
+            PrimefacesMenuItem second = (PrimefacesMenuItem) model.getElements().get(1);
+            assertEquals("First", first.getValue());
+            assertEquals("Second", second.getValue());
+        }
+
+        @Test
+        void shouldSortChildrenByOrder() {
+            MenuItemImpl parent = createMenuItem("Admin", "", 10, "/admin.xhtml", "");
+            MenuItemImpl child2 = createMenuItem("Roles", "Admin", 30, "/roles.xhtml", "");
+            MenuItemImpl child1 = createMenuItem("Users", "Admin", 20, "/users.xhtml", "");
+
+            Map<String, MenuItemImpl> beans = new LinkedHashMap<>();
+            beans.put("admin", parent);
+            beans.put("roles", child2);
+            beans.put("users", child1);
+            when(applicationContext.getBeansOfType(MenuItemImpl.class)).thenReturn(beans);
+            when(applicationContext.getBean("chatMenuBadgeProvider")).thenThrow(new RuntimeException("not found"));
+
+            MenuModel model = menuModelBuilder.buildMenuModel();
+
+            PrimefacesSubmenu submenu = (PrimefacesSubmenu) model.getElements().get(0);
+            assertEquals(2, submenu.getElements().size());
+            PrimefacesMenuItem firstChild = (PrimefacesMenuItem) submenu.getElements().get(0);
+            PrimefacesMenuItem secondChild = (PrimefacesMenuItem) submenu.getElements().get(1);
+            assertEquals("Users", firstChild.getValue());
+            assertEquals("Roles", secondChild.getValue());
+        }
+
+        @Test
+        void shouldHandleItemsWithSameOrder() {
+            MenuItemImpl a = createMenuItem("Alpha", "", 10, "/a.xhtml", "");
+            MenuItemImpl b = createMenuItem("Beta", "", 10, "/b.xhtml", "");
+
+            Map<String, MenuItemImpl> beans = new LinkedHashMap<>();
+            beans.put("a", a);
+            beans.put("b", b);
+            when(applicationContext.getBeansOfType(MenuItemImpl.class)).thenReturn(beans);
+            when(applicationContext.getBean("chatMenuBadgeProvider")).thenThrow(new RuntimeException("not found"));
+
+            MenuModel model = menuModelBuilder.buildMenuModel();
+
+            assertEquals(2, model.getElements().size());
+        }
+
+        @Test
+        void shouldSortThreeItemsByOrder() {
+            MenuItemImpl item3 = createMenuItem("Third", "", 30, "/third.xhtml", "");
+            MenuItemImpl item1 = createMenuItem("First", "", 10, "/first.xhtml", "");
+            MenuItemImpl item2 = createMenuItem("Second", "", 20, "/second.xhtml", "");
+
+            Map<String, MenuItemImpl> beans = new LinkedHashMap<>();
+            beans.put("third", item3);
+            beans.put("first", item1);
+            beans.put("second", item2);
+            when(applicationContext.getBeansOfType(MenuItemImpl.class)).thenReturn(beans);
+            when(applicationContext.getBean("chatMenuBadgeProvider")).thenThrow(new RuntimeException("not found"));
+
+            MenuModel model = menuModelBuilder.buildMenuModel();
+
+            assertEquals(3, model.getElements().size());
+            assertEquals("First", ((PrimefacesMenuItem) model.getElements().get(0)).getValue());
+            assertEquals("Second", ((PrimefacesMenuItem) model.getElements().get(1)).getValue());
+            assertEquals("Third", ((PrimefacesMenuItem) model.getElements().get(2)).getValue());
+        }
     }
 
-    @Test
-    void testBuildMenuModel_WithParentChild_ShouldCreateHierarchy() {
-        // Given
-        MenuItemImpl parent = createMenuItem("Settings", null, 1, true);
-        MenuItemImpl child = createMenuItem("User Settings", "Settings", 2, true);
+    @Nested
+    class Filtering {
 
-        Map<String, MenuItemImpl> beans = new HashMap<>();
-        beans.put("settings", parent);
-        beans.put("userSettings", child);
+        @Test
+        void shouldFilterOutInvisibleItems() {
+            MenuItemImpl visible = createMenuItem("Visible", "", 10, "/visible.xhtml", "");
+            MenuItemImpl hidden = createVisibleMenuItem("Hidden", "", 20, "/hidden.xhtml", "", false);
 
-        when(applicationContext.getBeansOfType(MenuItemImpl.class)).thenReturn(beans);
+            Map<String, MenuItemImpl> beans = new LinkedHashMap<>();
+            beans.put("visible", visible);
+            beans.put("hidden", hidden);
+            when(applicationContext.getBeansOfType(MenuItemImpl.class)).thenReturn(beans);
+            when(applicationContext.getBean("chatMenuBadgeProvider")).thenThrow(new RuntimeException("not found"));
 
-        // When
-        MenuModel result = menuModelBuilder.buildMenuModel();
+            MenuModel model = menuModelBuilder.buildMenuModel();
 
-        // Then
-        assertNotNull(result);
-        assertEquals(1, result.getElements().size());
+            assertEquals(1, model.getElements().size());
+            PrimefacesMenuItem item = (PrimefacesMenuItem) model.getElements().get(0);
+            assertEquals("Visible", item.getValue());
+        }
+
+        @Test
+        void shouldNotCreateSubmenuWhenParentVisibleButAllChildrenHidden() {
+            MenuItemImpl parent = createMenuItem("Admin", "", 10, "/admin.xhtml", "");
+            MenuItemImpl child = createVisibleMenuItem("Users", "Admin", 20, "/users.xhtml", "", false);
+
+            Map<String, MenuItemImpl> beans = new LinkedHashMap<>();
+            beans.put("admin", parent);
+            beans.put("child", child);
+            when(applicationContext.getBeansOfType(MenuItemImpl.class)).thenReturn(beans);
+            when(applicationContext.getBean("chatMenuBadgeProvider")).thenThrow(new RuntimeException("not found"));
+
+            MenuModel model = menuModelBuilder.buildMenuModel();
+
+            // Parent has no visible children, so it should be rendered as a plain menu item
+            assertEquals(1, model.getElements().size());
+            assertInstanceOf(PrimefacesMenuItem.class, model.getElements().get(0));
+        }
+
+        @Test
+        void shouldFilterOutInvisibleParentAndOrphanChildren() {
+            MenuItemImpl parent = createVisibleMenuItem("Admin", "", 10, "/admin.xhtml", "", false);
+            MenuItemImpl child = createMenuItem("Users", "Admin", 20, "/users.xhtml", "");
+
+            Map<String, MenuItemImpl> beans = new LinkedHashMap<>();
+            beans.put("admin", parent);
+            beans.put("child", child);
+            when(applicationContext.getBeansOfType(MenuItemImpl.class)).thenReturn(beans);
+            when(applicationContext.getBean("chatMenuBadgeProvider")).thenThrow(new RuntimeException("not found"));
+
+            MenuModel model = menuModelBuilder.buildMenuModel();
+
+            // Parent is filtered out, child's parent "Admin" has no submenu => child is skipped
+            assertTrue(model.getElements().isEmpty());
+        }
+
+        @Test
+        void shouldFilterMixOfVisibleAndInvisible() {
+            MenuItemImpl visible1 = createMenuItem("Home", "", 10, "/home.xhtml", "");
+            MenuItemImpl invisible = createVisibleMenuItem("Hidden", "", 20, "/hidden.xhtml", "", false);
+            MenuItemImpl visible2 = createMenuItem("About", "", 30, "/about.xhtml", "");
+
+            Map<String, MenuItemImpl> beans = new LinkedHashMap<>();
+            beans.put("home", visible1);
+            beans.put("hidden", invisible);
+            beans.put("about", visible2);
+            when(applicationContext.getBeansOfType(MenuItemImpl.class)).thenReturn(beans);
+            when(applicationContext.getBean("chatMenuBadgeProvider")).thenThrow(new RuntimeException("not found"));
+
+            MenuModel model = menuModelBuilder.buildMenuModel();
+
+            assertEquals(2, model.getElements().size());
+        }
     }
 
-    @Test
-    void testBuildMenuModel_WithInvisibleItem_ShouldNotInclude() {
-        // Given
-        MenuItemImpl visibleItem = createMenuItem("Home", null, 1, true);
-        MenuItemImpl invisibleItem = createMenuItem("Hidden", null, 2, false);
+    @Nested
+    class DynamicBadges {
 
-        Map<String, MenuItemImpl> beans = new HashMap<>();
-        beans.put("home", visibleItem);
-        beans.put("hidden", invisibleItem);
+        @Test
+        void shouldHandleMissingBadgeProviderGracefully() {
+            MenuItemImpl chatItem = createMenuItem("Chat", "", 10, "/chat.xhtml", "pi pi-comments");
 
-        when(applicationContext.getBeansOfType(MenuItemImpl.class)).thenReturn(beans);
+            Map<String, MenuItemImpl> beans = Map.of("chat", chatItem);
+            when(applicationContext.getBeansOfType(MenuItemImpl.class)).thenReturn(beans);
+            when(applicationContext.getBean("chatMenuBadgeProvider")).thenThrow(new RuntimeException("No bean"));
 
-        // When
-        MenuModel result = menuModelBuilder.buildMenuModel();
+            assertDoesNotThrow(() -> menuModelBuilder.buildMenuModel());
+            assertNull(chatItem.getBadge());
+        }
 
-        // Then
-        assertNotNull(result);
-        assertEquals(1, result.getElements().size());
+        @Test
+        void shouldNotUpdateBadgeForNonChatItems() {
+            MenuItemImpl item = createMenuItem("Home", "", 10, "/home.xhtml", "pi pi-home");
+
+            Map<String, MenuItemImpl> beans = Map.of("home", item);
+            when(applicationContext.getBeansOfType(MenuItemImpl.class)).thenReturn(beans);
+            when(applicationContext.getBean("chatMenuBadgeProvider")).thenThrow(new RuntimeException("No bean"));
+
+            menuModelBuilder.buildMenuModel();
+
+            assertNull(item.getBadge());
+        }
+
+        @Test
+        void shouldOnlyUpdateRootChatMenuItem() {
+            // Chat item with a parent should not be updated
+            MenuItemImpl childChat = createMenuItem("Chat", "Messages", 10, "/chat.xhtml", "");
+
+            Map<String, MenuItemImpl> beans = Map.of("chat", childChat);
+            when(applicationContext.getBeansOfType(MenuItemImpl.class)).thenReturn(beans);
+            when(applicationContext.getBean("chatMenuBadgeProvider")).thenReturn(new Object());
+
+            menuModelBuilder.buildMenuModel();
+
+            // Badge should not be set because the Chat item has a parent
+            assertNull(childChat.getBadge());
+        }
+
+        @Test
+        void shouldUpdateChatBadgeWhenProviderHasGetBadgeCountMethod() {
+            MenuItemImpl chatItem = createMenuItem("Chat", "", 10, "/chat.xhtml", "pi pi-comments");
+
+            Map<String, MenuItemImpl> beans = Map.of("chat", chatItem);
+            when(applicationContext.getBeansOfType(MenuItemImpl.class)).thenReturn(beans);
+
+            // Create a real object with getBadgeCount method
+            BadgeCountProvider provider = () -> "3";
+            when(applicationContext.getBean("chatMenuBadgeProvider")).thenReturn(provider);
+
+            menuModelBuilder.buildMenuModel();
+
+            assertEquals("3", chatItem.getBadge());
+        }
+
+        @Test
+        void shouldHandleBadgeProviderWithoutGetBadgeCountMethod() {
+            MenuItemImpl chatItem = createMenuItem("Chat", "", 10, "/chat.xhtml", "pi pi-comments");
+
+            Map<String, MenuItemImpl> beans = Map.of("chat", chatItem);
+            when(applicationContext.getBeansOfType(MenuItemImpl.class)).thenReturn(beans);
+
+            // Object without getBadgeCount method
+            when(applicationContext.getBean("chatMenuBadgeProvider")).thenReturn(new Object());
+
+            assertDoesNotThrow(() -> menuModelBuilder.buildMenuModel());
+            assertNull(chatItem.getBadge());
+        }
     }
 
-    @Test
-    void testBuildMenuModel_WithOrphanChild_ShouldSkip() {
-        // Given
-        MenuItemImpl orphan = createMenuItem("Orphan", "NonExistentParent", 1, true);
+    @Nested
+    class MixedScenarios {
 
-        Map<String, MenuItemImpl> beans = Map.of("orphan", orphan);
+        @Test
+        void shouldHandleMixOfRootItemsAndSubmenus() {
+            MenuItemImpl home = createMenuItem("Home", "", 10, "/home.xhtml", "pi pi-home");
+            MenuItemImpl admin = createMenuItem("Admin", "", 20, "/admin.xhtml", "pi pi-cog");
+            MenuItemImpl users = createMenuItem("Users", "Admin", 30, "/users.xhtml", "pi pi-users");
+            MenuItemImpl about = createMenuItem("About", "", 40, "/about.xhtml", "pi pi-info");
 
-        when(applicationContext.getBeansOfType(MenuItemImpl.class)).thenReturn(beans);
+            Map<String, MenuItemImpl> beans = new LinkedHashMap<>();
+            beans.put("home", home);
+            beans.put("admin", admin);
+            beans.put("users", users);
+            beans.put("about", about);
+            when(applicationContext.getBeansOfType(MenuItemImpl.class)).thenReturn(beans);
+            when(applicationContext.getBean("chatMenuBadgeProvider")).thenThrow(new RuntimeException("not found"));
 
-        // When
-        MenuModel result = menuModelBuilder.buildMenuModel();
+            MenuModel model = menuModelBuilder.buildMenuModel();
 
-        // Then
-        assertNotNull(result);
-        assertTrue(result.getElements().isEmpty());
+            assertEquals(3, model.getElements().size());
+            assertInstanceOf(PrimefacesMenuItem.class, model.getElements().get(0));
+            assertInstanceOf(PrimefacesSubmenu.class, model.getElements().get(1));
+            assertInstanceOf(PrimefacesMenuItem.class, model.getElements().get(2));
+
+            PrimefacesSubmenu adminSubmenu = (PrimefacesSubmenu) model.getElements().get(1);
+            assertEquals("Admin", adminSubmenu.getLabel());
+            assertEquals(1, adminSubmenu.getElements().size());
+        }
+
+        @Test
+        void shouldHandleComplexHierarchyWithMultipleSubmenusAndMixedOrders() {
+            MenuItemImpl menu1 = createMenuItem("Menu1", "", 50, "/menu1.xhtml", "");
+            MenuItemImpl child1 = createMenuItem("Child1", "Menu1", 10, "/child1.xhtml", "");
+            MenuItemImpl menu2 = createMenuItem("Menu2", "", 20, "/menu2.xhtml", "");
+            MenuItemImpl child2 = createMenuItem("Child2", "Menu2", 100, "/child2.xhtml", "");
+
+            Map<String, MenuItemImpl> beans = new LinkedHashMap<>();
+            beans.put("menu1", menu1);
+            beans.put("child1", child1);
+            beans.put("menu2", menu2);
+            beans.put("child2", child2);
+            when(applicationContext.getBeansOfType(MenuItemImpl.class)).thenReturn(beans);
+            when(applicationContext.getBean("chatMenuBadgeProvider")).thenThrow(new RuntimeException("not found"));
+
+            MenuModel model = menuModelBuilder.buildMenuModel();
+
+            assertEquals(2, model.getElements().size());
+            // First should be Menu2 (order 20) as a submenu, then Menu1 (order 50) as a submenu
+            // Both children have lower/higher order but are placed under their respective parents
+        }
     }
 
-    @Test
-    void testBuildMenuModel_WithMultipleLevels_ShouldCreateDeepHierarchy() {
-        // Given
-        MenuItemImpl level1 = createMenuItem("Settings", null, 1, true);
-        MenuItemImpl level2 = createMenuItem("User", "Settings", 2, true);
-        MenuItemImpl level3 = createMenuItem("Profile", "User", 3, true);
-
-        Map<String, MenuItemImpl> beans = new HashMap<>();
-        beans.put("settings", level1);
-        beans.put("user", level2);
-        beans.put("profile", level3);
-
-        when(applicationContext.getBeansOfType(MenuItemImpl.class)).thenReturn(beans);
-
-        // When
-        MenuModel result = menuModelBuilder.buildMenuModel();
-
-        // Then
-        assertNotNull(result);
-        assertEquals(1, result.getElements().size());
+    /**
+     * Helper interface for testing badge provider with getBadgeCount method
+     */
+    interface BadgeCountProvider {
+        String getBadgeCount();
     }
 
-    @Test
-    void testBuildMenuModel_ShouldRespectOrderProperty() {
-        // Given
-        MenuItemImpl item3 = createMenuItem("Third", null, 3, true);
-        MenuItemImpl item1 = createMenuItem("First", null, 1, true);
-        MenuItemImpl item2 = createMenuItem("Second", null, 2, true);
-
-        Map<String, MenuItemImpl> beans = new HashMap<>();
-        beans.put("third", item3);
-        beans.put("first", item1);
-        beans.put("second", item2);
-
-        when(applicationContext.getBeansOfType(MenuItemImpl.class)).thenReturn(beans);
-
-        // When
-        MenuModel result = menuModelBuilder.buildMenuModel();
-
-        // Then
-        assertNotNull(result);
-        assertEquals(3, result.getElements().size());
-        // Items should be ordered by their order property
-    }
-
-    @Test
-    void testBuildMenuModel_WithMixedVisibleInvisible_ShouldOnlyIncludeVisible() {
-        // Given
-        MenuItemImpl visible1 = createMenuItem("Home", null, 1, true);
-        MenuItemImpl invisible = createMenuItem("Hidden", null, 2, false);
-        MenuItemImpl visible2 = createMenuItem("About", null, 3, true);
-
-        Map<String, MenuItemImpl> beans = new HashMap<>();
-        beans.put("home", visible1);
-        beans.put("hidden", invisible);
-        beans.put("about", visible2);
-
-        when(applicationContext.getBeansOfType(MenuItemImpl.class)).thenReturn(beans);
-
-        // When
-        MenuModel result = menuModelBuilder.buildMenuModel();
-
-        // Then
-        assertNotNull(result);
-        assertEquals(2, result.getElements().size());
-    }
-
-    @Test
-    void testBuildMenuModel_WithEmptyParentString_ShouldTreatAsRoot() {
-        // Given
-        MenuItemImpl itemWithEmptyParent = createMenuItem("Home", "", 1, true);
-        MenuItemImpl itemWithNullParent = createMenuItem("About", null, 2, true);
-
-        Map<String, MenuItemImpl> beans = new HashMap<>();
-        beans.put("home", itemWithEmptyParent);
-        beans.put("about", itemWithNullParent);
-
-        when(applicationContext.getBeansOfType(MenuItemImpl.class)).thenReturn(beans);
-
-        // When
-        MenuModel result = menuModelBuilder.buildMenuModel();
-
-        // Then
-        assertNotNull(result);
-        assertEquals(2, result.getElements().size());
-    }
-
-    @Test
-    void testBuildMenuModel_WithChildrenButInvisibleParent_ShouldSkipBoth() {
-        // Given
-        MenuItemImpl parent = createMenuItem("Settings", null, 1, false);
-        MenuItemImpl child = createMenuItem("User Settings", "Settings", 2, true);
-
-        Map<String, MenuItemImpl> beans = new HashMap<>();
-        beans.put("settings", parent);
-        beans.put("userSettings", child);
-
-        when(applicationContext.getBeansOfType(MenuItemImpl.class)).thenReturn(beans);
-
-        // When
-        MenuModel result = menuModelBuilder.buildMenuModel();
-
-        // Then
-        assertNotNull(result);
-        assertTrue(result.getElements().isEmpty());
-    }
-
-    @Test
-    void testBuildMenuModel_WithChildOrderLowerThanParent_ShouldStillBuildHierarchy() {
-        // Given - Child has lower order (10) than parent (100)
-        // This simulates the real-world scenario where ZeiterfassungMenu has order 20
-        // but ZeiterfassungEingabeSubmenu has order 24
-        MenuItemImpl child = createMenuItem("Eingabe", "Zeiterfassung", 10, true);
-        MenuItemImpl parent = createMenuItem("Zeiterfassung", null, 100, true);
-
-        Map<String, MenuItemImpl> beans = new HashMap<>();
-        beans.put("child", child);
-        beans.put("parent", parent);
-
-        when(applicationContext.getBeansOfType(MenuItemImpl.class)).thenReturn(beans);
-
-        // When
-        MenuModel result = menuModelBuilder.buildMenuModel();
-
-        // Then
-        assertNotNull(result);
-        assertEquals(1, result.getElements().size(), "Should have 1 root element (parent)");
-        // The hierarchy should be built correctly despite order values
-    }
-
-    @Test
-    void testBuildMenuModel_WithComplexOrderScenario_ShouldHandleAllItems() {
-        // Given - Mixed orders where children might have lower order than parents
-        MenuItemImpl parent1 = createMenuItem("Menu1", null, 50, true);
-        MenuItemImpl child1 = createMenuItem("Child1", "Menu1", 10, true);
-        MenuItemImpl parent2 = createMenuItem("Menu2", null, 20, true);
-        MenuItemImpl child2 = createMenuItem("Child2", "Menu2", 100, true);
-
-        Map<String, MenuItemImpl> beans = new HashMap<>();
-        beans.put("parent1", parent1);
-        beans.put("child1", child1);
-        beans.put("parent2", parent2);
-        beans.put("child2", child2);
-
-        when(applicationContext.getBeansOfType(MenuItemImpl.class)).thenReturn(beans);
-
-        // When
-        MenuModel result = menuModelBuilder.buildMenuModel();
-
-        // Then
-        assertNotNull(result);
-        assertEquals(2, result.getElements().size(), "Should have 2 root elements");
-    }
-
-    // Helper method
-    private MenuItemImpl createMenuItem(String title, String parent, int order, boolean visible) {
+    private MenuItemImpl createMenuItem(String title, String parent, int order, String command, String icon) {
         MenuItemImpl item = new MenuItemImpl();
         item.setTitle(title);
         item.setParent(parent);
         item.setOrder(order);
-        item.setCommand("/test/" + title.toLowerCase().replace(" ", "-"));
+        item.setCommand(command);
+        item.setIcon(icon);
+        return item;
+    }
+
+    /**
+     * Creates a MenuItemImpl where isOn() is controlled via spy.
+     * Used for testing filtering of invisible items without needing real SecurityProvider setup.
+     */
+    private MenuItemImpl createVisibleMenuItem(String title, String parent, int order, String command, String icon, boolean visible) {
+        MenuItemImpl item = new MenuItemImpl();
+        item.setTitle(title);
+        item.setParent(parent);
+        item.setOrder(order);
+        item.setCommand(command);
+        item.setIcon(icon);
         item.setRoles(Collections.emptyList());
-        item.setIcon("pi pi-home");
 
-        // Mock the isOn method to return visible
-        MenuItemImpl spy = spy(item);
-        when(spy.isOn()).thenReturn(visible);
-
-        return spy;
+        MenuItemImpl spied = spy(item);
+        when(spied.isOn()).thenReturn(visible);
+        return spied;
     }
 }

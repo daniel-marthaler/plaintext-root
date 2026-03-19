@@ -100,7 +100,7 @@ class PlaintextSecurityImplTest {
     }
 
     @Test
-    void getMandat_shouldReturnError_whenAuthenticationIsNull() {
+    void getMandat_shouldReturnNoAuth_whenAuthenticationIsNull() {
         // Given: No authentication
         when(securityContext.getAuthentication()).thenReturn(null);
 
@@ -108,7 +108,7 @@ class PlaintextSecurityImplTest {
         String mandat = plaintextSecurity.getMandat();
 
         // Then
-        assertEquals("ERROR", mandat);
+        assertEquals("NO_AUTH", mandat);
     }
 
     @Test
