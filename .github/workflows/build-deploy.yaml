@@ -1,17 +1,57 @@
-name: Build & Deploy
+name: Build & Test
 
 on:
   push:
     branches: [master]
+  pull_request:
+    branches: [master]
 
 concurrency:
-  group: plaintext-root-build
-  cancel-in-progress: false
+  group: plaintext-root-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
     if: ${{ !contains(github.event.head_commit.message, '[skip-ci]') }}
-    uses: daniel-marthaler/plaintext-scripts/.github/workflows/maven-build-deploy.yaml@master
-    with:
-      build-command: "5"
-    secrets: inherit
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_DB: plaintext_root
+          POSTGRES_USER: plaintext
+          POSTGRES_PASSWORD: plaintext
+        ports:
+          - 5434:5432
+        options: >-
+          --health-cmd "pg_isready -U plaintext -d plaintext_root"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 25
+        uses: actions/setup-java@v4
+        with:
+          java-version: '25'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build & Test
+        run: mvn clean install -B
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5434/plaintext_root
+          SPRING_DATASOURCE_USERNAME: plaintext
+          SPRING_DATASOURCE_PASSWORD: plaintext
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: '**/target/surefire-reports/*.xml'
+          retention-days: 7
