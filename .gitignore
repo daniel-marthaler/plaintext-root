@@ -1,0 +1,7 @@
+target/
+*.iml
+.idea/
+.DS_Store
+buildTimestamp.txt
+plaintext-scripts/
+plaintext-root-template-freya/

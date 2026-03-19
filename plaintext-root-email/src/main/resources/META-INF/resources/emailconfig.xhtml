@@ -1,0 +1,340 @@
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                template="/includes/template.xhtml">
+
+    <ui:define name="title">Email-Konfigurationen</ui:define>
+
+    <ui:define name="page">
+        <f:metadata>
+            <f:event type="preRenderView" listener="#{emailConfigBackingBean.initThis()}"/>
+        </f:metadata>
+
+        <h:form id="fm">
+            <input type="hidden" name="_csrf" value="#{_csrf.token}"/>
+
+        <style>
+            .config-table .ui-datatable-header {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                padding: 15px;
+                border-radius: 8px 8px 0 0;
+            }
+
+            .config-row:hover {
+                background-color: var(--surface-100, #f8f9fa) !important;
+            }
+
+            .action-buttons {
+                margin-bottom: 15px;
+                padding: 10px;
+                background: var(--surface-0);
+                border: 1px solid var(--surface-border);
+                border-radius: 8px;
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+                gap: 10px;
+                align-items: center;
+            }
+
+            .status-badge {
+                padding: 5px 10px;
+                border-radius: 4px;
+                font-weight: bold;
+                font-size: 0.8em;
+            }
+
+            .status-configured {
+                background-color: #22c55e;
+                color: white;
+            }
+
+            .status-not-configured {
+                background-color: #ef4444;
+                color: white;
+            }
+
+            .config-grid td {
+                padding: 12px 8px;
+            }
+
+            @media screen and (max-width: 768px) {
+                .action-buttons {
+                    grid-template-columns: 1fr;
+                }
+            }
+        </style>
+
+        <h:outputScript>
+            history.pushState(null, null, '/emailconfig.html');
+        </h:outputScript>
+
+        <p:growl id="messages" showDetail="true" life="3000"/>
+
+        <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+            <p:commandButton value="Ja" type="button" styleClass="ui-confirmdialog-yes"/>
+            <p:commandButton value="Nein" type="button" styleClass="ui-confirmdialog-no"/>
+        </p:confirmDialog>
+
+        <div class="action-buttons">
+            <p:commandButton value="Neue Konfiguration"
+                             icon="pi pi-plus"
+                             actionListener="#{emailConfigBackingBean.newConfig()}"
+                             oncomplete="PF('dlgConfig').show(); PF('tblConfigs').unselectAllRows();"
+                             update=":fm:dlgConfig,:fm:tblConfigs"
+                             process="@this"
+                             styleClass="ui-button-success"/>
+
+            <p:commandButton value="Bearbeiten"
+                             icon="pi pi-pencil"
+                             actionListener="#{emailConfigBackingBean.selectConfig()}"
+                             oncomplete="PF('dlgConfig').show()"
+                             update=":fm:dlgConfig"
+                             process="@this"
+                             disabled="#{emailConfigBackingBean.selectedConfig == null}"/>
+
+            <p:commandButton value="Duplizieren"
+                             icon="pi pi-copy"
+                             actionListener="#{emailConfigBackingBean.duplicateConfig()}"
+                             update="messages,tblConfigs"
+                             process="@this"
+                             disabled="#{emailConfigBackingBean.selectedConfig == null}"/>
+
+            <p:commandButton value="Löschen"
+                             icon="pi pi-trash"
+                             styleClass="ui-button-danger"
+                             actionListener="#{emailConfigBackingBean.deleteConfig()}"
+                             update="messages,tblConfigs"
+                             process="@this"
+                             disabled="#{emailConfigBackingBean.selectedConfig == null}">
+                <p:confirm header="Bestätigung" message="Konfiguration wirklich löschen?" icon="pi pi-exclamation-triangle"/>
+            </p:commandButton>
+
+            <p:commandButton value="Aktualisieren"
+                             icon="pi pi-refresh"
+                             actionListener="#{emailConfigBackingBean.loadConfigs()}"
+                             update="tblConfigs,messages"
+                             process="@this"
+                             styleClass="ui-button-outlined"/>
+        </div>
+
+        <p:dataTable emptyMessage="Keine Email-Konfigurationen vorhanden"
+                     widgetVar="tblConfigs"
+                     id="tblConfigs"
+                     selectionMode="single"
+                     selection="#{emailConfigBackingBean.selectedConfig}"
+                     var="config"
+                     rowKey="#{config.id}"
+                     value="#{emailConfigBackingBean.configs}"
+                     styleClass="config-table"
+                     rowStyleClass="config-row"
+                     paginator="true"
+                     rows="20"
+                     paginatorPosition="bottom"
+                     reflow="true">
+
+            <p:ajax event="rowSelect" listener="#{emailConfigBackingBean.selectConfig()}" update="@form"/>
+            <p:ajax event="rowUnselect" listener="#{emailConfigBackingBean.clearSelection()}" update="@form"/>
+
+            <f:facet name="header">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 1.2em;">
+                        <i class="pi pi-cog" style="margin-right: 8px;"></i>
+                        Email-Konfigurationen
+                    </span>
+                    <span style="font-size: 0.9em; opacity: 0.8;">
+                        Total: #{emailConfigBackingBean.configs.size()}
+                    </span>
+                </div>
+            </f:facet>
+
+            <p:column headerText="Name" sortBy="#{config.configName}" style="width: 20%">
+                <h:outputText value="#{config.configName}" style="font-weight: bold;"/>
+            </p:column>
+
+            <p:column headerText="SMTP" style="width: 22%; text-align: center;">
+                <span class="status-badge #{config.smtpConfigured ? 'status-configured' : 'status-not-configured'}">
+                    #{config.smtpConfigured ? '✓ OK' : '⚠ Nicht konfiguriert'}
+                </span>
+                <h:panelGroup rendered="#{config.smtpConfigured and config.id != null}" style="display: block; margin-top: 5px;">
+                    <p:commandButton value="#{emailConfigBackingBean.getSmtpButtonLabel(config.id)}"
+                                     icon="pi pi-send"
+                                     title="Test-Mail an daniel@danielmarthaler.ch senden"
+                                     action="#{emailConfigBackingBean.testSmtpForConfig(config.id)}"
+                                     update=":fm:tblConfigs,:fm:messages"
+                                     process="@this"
+                                     styleClass="#{emailConfigBackingBean.getSmtpTestStyleClass(config.id)}"/>
+                </h:panelGroup>
+            </p:column>
+
+            <p:column headerText="IMAP" style="width: 22%; text-align: center;">
+                <span class="status-badge #{config.imapConfigured ? 'status-configured' : 'status-not-configured'}">
+                    #{config.imapConfigured ? '✓ OK' : '⚠ Nicht konfiguriert'}
+                </span>
+                <h:panelGroup rendered="#{config.imapConfigured and config.id != null}" style="display: block; margin-top: 5px;">
+                    <p:commandButton value="#{emailConfigBackingBean.getImapButtonLabel(config.id)}"
+                                     icon="pi pi-inbox"
+                                     title="IMAP-Verbindung testen und Mails zählen"
+                                     action="#{emailConfigBackingBean.testImapForConfig(config.id)}"
+                                     update=":fm:tblConfigs,:fm:messages"
+                                     process="@this"
+                                     styleClass="#{emailConfigBackingBean.getImapTestStyleClass(config.id)}"/>
+                </h:panelGroup>
+            </p:column>
+
+            <p:column headerText="Von-Adresse" style="width: 40%">
+                <h:outputText value="#{config.smtpFromAddress}"/>
+            </p:column>
+
+        </p:dataTable>
+
+        <!-- Configuration Dialog -->
+        <p:dialog header="#{emailConfigBackingBean.selectedConfig.id == null ? 'Neue Email-Konfiguration' : 'Email-Konfiguration bearbeiten'}"
+                  widgetVar="dlgConfig"
+                  id="dlgConfig"
+                  modal="true"
+                  showEffect="fade"
+                  hideEffect="fade"
+                  width="900"
+                  responsive="true">
+
+            <h:panelGroup rendered="#{emailConfigBackingBean.selectedConfig != null}">
+                <p:tabView>
+                    <p:tab title="Allgemein">
+                        <h:panelGrid columns="2" cellpadding="10" style="width: 100%;">
+                            <p:outputLabel for="configName" value="Konfigurationsname:" style="font-weight: bold;"/>
+                            <p:inputText id="configName"
+                                         value="#{emailConfigBackingBean.selectedConfig.configName}"
+                                         style="width: 100%;"
+                                         required="true"
+                                         placeholder="z.B. 'default', 'kalender', 'support'"/>
+                        </h:panelGrid>
+                    </p:tab>
+
+                    <p:tab title="SMTP (Versand)">
+                        <h:panelGrid columns="2" cellpadding="10" styleClass="config-grid" style="width: 100%;">
+                            <p:outputLabel for="smtpHost" value="SMTP Host:" style="font-weight: bold;"/>
+                            <p:inputText id="smtpHost"
+                                         value="#{emailConfigBackingBean.selectedConfig.smtpHost}"
+                                         style="width: 100%;"
+                                         placeholder="smtp.example.com"/>
+
+                            <p:outputLabel for="smtpPort" value="SMTP Port:" style="font-weight: bold;"/>
+                            <p:inputNumber id="smtpPort"
+                                           value="#{emailConfigBackingBean.selectedConfig.smtpPort}"
+                                           decimalPlaces="0"/>
+
+                            <p:outputLabel for="smtpUsername" value="Benutzername:" style="font-weight: bold;"/>
+                            <p:inputText id="smtpUsername"
+                                         value="#{emailConfigBackingBean.selectedConfig.smtpUsername}"
+                                         style="width: 100%;"/>
+
+                            <p:outputLabel for="smtpPassword" value="Passwort:" style="font-weight: bold;"/>
+                            <p:password id="smtpPassword"
+                                        value="#{emailConfigBackingBean.selectedConfig.smtpPassword}"
+                                        style="width: 100%;"
+                                        feedback="false"
+                                        toggleMask="true"/>
+
+                            <p:outputLabel for="smtpFromAddress" value="Von-Adresse:" style="font-weight: bold;"/>
+                            <p:inputText id="smtpFromAddress"
+                                         value="#{emailConfigBackingBean.selectedConfig.smtpFromAddress}"
+                                         style="width: 100%;"
+                                         placeholder="noreply@example.com"/>
+
+                            <p:outputLabel for="smtpFromName" value="Von-Name:"/>
+                            <p:inputText id="smtpFromName"
+                                         value="#{emailConfigBackingBean.selectedConfig.smtpFromName}"
+                                         style="width: 100%;"
+                                         placeholder="Mein Unternehmen"/>
+
+                            <p:outputLabel for="smtpUseTls" value="TLS verwenden:"/>
+                            <p:selectBooleanCheckbox id="smtpUseTls"
+                                                     value="#{emailConfigBackingBean.selectedConfig.smtpUseTls}"/>
+
+                            <p:outputLabel for="smtpUseSsl" value="SSL verwenden:"/>
+                            <p:selectBooleanCheckbox id="smtpUseSsl"
+                                                     value="#{emailConfigBackingBean.selectedConfig.smtpUseSsl}"/>
+
+                            <p:outputLabel for="smtpEnabled" value="SMTP aktivieren:" style="font-weight: bold;"/>
+                            <p:selectBooleanCheckbox id="smtpEnabled"
+                                                     value="#{emailConfigBackingBean.selectedConfig.smtpEnabled}">
+                                <p:ajax process="@this" update="@none"/>
+                            </p:selectBooleanCheckbox>
+                        </h:panelGrid>
+                    </p:tab>
+
+                    <p:tab title="IMAP (Empfang)">
+                        <h:panelGrid columns="2" cellpadding="10" styleClass="config-grid" style="width: 100%;">
+                            <p:outputLabel for="imapHost" value="IMAP Host:" style="font-weight: bold;"/>
+                            <p:inputText id="imapHost"
+                                         value="#{emailConfigBackingBean.selectedConfig.imapHost}"
+                                         style="width: 100%;"
+                                         placeholder="imap.example.com"/>
+
+                            <p:outputLabel for="imapPort" value="IMAP Port:" style="font-weight: bold;"/>
+                            <p:inputNumber id="imapPort"
+                                           value="#{emailConfigBackingBean.selectedConfig.imapPort}"
+                                           decimalPlaces="0"/>
+
+                            <p:outputLabel for="imapUsername" value="Benutzername:" style="font-weight: bold;"/>
+                            <p:inputText id="imapUsername"
+                                         value="#{emailConfigBackingBean.selectedConfig.imapUsername}"
+                                         style="width: 100%;"/>
+
+                            <p:outputLabel for="imapPassword" value="Passwort:" style="font-weight: bold;"/>
+                            <p:password id="imapPassword"
+                                        value="#{emailConfigBackingBean.selectedConfig.imapPassword}"
+                                        style="width: 100%;"
+                                        feedback="false"
+                                        toggleMask="true"/>
+
+                            <p:outputLabel for="imapUseSsl" value="SSL verwenden:"/>
+                            <p:selectBooleanCheckbox id="imapUseSsl"
+                                                     value="#{emailConfigBackingBean.selectedConfig.imapUseSsl}"/>
+
+                            <p:outputLabel for="imapFolder" value="Ordner:"/>
+                            <p:inputText id="imapFolder"
+                                         value="#{emailConfigBackingBean.selectedConfig.imapFolder}"
+                                         style="width: 100%;"/>
+
+                            <p:outputLabel for="imapMarkAsRead" value="Als gelesen markieren:"/>
+                            <p:selectBooleanCheckbox id="imapMarkAsRead"
+                                                     value="#{emailConfigBackingBean.selectedConfig.imapMarkAsRead}"/>
+
+                            <p:outputLabel for="imapDeleteAfterFetch" value="Nach Abruf löschen:"/>
+                            <p:selectBooleanCheckbox id="imapDeleteAfterFetch"
+                                                     value="#{emailConfigBackingBean.selectedConfig.imapDeleteAfterFetch}"/>
+
+                            <p:outputLabel for="imapEnabled" value="IMAP aktivieren:" style="font-weight: bold;"/>
+                            <p:selectBooleanCheckbox id="imapEnabled"
+                                                     value="#{emailConfigBackingBean.selectedConfig.imapEnabled}">
+                                <p:ajax process="@this" update="@none"/>
+                            </p:selectBooleanCheckbox>
+                        </h:panelGrid>
+                    </p:tab>
+                </p:tabView>
+            </h:panelGroup>
+
+            <f:facet name="footer">
+                <p:commandButton value="Speichern"
+                                 icon="pi pi-save"
+                                 actionListener="#{emailConfigBackingBean.saveConfig()}"
+                                 update=":fm:messages,:fm:tblConfigs,:fm:dlgConfig"
+                                 process=":fm:dlgConfig"
+                                 oncomplete="if (args &amp;&amp; !args.validationFailed) PF('dlgConfig').hide()"
+                                 styleClass="ui-button-success"/>
+
+                <p:commandButton value="Abbrechen"
+                                 icon="pi pi-times"
+                                 onclick="PF('dlgConfig').hide()"
+                                 styleClass="ui-button-secondary"/>
+            </f:facet>
+        </p:dialog>
+
+        </h:form>
+    </ui:define>
+
+</ui:composition>

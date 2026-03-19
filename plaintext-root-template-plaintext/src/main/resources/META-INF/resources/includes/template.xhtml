@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      lang="en"
+      data-theme="#{userPreferencesBackingBean.darkMode}">
+
+<h:head>
+    <f:facet name="first">
+        <meta http-equiv="x-ua-compatible" content="IE=edge"/>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
+        <meta name="mobile-web-app-capable" content="yes"/>
+        <link rel="icon" href="#{request.contextPath}/resources/plaintext-layout/images/favicon.ico" type="image/x-icon"></link>
+        <h:outputStylesheet library="primefaces-#{userPreferencesBackingBean.darkMode == 'dark' ? 'arya' : 'saga'}-blue" name="theme.css"/>
+        <style>
+            /* Prevent menu flickering on page load */
+            body:not(.plaintext-menu-ready) .layout-menu li > ul {
+                visibility: hidden !important;
+            }
+            body.plaintext-menu-ready .layout-menu li > ul {
+                visibility: visible;
+            }
+
+            /* Prevent theme flash with CSS variables */
+            html[data-theme="light"] {
+                --surface-0: #ffffff;
+                --surface-50: #f8f9fa;
+                --surface-100: #e9ecef;
+                --surface-200: #dee2e6;
+                --surface-border: #dee2e6;
+                --text-color: #495057;
+                --primary-color: #2c84d8;
+                --success-color: #28a745;
+                --danger-color: #dc3545;
+                --info-bg: #f5f9ff;
+                --info-text: #1976d2;
+            }
+
+            html[data-theme="dark"] {
+                --surface-0: #1e1e2f;
+                --surface-50: #2a2b3d;
+                --surface-100: #3c3d4f;
+                --surface-200: #4e4f62;
+                --surface-border: #3c3d4f;
+                --text-color: #d4d4dc;
+                --primary-color: #5eb3f6;
+                --success-color: #4caf50;
+                --danger-color: #f44336;
+                --info-bg: #2a2b3d;
+                --info-text: #5eb3f6;
+            }
+        </style>
+    </f:facet>
+    <title>
+        <ui:insert name="title">Plaintext App</ui:insert>
+    </title>
+    <h:outputScript name="js/layout.js" library="plaintext-layout"/>
+    <script>
+        //<![CDATA[
+        // Fix PrimeFaces dialog accessibility issue: remove focus before hiding
+        $(document).ready(function() {
+            var observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.type === 'attributes' && mutation.attributeName === 'aria-hidden') {
+                        var dialog = $(mutation.target);
+                        if (dialog.attr('aria-hidden') === 'true') {
+                            var focusedElement = dialog.find(':focus');
+                            if (focusedElement.length > 0) {
+                                focusedElement.blur();
+                            }
+                        }
+                    }
+                });
+            });
+
+            function observeDialogs() {
+                $('div[role="dialog"]').each(function() {
+                    observer.observe(this, {
+                        attributes: true,
+                        attributeFilter: ['aria-hidden']
+                    });
+                });
+            }
+
+            observeDialogs();
+
+            $(document).on('pfAjaxComplete', function() {
+                observeDialogs();
+            });
+        });
+        //]]>
+    </script>
+    <ui:insert name="head"/>
+</h:head>
+
+<h:body styleClass="#{userPreferencesBackingBean.inputStyleClass}">
+    <div class="layout-wrapper layout-topbar-#{userPreferencesBackingBean.topbarTheme} layout-menu-#{userPreferencesBackingBean.menuTheme} #{userPreferencesBackingBean.menuMode} #{userPreferencesBackingBean.menuStaticClass}">
+        <ui:include src="/includes/topbar.xhtml"/>
+        <ui:include src="/includes/config.xhtml"/>
+
+        <div class="layout-main">
+            <div class="layout-content">
+                    <f:metadata>
+                        <f:event type="preRenderView" listener="#{pageAccessGuardBackingBean.checkPageAccess()}"/>
+                    </f:metadata>
+                    <ui:insert name="content"/>
+                    <ui:insert name="page"/>
+            </div>
+            <ui:include src="/includes/footer.xhtml"/>
+        </div>
+
+        <p:ajaxStatus style="width:32px;height:32px;position:fixed;right:7px;bottom:7px">
+            <f:facet name="start">
+                <i class="pi pi-spin pi-spinner ajax-loader" aria-hidden="true"/>
+            </f:facet>
+
+            <f:facet name="complete">
+                <h:outputText value=""/>
+            </f:facet>
+        </p:ajaxStatus>
+        <div class="layout-mask modal-in"></div>
+    </div>
+    <h:outputStylesheet name="css/primeicons.css" library="plaintext-layout"/>
+    <h:outputStylesheet name="css/primeflex.min.css" library="plaintext-layout"/>
+    <h:outputStylesheet name="css/#{userPreferencesBackingBean.layout}.css" library="plaintext-layout"/>
+    <h:outputStylesheet library="plaintext-layout" name="css/colors/color-#{userPreferencesBackingBean.componentTheme}.css"/>
+
+</h:body>
+
+</html>

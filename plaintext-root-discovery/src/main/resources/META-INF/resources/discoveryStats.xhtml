@@ -1,0 +1,148 @@
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                template="/includes/template.xhtml">
+
+    <ui:define name="title">Discovery Statistics</ui:define>
+
+    <ui:define name="page">
+        <f:metadata>
+            <f:event type="preRenderView" listener="#{discoveryStatsBackingBean.init()}"/>
+        </f:metadata>
+        
+        <h:form id="fm">
+            <input type="hidden" name="_csrf" value="#{_csrf.token}"/>
+
+            <p:growl id="messages" showDetail="true" life="3000"/>
+
+            <h1>🌐 Discovery Statistics</h1>
+            <p style="margin-bottom: 20px; color: #666;">
+                Multi-Instance navigation statistics and monitoring for connected Plaintext apps.
+            </p>
+
+            <!-- Overview Cards -->
+            <div class="grid mb-4">
+                <div class="col-12 md:col-3">
+                    <div class="card text-center">
+                        <h3 style="color: #2196F3; margin: 0;">#{discoveryStatsBackingBean.totalApps}</h3>
+                        <p style="margin: 0; color: #666;">Total Apps</p>
+                        <small style="color: #999;">#{discoveryStatsBackingBean.totalActiveApps} active</small>
+                    </div>
+                </div>
+                <div class="col-12 md:col-3">
+                    <div class="card text-center">
+                        <h3 style="color: #4CAF50; margin: 0;">#{discoveryStatsBackingBean.totalSessions}</h3>
+                        <p style="margin: 0; color: #666;">Total Sessions</p>
+                        <small style="color: #999;">#{discoveryStatsBackingBean.totalActiveSessions} active</small>
+                    </div>
+                </div>
+                <div class="col-12 md:col-3">
+                    <div class="card text-center">
+                        <h3 style="color: #FF9800; margin: 0;">#{discoveryStatsBackingBean.uniqueActiveUsers}</h3>
+                        <p style="margin: 0; color: #666;">Unique Users</p>
+                        <small style="color: #999;">with active sessions</small>
+                    </div>
+                </div>
+                <div class="col-12 md:col-3">
+                    <div class="card text-center">
+                        <p:commandButton value="🔄 Refresh"
+                                         action="#{discoveryStatsBackingBean.loadStatistics()}"
+                                         update="fm"
+                                         styleClass="ui-button-outlined"/>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Applications Table -->
+            <p:fieldset legend="Discovered Applications" style="margin-bottom: 20px;">
+                <p:dataTable id="appsTable"
+                             value="#{discoveryStatsBackingBean.allApps}"
+                             var="app"
+                             emptyMessage="No apps discovered yet"
+                             styleClass="modern-table"
+                             reflow="true"
+                             paginator="true"
+                             rows="15"
+                             sortBy="#{app.environment}"
+                             sortOrder="descending">
+
+                    <p:column headerText="Status" priority="1" style="width: 60px;">
+                        <i class="pi #{app.active ? 'pi-circle-fill' : 'pi-circle'}"
+                           style="color: #{app.active ? '#4CAF50' : '#999'};"/>
+                    </p:column>
+
+                    <p:column headerText="App Name" priority="1" sortBy="#{app.appName}">
+                        <h:outputText value="#{app.appName}" style="font-weight: bold;"/>
+                        <br/>
+                        <small style="color: #888; font-family: monospace;">#{app.appId}</small>
+                    </p:column>
+
+                    <p:column headerText="Environment" priority="2" sortBy="#{app.environment}">
+                        <span style="padding: 2px 8px; border-radius: 3px; font-size: 0.8em; #{discoveryStatsBackingBean.getAppEnvironmentCss(app.environment)}">
+                            #{app.environment}
+                        </span>
+                    </p:column>
+
+                    <p:column headerText="URL" priority="1">
+                        <h:outputLink value="#{app.appUrl}" target="_blank" style="text-decoration: none;">
+                            <h:outputText value="#{app.appUrl}"/>
+                            <i class="pi pi-external-link" style="margin-left: 5px; font-size: 0.8em;"/>
+                        </h:outputLink>
+                    </p:column>
+
+                    <p:column headerText="Last Seen" priority="2" sortBy="#{app.lastSeenAt}">
+                        <h:outputText value="#{discoveryStatsBackingBean.formatLastSeen(app.lastSeenAt)}"/>
+                    </p:column>
+
+                    <p:column headerText="Version" priority="3">
+                        <h:outputText value="#{app.version}" style="font-family: monospace;"/>
+                    </p:column>
+
+                </p:dataTable>
+            </p:fieldset>
+
+            <!-- Active Users -->
+            <p:fieldset legend="Active Users (Last 24h)" style="margin-bottom: 20px;">
+                <p:dataTable id="usersTable"
+                             value="#{discoveryStatsBackingBean.userRows}"
+                             var="userRow"
+                             emptyMessage="No active users in last 24 hours"
+                             styleClass="modern-table"
+                             reflow="true"
+                             paginator="true"
+                             rows="20">
+
+                    <p:column headerText="Status" priority="1" style="width: 60px;">
+                        <i class="pi #{userRow.active ? 'pi-circle-fill' : 'pi-circle'}"
+                           style="color: #{userRow.active ? '#4CAF50' : '#999'};"/>
+                    </p:column>
+
+                    <p:column headerText="User" priority="1" sortBy="#{userRow.displayName}">
+                        <h:outputText value="#{userRow.displayName}" style="font-weight: bold;"/>
+                        <h:panelGroup rendered="#{userRow.userName != null and !userRow.userName.isBlank() and userRow.userName != userRow.userEmail}">
+                            <br/>
+                            <small style="color: #888; font-family: monospace;">#{userRow.userEmail}</small>
+                        </h:panelGroup>
+                    </p:column>
+
+                    <p:column headerText="Apps" priority="1">
+                        <ui:repeat value="#{userRow.sessions}" var="sess">
+                            <span style="display: inline-block; margin: 2px 4px 2px 0; padding: 2px 8px; border-radius: 3px; font-size: 0.8em; #{discoveryStatsBackingBean.getAppEnvironmentCss(sess.app.environment)}">
+                                #{sess.app.appName}
+                            </span>
+                        </ui:repeat>
+                    </p:column>
+
+                    <p:column headerText="Last Activity" priority="2" sortBy="#{userRow.lastActivity}">
+                        <h:outputText value="#{discoveryStatsBackingBean.formatLastSeen(userRow.lastActivity)}"/>
+                    </p:column>
+
+                </p:dataTable>
+            </p:fieldset>
+
+        </h:form>
+    </ui:define>
+
+</ui:composition>

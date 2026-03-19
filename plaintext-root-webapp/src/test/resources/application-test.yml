@@ -1,0 +1,32 @@
+# Test-spezifische Konfiguration für Playwright Integration Tests
+spring:
+  # Flyway für Tests deaktivieren (um Migrations-Probleme zu vermeiden)
+  flyway:
+    enabled: false
+
+  # JPA Konfiguration
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  # Security
+  security:
+    user:
+      name: admin
+      password: admin
+      roles: ADMIN
+
+# Server
+server:
+  port: 0  # Random port für Tests
+
+# Logging
+logging:
+  level:
+    root: WARN
+    ch.plaintext: INFO

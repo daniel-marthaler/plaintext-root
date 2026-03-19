@@ -1,0 +1,296 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui">
+
+    <div id="layout-config" class="layout-config">
+        <h:form id="config-form" styleClass="layout-config-form">
+            <input type="hidden" name="_csrf" value="#{_csrf.token}"/>
+            <h5 style="margin-top: 0">Menu Type</h5>
+            <p:selectOneRadio id="menuModeRadio" value="#{userPreferencesBackingBean.menuMode}" layout="pageDirection"
+                              onchange="handleChange('menuMode', this.value, function(val) { changeMenuMode(val); });">
+                <f:selectItem itemLabel="Horizontal" itemValue="layout-horizontal" />
+                <f:selectItem itemLabel="Sidebar" itemValue="layout-sidebar" />
+                <f:selectItem itemLabel="Slim" itemValue="layout-slim" />
+            </p:selectOneRadio>
+
+            <hr/>
+
+            <h5>Color Scheme</h5>
+            <p:selectOneRadio id="darkModeRadio" value="#{userPreferencesBackingBean.darkMode}" layout="pageDirection"
+                              onchange="handleChange('darkMode', this.value, function(val) { changeDarkMode(val); });">
+                <f:selectItem itemLabel="Light" itemValue="light" />
+                <f:selectItem itemLabel="Dark" itemValue="dark" />
+            </p:selectOneRadio>
+
+            <hr/>
+
+            <h5>Input Style</h5>
+            <p:selectOneRadio id="inputStyleRadio" value="#{userPreferencesBackingBean.inputStyle}" layout="pageDirection"
+                              onchange="handleChange('inputStyle', this.value, function(val) { changeInputStyle(val); });">
+                <f:selectItem itemLabel="Outlined" itemValue="outlined" />
+                <f:selectItem itemLabel="Filled" itemValue="filled" />
+            </p:selectOneRadio>
+
+            <hr/>
+
+            <h5>Theme Colors</h5>
+            <div class="layout-themes">
+                <ui:repeat value="#{userPreferencesBackingBean.componentThemes}" var="componentTheme">
+                    <div>
+                        <a href="#"
+                           style="background-color: #{componentTheme.color};"
+                           title="#{componentTheme.name}"
+                           onclick="changeThemeColor('#{componentTheme.file}'); return false;">
+                        </a>
+                    </div>
+                </ui:repeat>
+            </div>
+
+            <script>
+                //<![CDATA[
+                var currentComponentTheme = '#{userPreferencesBackingBean.componentTheme}';
+                var currentDarkMode = '#{userPreferencesBackingBean.darkMode}';
+                var currentMenuMode = '#{userPreferencesBackingBean.menuMode}';
+                var currentTopbarTheme = '#{userPreferencesBackingBean.topbarTheme}';
+                var currentMenuTheme = '#{userPreferencesBackingBean.menuTheme}';
+                var currentInputStyle = '#{userPreferencesBackingBean.inputStyle}';
+
+                var pendingPreferences = {};
+                var hasUnsavedChanges = false;
+                var isInitializing = true;
+                var autoSaveTimer = null;
+                var AUTO_SAVE_DELAY = 2000;
+                var cssChangeQueue = [];
+                var isCssChangeInProgress = false;
+
+                // Optimized CSS replacement
+                function optimizedChangeLayoutsTheme(darkMode) {
+                    try {
+                        var linkElement = document.querySelector('link[href*="layout-"]');
+                        if (linkElement) {
+                            var href = linkElement.getAttribute('href');
+                            var startIndexOf = href.indexOf('layout-') + 6;
+                            var endIndexOf = href.indexOf('.css');
+                            var currentColor = href.substring(startIndexOf, endIndexOf);
+                            linkElement.setAttribute('href', href.replace(currentColor, '-' + darkMode));
+                        }
+                    } catch (e) {
+                        console.error('Error in optimizedChangeLayoutsTheme:', e);
+                    }
+                }
+
+                function optimizedChangeComponentsTheme(themeColor, darkMode) {
+                    try {
+                        // Switch between saga (light) and arya (dark) PrimeFaces themes
+                        var newLibrary = darkMode === 'dark' ? 'arya' : 'saga';
+                        var linkElement = document.querySelector('link[href*="theme.css"]');
+                        if (linkElement) {
+                            var href = linkElement.getAttribute('href');
+                            // Replace saga-blue or arya-blue with the correct variant
+                            var newHref = href.replace(/primefaces-(saga|arya)-blue/, 'primefaces-' + newLibrary + '-blue');
+                            linkElement.setAttribute('href', newHref);
+                        }
+                    } catch (e) {
+                        console.error('Error in optimizedChangeComponentsTheme:', e);
+                    }
+                }
+
+                // Initialize UI
+                (function initializeUI() {
+                    try {
+                        setTimeout(function() {
+                            try {
+                                Plaintext.Configurator.changeLayoutsTheme(currentDarkMode);
+                                Plaintext.Configurator.changeSectionTheme(currentDarkMode, 'layout-topbar');
+                                Plaintext.Configurator.changeSectionTheme(currentDarkMode, 'layout-menu');
+                                Plaintext.Configurator.updateInputStyle(currentInputStyle);
+                            } catch (e) {
+                                console.error('Error applying visual themes:', e);
+                            }
+
+                            setTimeout(function() {
+                                cleanupOrphanedLinks();
+                                pendingPreferences = {};
+                                hasUnsavedChanges = false;
+                                isInitializing = false;
+                            }, 1000);
+                        }, 500);
+                    } catch (e) {
+                        console.error('Error initializing UI:', e);
+                        isInitializing = false;
+                    }
+                })();
+
+                function handleChange(key, value, visualChangeFunc) {
+                    if (isInitializing) return;
+
+                    pendingPreferences[key] = value;
+                    hasUnsavedChanges = true;
+
+                    if (visualChangeFunc) {
+                        queueCssChange(key, value, visualChangeFunc);
+                    }
+
+                    scheduleAutoSave();
+                }
+
+                function scheduleAutoSave() {
+                    if (autoSaveTimer) clearTimeout(autoSaveTimer);
+                    autoSaveTimer = setTimeout(function() {
+                        if (hasUnsavedChanges) saveAllPendingChanges();
+                    }, AUTO_SAVE_DELAY);
+                }
+
+                function queueCssChange(key, value, changeFunc) {
+                    cssChangeQueue = cssChangeQueue.filter(function(item) { return item.key !== key; });
+                    cssChangeQueue.push({ key: key, value: value, changeFunc: changeFunc });
+                    if (!isCssChangeInProgress) processCssQueue();
+                }
+
+                function processCssQueue() {
+                    if (cssChangeQueue.length === 0) { isCssChangeInProgress = false; return; }
+                    isCssChangeInProgress = true;
+                    var change = cssChangeQueue.shift();
+                    try {
+                        cleanupOrphanedLinks();
+                        change.changeFunc(change.value);
+                        switch(change.key) {
+                            case 'componentTheme': currentComponentTheme = change.value; break;
+                            case 'darkMode': currentDarkMode = change.value; break;
+                            case 'menuMode': currentMenuMode = change.value; break;
+                            case 'inputStyle': currentInputStyle = change.value; break;
+                        }
+                        setTimeout(processCssQueue, 300);
+                    } catch (e) {
+                        console.error('Error processing CSS change:', e);
+                        setTimeout(processCssQueue, 100);
+                    }
+                }
+
+                function cleanupOrphanedLinks() {
+                    try {
+                        ['theme.css', 'layout-'].forEach(function(pattern) {
+                            var links = document.querySelectorAll('link[href*="' + pattern + '"]');
+                            if (links.length > 1) {
+                                for (var i = 0; i < links.length - 1; i++) {
+                                    links[i].parentNode.removeChild(links[i]);
+                                }
+                            }
+                        });
+                    } catch (e) { }
+                }
+
+                window.addEventListener('beforeunload', function() {
+                    if (hasUnsavedChanges) saveAllPendingChanges();
+                });
+
+                document.addEventListener('click', function(e) {
+                    var configPanel = document.getElementById('layout-config');
+                    if (configPanel && !configPanel.contains(e.target) && hasUnsavedChanges) {
+                        saveAllPendingChanges();
+                    }
+                });
+
+                function saveAllPendingChanges() {
+                    if (!hasUnsavedChanges) return;
+                    try {
+                        var params = new URLSearchParams();
+                        for (var key in pendingPreferences) {
+                            params.append(key, pendingPreferences[key]);
+                        }
+                        // Add CSRF token
+                        var csrfInput = document.querySelector('#config-form input[name="_csrf"]');
+                        if (csrfInput) {
+                            params.append('_csrf', csrfInput.value);
+                        }
+
+                        fetch('/api/preferences/save', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                            body: params.toString(),
+                            keepalive: true
+                        })
+                        .then(function(response) {
+                            if (response.ok) {
+                                hasUnsavedChanges = false;
+                                pendingPreferences = {};
+                            }
+                        })
+                        .catch(function(error) {
+                            console.error('Error saving preferences:', error);
+                        });
+                    } catch (e) {
+                        console.error('Exception saving preferences:', e);
+                    }
+                }
+
+                function changeThemeColor(themeFile) {
+                    // 1. Find and swap color CSS
+                    var allLinks = document.getElementsByTagName('link');
+                    for (var i = 0; i < allLinks.length; i++) {
+                        var h = allLinks[i].getAttribute('href');
+                        if (h && h.indexOf('colors%2Fcolor-') > -1) {
+                            allLinks[i].setAttribute('href', h.replace(/color-[a-z]+/, 'color-' + themeFile));
+                            break;
+                        }
+                        if (h && h.indexOf('colors/color-') > -1) {
+                            allLinks[i].setAttribute('href', h.replace(/color-[a-z]+/, 'color-' + themeFile));
+                            break;
+                        }
+                    }
+
+                    // 2. Save to backend
+                    currentComponentTheme = themeFile;
+                    pendingPreferences['componentTheme'] = themeFile;
+                    hasUnsavedChanges = true;
+                    scheduleAutoSave();
+                }
+
+                function changeDarkMode(darkMode) {
+                    handleChange('darkMode', darkMode, function(mode) {
+                        document.documentElement.setAttribute('data-theme', mode);
+                        optimizedChangeLayoutsTheme(mode);
+                        optimizedChangeComponentsTheme(currentComponentTheme, mode);
+                        Plaintext.Configurator.changeSectionTheme(mode, 'layout-menu');
+                        Plaintext.Configurator.changeSectionTheme(mode, 'layout-topbar');
+                    });
+
+                    if (!isInitializing) {
+                        pendingPreferences['topbarTheme'] = darkMode;
+                        pendingPreferences['menuTheme'] = darkMode;
+                        currentTopbarTheme = darkMode;
+                        currentMenuTheme = darkMode;
+                    }
+                }
+
+                function changeMenuMode(menuMode) {
+                    try {
+                        var wrapper = document.querySelector('.layout-wrapper');
+                        if (wrapper) {
+                            wrapper.classList.remove('layout-sidebar', 'layout-slim', 'layout-horizontal', 'layout-static');
+                            wrapper.classList.add(menuMode);
+                            if (!isInitializing) {
+                                if (menuMode === 'layout-sidebar') {
+                                    wrapper.classList.add('layout-static');
+                                    pendingPreferences['menuStatic'] = 'true';
+                                } else {
+                                    pendingPreferences['menuStatic'] = 'false';
+                                }
+                            }
+                        }
+                        Plaintext.Configurator.clearLayoutState();
+                    } catch (e) {
+                        console.error('Error changing menu mode:', e);
+                    }
+                }
+
+                function changeInputStyle(inputStyle) {
+                    Plaintext.Configurator.updateInputStyle(inputStyle);
+                }
+                //]]>
+            </script>
+        </h:form>
+    </div>
+</ui:composition>

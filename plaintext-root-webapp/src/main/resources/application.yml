@@ -1,0 +1,68 @@
+spring:
+  application:
+    name: plaintext-root
+  profiles:
+    active: dev
+    include: discovery
+  config:
+    import: "optional:file:./plconfig/spring/application.yml"
+  main:
+    allow-circular-references: true
+    allow-bean-definition-overriding: true
+  servlet:
+    multipart:
+      max-file-size: 10MB
+  datasource:
+    url: jdbc:postgresql://localhost:5434/plaintext_root
+    username: plaintext
+    password: plaintext
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  docker:
+    compose:
+      enabled: false
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    out-of-order: true
+
+logging:
+  level:
+    root: WARN
+    ch.plaintext: DEBUG
+
+joinfaces:
+  faces-servlet:
+    url-mappings:
+      - "*.jsf"
+      - "*.xhtml"
+      - "*.html"
+      - "/faces/*"
+  primefaces:
+    theme: none
+
+mad:
+  autologin: true
+
+plaintext:
+  stage: ${PLAINTEXT_ENV:dev}
+  root:
+    version: '@project.version@'
+  menu:
+    scan-package: ch.plaintext
+
+discovery:
+  enabled: true
+  app:
+    id: ${DISCOVERY_APP_ID:plaintext-root}
+    name: ${PLAINTEXT_APP_NAME:Plaintext Root}
+    url: ${PLAINTEXT_APP_URL:http://localhost:8080}
+  mqtt:
+    broker: tcp://${DISCOVERY_MQTT_HOST:192.168.1.224}:${DISCOVERY_MQTT_PORT:1883}
+    client-id: plaintext-root-discovery

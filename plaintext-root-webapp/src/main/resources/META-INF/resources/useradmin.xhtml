@@ -1,0 +1,244 @@
+<ui:composition xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml" template="includes/template.xhtml">
+
+    <ui:define name="content">
+        <h:form id="fm">
+            <input type="hidden" name="_csrf" value="#{_csrf.token}"/>
+        <f:metadata>
+            <f:event type="preRenderView" listener="#{myUserBackingBean.checkAccess()}"/>
+        </f:metadata>
+
+        <style>
+            /* Defining column widths */
+            .label-column {
+                width: 30%;
+            }
+
+            .input-column {
+                width: 70%;
+            }
+
+            /* Ensuring that columns sum to less than 100% to avoid overflow */
+            .grid-example {
+                width: 100%;
+            }
+
+            /* Add spacing between rows in dialog */
+            .dialog-grid td {
+                padding: 8px 4px;
+            }
+
+            /* Button group styles - responsive */
+            .user-action-buttons {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+                gap: 10px;
+                margin-bottom: 10px;
+                margin-left: 10px;
+            }
+
+            /* Mobile optimizations */
+            @media screen and (max-width: 768px) {
+                .user-action-buttons {
+                    grid-template-columns: 1fr;
+                    margin-left: 0;
+                }
+
+                .user-action-buttons .ui-button {
+                    width: 100% !important;
+                    margin-left: 0 !important;
+                }
+            }
+        </style>
+
+        <p:growl id="messages" showDetail="true" life="3000"/>
+
+        <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+            <p:commandButton value="Ja" type="button" styleClass="ui-confirmdialog-yes"/>
+            <p:commandButton value="Nein" type="button" styleClass="ui-confirmdialog-no"/>
+        </p:confirmDialog>
+
+        <p:fieldset id="fs1" legend="Benutzer Liste">
+
+            <div class="user-action-buttons">
+                <p:commandButton value="Neuer Benutzer"
+                                 icon="pi pi-user-plus"
+                                 actionListener="#{myUserBackingBean.newUser()}"
+                                 oncomplete="PF('dlg').show()"
+                                 update="fm"
+                                 process="@this"/>
+
+                <p:commandButton value="Bearbeiten"
+                                 icon="pi pi-pencil"
+                                 actionListener="#{myUserBackingBean.select()}"
+                                 oncomplete="PF('dlg').show()"
+                                 update="fm"
+                                 process="@this"
+                                 disabled="#{myUserBackingBean.selected == null}"/>
+
+                <p:commandButton value="Benutzer löschen"
+                                 icon="pi pi-trash"
+                                 styleClass="ui-button-danger"
+                                 actionListener="#{myUserBackingBean.delete()}"
+                                 update="messages,tbl"
+                                 process="@this"
+                                 disabled="#{myUserBackingBean.selected == null}">
+                    <p:confirm header="Bestätigung" message="Wollen Sie Benutzer '#{myUserBackingBean.selected.username}' wirklich löschen?" icon="pi pi-exclamation-triangle"/>
+                </p:commandButton>
+            </div>
+
+            <p:dataTable emptyMessage="-"
+                         widgetVar="tbl"
+                         multiViewState="true"
+                         id="tbl"
+                         selectionMode="single"
+                         selection="#{myUserBackingBean.selected}"
+                         reflow="true"
+                         var="obj"
+                         rowKey="#{obj.id}"
+                         value="#{myUserBackingBean.users}"
+                         rowIndexVar="ri">
+
+                <p:ajax event="rowSelect" listener="#{myUserBackingBean.select()}" update="fm"/>
+                <p:ajax event="rowUnselect" listener="#{myUserBackingBean.clearSelection()}" update="fm"/>
+
+                <p:column headerText="ID" priority="5">
+                    <h:outputText value=" #{obj.id}" escape="false"/>
+                </p:column>
+
+                <p:column headerText="Benutzername" priority="1">
+                    <h:outputText value=" #{obj.username}" escape="false"/>
+                </p:column>
+
+                <p:column headerText="Mandat" priority="2">
+                    <h:outputText value=" #{obj.mandat}" escape="false"/>
+                </p:column>
+
+                <p:column headerText="Startseite" priority="3">
+                    <h:outputText value=" #{obj.startpage}" escape="false"/>
+                </p:column>
+
+                <p:column headerText="Rem.Me" priority="4">
+                    <p:commandButton icon="pi pi-trash"
+                                     styleClass="ui-button-danger"
+                                     actionListener="#{myUserBackingBean.deleteRememberMeForUser(obj.username)}"
+                                     update="fm:tbl"
+                                     process="@this"
+                                     disabled="#{!myUserBackingBean.hasRememberMeEntries(obj.username)}"
+                                     title="Delete RememberMe"/>
+                </p:column>
+
+                <p:column headerText="Impersonate" priority="5" rendered="#{myUserBackingBean.root}">
+                    <p:commandButton icon="pi pi-user-edit"
+                                     styleClass="ui-button-warning"
+                                     actionListener="#{myUserBackingBean.impersonateUser(obj)}"
+                                     update="@none"
+                                     process="@this"
+                                     disabled="#{obj.id == plaintextSecurity.id}"
+                                     title="Als dieser Benutzer anmelden">
+                        <p:confirm header="Bestätigung"
+                                   message="Wollen Sie sich wirklich als Benutzer '#{obj.username}' anmelden?"
+                                   icon="pi pi-exclamation-triangle"/>
+                    </p:commandButton>
+                </p:column>
+
+            </p:dataTable>
+
+            <p:dialog header="Benutzer Details" id="dlg" widgetVar="dlg" modal="true" columnClasses="label-column, input-column" showEffect="fade" hideEffect="fade" resizable="false" height="700">
+
+                <h:panelGrid columns="2" styleClass="dialog-grid">
+
+                    <h:outputText value="ID:" escape="false"/>
+                    <h:outputText value="#{myUserBackingBean.selected.id}" escape="false"/>
+
+                    <h:outputText value="Benutzername:" escape="false"/>
+                    <p:inputText id="username" size="45" value="#{myUserBackingBean.selected.username}" required="true" requiredMessage="Benutzername ist erforderlich">
+                        <f:validateRegex pattern="^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$"/>
+                        <p:ajax event="blur" update="messages" listener="#{myUserBackingBean.validateUsername()}"/>
+                    </p:inputText>
+
+                    <h:outputText value="Passwort:" escape="false"/>
+                    <p:password size="45" value="#{myUserBackingBean.selected.password}" required="#{myUserBackingBean.myUserPw == null or myUserBackingBean.myUserPw == ''}" requiredMessage="Passwort ist bei einem neuen Benutzer erforderlich"/>
+
+                    <h:outputText value="Ausgewählte Rollen:" escape="false"/>
+                    <h:panelGroup>
+                        <p:chips id="selectedRolesChips"
+                                 value="#{myUserBackingBean.selectedRolesList}"
+                                 max="20"
+                                 style="width: 450px;">
+                            <p:ajax event="itemSelect"
+                                    listener="#{myUserBackingBean.onSelectedRolesChanged()}"
+                                    update="availableRolesChips" />
+                            <p:ajax event="itemUnselect"
+                                    listener="#{myUserBackingBean.onSelectedRolesChanged()}"
+                                    update="availableRolesChips" />
+                        </p:chips>
+                        <small style="display: block; margin-top: 5px; color: #6c757d;">
+                            Rolle eingeben und Enter drücken. Klick auf X zum Entfernen.
+                        </small>
+                    </h:panelGroup>
+
+                    <h:outputText value="Verfügbare Rollen:" escape="false"/>
+                    <h:panelGroup>
+                        <p:chips id="availableRolesChips"
+                                 value="#{myUserBackingBean.availableRolesList}"
+                                 max="20"
+                                 style="width: 450px;">
+                            <p:ajax event="itemSelect"
+                                    listener="#{myUserBackingBean.onAvailableRolesChanged()}"
+                                    update="selectedRolesChips" />
+                            <p:ajax event="itemUnselect"
+                                    listener="#{myUserBackingBean.onAvailableRolesChanged()}"
+                                    update="selectedRolesChips" />
+                        </p:chips>
+                        <small style="display: block; margin-top: 5px; color: #6c757d;">
+                            Hier werden alle im System gefundenen Rollen angezeigt. Klick auf X um eine Rolle zu den ausgewählten Rollen hinzuzufügen.
+                        </small>
+                    </h:panelGroup>
+
+                    <h:outputText value="Mandat:" escape="false"/>
+                    <p:selectOneMenu value="#{myUserBackingBean.selected.mandat}"
+                                     editable="#{myUserBackingBean.root}"
+                                     disabled="#{!myUserBackingBean.root}"
+                                     style="width: 360px;">
+                        <f:selectItem itemLabel="-- Mandat wählen oder neu eingeben --" itemValue="" noSelectionOption="true"/>
+                        <f:selectItems value="#{myUserBackingBean.allMandate}"
+                                     var="m"
+                                     itemLabel="#{m}"
+                                     itemValue="#{m}"/>
+                    </p:selectOneMenu>
+
+                    <h:outputText value="Startseite:" escape="false"/>
+                    <p:inputText size="45" value="#{myUserBackingBean.selected.startpage}"/>
+
+                    <h:outputText value="AutologinKey:" escape="false"/>
+                    <h:panelGroup>
+                        <p:inputText id="autologinKeyInput" size="35" value="#{myUserBackingBean.selected.autologinKey}"/>
+                        <p:commandButton value="Generieren"
+                                         icon="pi pi-key"
+                                         actionListener="#{myUserBackingBean.generateAutologinKey()}"
+                                         update="autologinKeyInput"
+                                         process="@this"
+                                         style="margin-left: 5px;"/>
+                    </h:panelGroup>
+
+                    <br/>
+                    <h:panelGroup colspan="3" styleClass="dialog-buttons">
+                        <p:commandButton value="Speichern" icon="pi pi-check" action="#{myUserBackingBean.save()}" update="messages,fm:tbl,selectedRolesChips,availableRolesChips,mandatFm" oncomplete="if (args &amp;&amp; !args.validationFailed) PF('dlg').hide()"/>
+                    </h:panelGroup>
+
+                </h:panelGrid>
+            </p:dialog>
+
+        </p:fieldset>
+        </h:form>
+    </ui:define>
+</ui:composition>
+
+
+
+
+
