@@ -285,7 +285,6 @@ class DiscoveryServiceTest {
             when(sessionRepository.findByAppAndUserEmailAndSessionActiveTrue(localApp, "user@test.com"))
                 .thenReturn(Optional.empty());
             when(sessionRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
-            when(encryptionService.getPublicKeyString()).thenReturn("pub-key");
 
             String token = discoveryService.generateLoginToken("user@test.com");
 
@@ -325,7 +324,6 @@ class DiscoveryServiceTest {
             when(sessionRepository.findByAppAndUserEmailAndSessionActiveTrue(localApp, "user@test.com"))
                 .thenReturn(Optional.empty());
             when(sessionRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
-            when(encryptionService.getPublicKeyString()).thenReturn("pub-key");
 
             discoveryService.generateLoginToken("user@test.com");
 

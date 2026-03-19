@@ -4,7 +4,6 @@
 package ch.plaintext.menuesteuerung.service;
 
 import ch.plaintext.MenuRegistry;
-import ch.plaintext.MenuVisibilityProvider;
 import ch.plaintext.PlaintextSecurity;
 import ch.plaintext.menuesteuerung.model.MandateMenuConfig;
 import ch.plaintext.menuesteuerung.persistence.MandateMenuConfigRepository;
@@ -17,7 +16,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -25,17 +23,16 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 /**
- * Unit tests for MandateMenuVisibilityService whitelist/blacklist functionality.
+ * Comprehensive unit tests for MandateMenuVisibilityService.
  *
  * @author plaintext.ch
  * @since 1.39.0
  */
 @ExtendWith(MockitoExtension.class)
-@DisplayName("MandateMenuVisibilityService - Whitelist/Blacklist Tests")
+@DisplayName("MandateMenuVisibilityService Tests")
 class MandateMenuVisibilityServiceTest {
 
     @Mock
@@ -61,424 +58,199 @@ class MandateMenuVisibilityServiceTest {
     }
 
     @Nested
-    @DisplayName("Scenario 1: Whitelist Mode Active with Items")
-    class WhitelistActiveWithItems {
+    @DisplayName("isMenuVisible - Current Mandate")
+    class IsMenuVisibleCurrentMandate {
+
+        @Test
+        @DisplayName("Should show all menus when PlaintextSecurity is constructed with null")
+        void shouldShowAllMenusWhenSecurityIsNull() {
+            MandateMenuVisibilityService serviceWithNullSecurity =
+                    new MandateMenuVisibilityService(repository, null, menuRegistry);
+            assertTrue(serviceWithNullSecurity.isMenuVisible("AnyMenu"));
+        }
+
+        @Test
+        @DisplayName("Should delegate to isMenuVisibleForMandate with current mandate")
+        void shouldDelegateToIsMenuVisibleForMandate() {
+            when(plaintextSecurity.getMandat()).thenReturn("test-mandate");
+            testConfig.setHiddenMenus(new HashSet<>(Set.of("HiddenMenu")));
+            when(repository.findByMandateName("test-mandate")).thenReturn(Optional.of(testConfig));
+
+            assertFalse(service.isMenuVisible("HiddenMenu"));
+            assertTrue(service.isMenuVisible("VisibleMenu"));
+        }
+
+        @Test
+        @DisplayName("Should normalize mandate name to lowercase")
+        void shouldNormalizeMandateNameToLowercase() {
+            when(plaintextSecurity.getMandat()).thenReturn("TEST-MANDATE");
+            when(repository.findByMandateName("test-mandate")).thenReturn(Optional.empty());
+
+            assertTrue(service.isMenuVisible("AnyMenu"));
+            verify(repository).findByMandateName("test-mandate");
+        }
+
+        @Test
+        @DisplayName("Should show all menus when current mandate is null")
+        void shouldShowAllMenusWhenCurrentMandateIsNull() {
+            when(plaintextSecurity.getMandat()).thenReturn(null);
+            assertTrue(service.isMenuVisible("AnyMenu"));
+            verifyNoInteractions(repository);
+        }
+
+        @Test
+        @DisplayName("Should show all menus when current mandate is empty")
+        void shouldShowAllMenusWhenCurrentMandateIsEmpty() {
+            when(plaintextSecurity.getMandat()).thenReturn("");
+            assertTrue(service.isMenuVisible("AnyMenu"));
+            verifyNoInteractions(repository);
+        }
+    }
+
+    @Nested
+    @DisplayName("isMenuVisibleForMandate - Blacklist Mode")
+    class BlacklistMode {
+
+        @BeforeEach
+        void setup() {
+            testConfig.setWhitelistMode(false);
+            testConfig.setHiddenMenus(new HashSet<>(Set.of("HiddenMenu1", "HiddenMenu2", "HiddenMenu3")));
+            when(repository.findByMandateName("test-mandate")).thenReturn(Optional.of(testConfig));
+        }
+
+        @Test
+        @DisplayName("Should hide blacklisted items")
+        void shouldHideBlacklistedItems() {
+            assertFalse(service.isMenuVisibleForMandate("HiddenMenu1", "test-mandate"));
+            assertFalse(service.isMenuVisibleForMandate("HiddenMenu2", "test-mandate"));
+            assertFalse(service.isMenuVisibleForMandate("HiddenMenu3", "test-mandate"));
+        }
+
+        @Test
+        @DisplayName("Should show items not in blacklist")
+        void shouldShowItemsNotInBlacklist() {
+            assertTrue(service.isMenuVisibleForMandate("VisibleMenu1", "test-mandate"));
+            assertTrue(service.isMenuVisibleForMandate("VisibleMenu2", "test-mandate"));
+        }
+
+        @Test
+        @DisplayName("Should show all items when blacklist is empty")
+        void shouldShowAllItemsWhenBlacklistEmpty() {
+            testConfig.setHiddenMenus(new HashSet<>());
+            assertTrue(service.isMenuVisibleForMandate("AnyMenu", "test-mandate"));
+        }
+    }
+
+    @Nested
+    @DisplayName("isMenuVisibleForMandate - Whitelist Mode")
+    class WhitelistMode {
 
         @BeforeEach
         void setup() {
             testConfig.setWhitelistMode(true);
-            testConfig.setHiddenMenus(Set.of("Menu1", "Menu2", "Menu3"));
+            testConfig.setHiddenMenus(new HashSet<>(Set.of("Menu1", "Menu2", "Menu3")));
             when(repository.findByMandateName("test-mandate")).thenReturn(Optional.of(testConfig));
         }
 
         @Test
         @DisplayName("Should show only whitelisted items")
         void shouldShowOnlyWhitelistedItems() {
-            // Arrange
-            String whitelistedItem = "Menu1";
-            String nonWhitelistedItem = "Menu99";
-
-            // Act
-            boolean whitelistedVisible = service.isMenuVisibleForMandate(whitelistedItem, "test-mandate");
-            boolean nonWhitelistedVisible = service.isMenuVisibleForMandate(nonWhitelistedItem, "test-mandate");
-
-            // Assert
-            assertTrue(whitelistedVisible, "Whitelisted item should be visible");
-            assertFalse(nonWhitelistedVisible, "Non-whitelisted item should not be visible");
-        }
-
-        @Test
-        @DisplayName("Should show all items from whitelist set")
-        void shouldShowAllWhitelistItems() {
-            // Arrange
-            Set<String> whitelistSet = testConfig.getHiddenMenus();
-
-            // Act & Assert
-            for (String menu : whitelistSet) {
-                assertTrue(
-                    service.isMenuVisibleForMandate(menu, "test-mandate"),
-                    "Menu '" + menu + "' should be visible in whitelist mode"
-                );
-            }
+            assertTrue(service.isMenuVisibleForMandate("Menu1", "test-mandate"));
+            assertTrue(service.isMenuVisibleForMandate("Menu2", "test-mandate"));
+            assertTrue(service.isMenuVisibleForMandate("Menu3", "test-mandate"));
         }
 
         @Test
         @DisplayName("Should hide items not in whitelist")
         void shouldHideItemsNotInWhitelist() {
-            // Arrange
-            String[] otherMenus = {"OtherMenu", "AnotherMenu", "ThirdMenu"};
-
-            // Act & Assert
-            for (String menu : otherMenus) {
-                assertFalse(
-                    service.isMenuVisibleForMandate(menu, "test-mandate"),
-                    "Menu '" + menu + "' should be hidden in whitelist mode"
-                );
-            }
-        }
-    }
-
-    @Nested
-    @DisplayName("Scenario 2: Blacklist Mode Active with Items")
-    class BlacklistActiveWithItems {
-
-        @BeforeEach
-        void setup() {
-            testConfig.setWhitelistMode(false);
-            testConfig.setHiddenMenus(Set.of("HiddenMenu1", "HiddenMenu2", "HiddenMenu3"));
-            when(repository.findByMandateName("test-mandate")).thenReturn(Optional.of(testConfig));
-        }
-
-        @Test
-        @DisplayName("Should show all except blacklisted items")
-        void shouldShowAllExceptBlacklistedItems() {
-            // Arrange
-            String blacklistedItem = "HiddenMenu1";
-            String visibleItem = "VisibleMenu";
-
-            // Act
-            boolean blacklistedVisible = service.isMenuVisibleForMandate(blacklistedItem, "test-mandate");
-            boolean visibleItemVisible = service.isMenuVisibleForMandate(visibleItem, "test-mandate");
-
-            // Assert
-            assertFalse(blacklistedVisible, "Blacklisted item should be hidden");
-            assertTrue(visibleItemVisible, "Non-blacklisted item should be visible");
-        }
-
-        @Test
-        @DisplayName("Should hide all items from blacklist set")
-        void shouldHideAllBlacklistedItems() {
-            // Arrange
-            Set<String> blacklistSet = testConfig.getHiddenMenus();
-
-            // Act & Assert
-            for (String menu : blacklistSet) {
-                assertFalse(
-                    service.isMenuVisibleForMandate(menu, "test-mandate"),
-                    "Menu '" + menu + "' should be hidden in blacklist mode"
-                );
-            }
-        }
-
-        @Test
-        @DisplayName("Should show items not in blacklist")
-        void shouldShowItemsNotInBlacklist() {
-            // Arrange
-            String[] visibleMenus = {"VisibleMenu1", "VisibleMenu2", "VisibleMenu3"};
-
-            // Act & Assert
-            for (String menu : visibleMenus) {
-                assertTrue(
-                    service.isMenuVisibleForMandate(menu, "test-mandate"),
-                    "Menu '" + menu + "' should be visible in blacklist mode"
-                );
-            }
-        }
-    }
-
-    @Nested
-    @DisplayName("Scenario 3: Both Whitelist and Blacklist Active")
-    class BothModesConfigured {
-
-        @BeforeEach
-        void setup() {
-            // If both modes were somehow set (shouldn't happen in normal flow)
-            // Whitelist should take precedence
-            testConfig.setWhitelistMode(true);
-            testConfig.setHiddenMenus(Set.of("Menu1", "Menu2"));
-            when(repository.findByMandateName("test-mandate")).thenReturn(Optional.of(testConfig));
-        }
-
-        @Test
-        @DisplayName("Should treat whitelist mode as active regardless of data")
-        void whitelistTakesPrecedence() {
-            // This test verifies that when whitelistMode is true,
-            // the service treats hiddenMenus as whitelist items, not blacklist
-
-            // Arrange
-            String whitelistItem = "Menu1";
-            String nonWhitelistItem = "Menu99";
-
-            // Act
-            boolean whitelistVisible = service.isMenuVisibleForMandate(whitelistItem, "test-mandate");
-            boolean nonWhitelistVisible = service.isMenuVisibleForMandate(nonWhitelistItem, "test-mandate");
-
-            // Assert
-            assertTrue(whitelistVisible, "Whitelist item should be visible");
-            assertFalse(nonWhitelistVisible, "Non-whitelist item should not be visible");
-        }
-    }
-
-    @Nested
-    @DisplayName("Scenario 4: Neither Mode Active (Default Behavior)")
-    class NeitherModeActive {
-
-        @BeforeEach
-        void setup() {
-            testConfig.setWhitelistMode(false);
-            testConfig.setHiddenMenus(new HashSet<>()); // Empty list
-            when(repository.findByMandateName("test-mandate")).thenReturn(Optional.of(testConfig));
-        }
-
-        @Test
-        @DisplayName("Should show all items when blacklist is empty")
-        void shouldShowAllItemsWhenBlacklistEmpty() {
-            // Arrange
-            String[] allMenus = {"Menu1", "Menu2", "Menu3", "Menu4", "Menu5"};
-
-            // Act & Assert
-            for (String menu : allMenus) {
-                assertTrue(
-                    service.isMenuVisibleForMandate(menu, "test-mandate"),
-                    "Menu '" + menu + "' should be visible when blacklist is empty"
-                );
-            }
-        }
-
-        @Test
-        @DisplayName("Should treat null whitelistMode as false (blacklist mode)")
-        void shouldTreatNullWhitelistModeAsBlacklist() {
-            // Arrange
-            testConfig.setWhitelistMode(null);
-            String testMenu = "AnyMenu";
-
-            // Act
-            boolean visible = service.isMenuVisibleForMandate(testMenu, "test-mandate");
-
-            // Assert
-            assertTrue(visible, "Menu should be visible when whitelistMode is null (blacklist mode)");
-        }
-    }
-
-    @Nested
-    @DisplayName("Scenario 5: Empty Whitelist")
-    class EmptyWhitelist {
-
-        @BeforeEach
-        void setup() {
-            testConfig.setWhitelistMode(true);
-            testConfig.setHiddenMenus(new HashSet<>()); // Empty whitelist
-            when(repository.findByMandateName("test-mandate")).thenReturn(Optional.of(testConfig));
+            assertFalse(service.isMenuVisibleForMandate("OtherMenu", "test-mandate"));
+            assertFalse(service.isMenuVisibleForMandate("AnotherMenu", "test-mandate"));
         }
 
         @Test
         @DisplayName("Should hide all items when whitelist is empty")
         void shouldHideAllItemsWhenWhitelistEmpty() {
-            // Arrange
-            String[] allMenus = {"Menu1", "Menu2", "Menu3"};
-
-            // Act & Assert
-            for (String menu : allMenus) {
-                assertFalse(
-                    service.isMenuVisibleForMandate(menu, "test-mandate"),
-                    "Menu '" + menu + "' should be hidden when whitelist is empty"
-                );
-            }
-        }
-
-        @Test
-        @DisplayName("Should have defined behavior: nothing is visible")
-        void emptyWhitelistBehaviorIsDefinedAsHideAll() {
-            // This documents the expected behavior: empty whitelist = hide all
-
-            // Act
-            boolean anyMenuVisible = service.isMenuVisibleForMandate("AnyMenu", "test-mandate");
-
-            // Assert
-            assertFalse(anyMenuVisible, "Empty whitelist should hide all menus");
+            testConfig.setHiddenMenus(new HashSet<>());
+            assertFalse(service.isMenuVisibleForMandate("AnyMenu", "test-mandate"));
         }
     }
 
     @Nested
-    @DisplayName("Scenario 6: Empty Blacklist")
-    class EmptyBlacklist {
-
-        @BeforeEach
-        void setup() {
-            testConfig.setWhitelistMode(false);
-            testConfig.setHiddenMenus(new HashSet<>()); // Empty blacklist
-            when(repository.findByMandateName("test-mandate")).thenReturn(Optional.of(testConfig));
-        }
-
-        @Test
-        @DisplayName("Should show all items when blacklist is empty")
-        void shouldShowAllItemsWhenBlacklistEmpty() {
-            // Arrange
-            String[] allMenus = {"Menu1", "Menu2", "Menu3", "Menu4"};
-
-            // Act & Assert
-            for (String menu : allMenus) {
-                assertTrue(
-                    service.isMenuVisibleForMandate(menu, "test-mandate"),
-                    "Menu '" + menu + "' should be visible when blacklist is empty"
-                );
-            }
-        }
-    }
-
-    @Nested
-    @DisplayName("Scenario 7: Edge Cases - Null Values")
-    class EdgeCasesNullValues {
+    @DisplayName("isMenuVisibleForMandate - Edge Cases")
+    class IsMenuVisibleForMandateEdgeCases {
 
         @Test
         @DisplayName("Should handle null mandate gracefully")
         void shouldHandleNullMandate() {
-            // Act
-            boolean visible = service.isMenuVisibleForMandate("AnyMenu", null);
-
-            // Assert
-            assertTrue(visible, "Should show all items when mandate is null");
+            assertTrue(service.isMenuVisibleForMandate("AnyMenu", null));
         }
 
         @Test
         @DisplayName("Should handle empty mandate string")
         void shouldHandleEmptyMandateString() {
-            // Act
-            boolean visible = service.isMenuVisibleForMandate("AnyMenu", "");
-
-            // Assert
-            assertTrue(visible, "Should show all items when mandate is empty");
+            assertTrue(service.isMenuVisibleForMandate("AnyMenu", ""));
         }
 
         @Test
-        @DisplayName("Should handle missing configuration")
-        void shouldHandleMissingConfiguration() {
-            // Arrange
+        @DisplayName("Should show all menus when no configuration exists")
+        void shouldShowAllMenusWhenNoConfigExists() {
             when(repository.findByMandateName("unknown-mandate")).thenReturn(Optional.empty());
-
-            // Act
-            boolean visible = service.isMenuVisibleForMandate("AnyMenu", "unknown-mandate");
-
-            // Assert
-            assertTrue(visible, "Should show all items when no configuration exists");
+            assertTrue(service.isMenuVisibleForMandate("AnyMenu", "unknown-mandate"));
         }
 
         @Test
-        @DisplayName("Should handle null hiddenMenus set")
-        void shouldHandleNullHiddenMenus() {
-            // Arrange
+        @DisplayName("Should handle null hiddenMenus set in blacklist mode")
+        void shouldHandleNullHiddenMenusInBlacklistMode() {
             testConfig.setWhitelistMode(false);
             testConfig.setHiddenMenus(null);
             when(repository.findByMandateName("test-mandate")).thenReturn(Optional.of(testConfig));
 
-            // Act
-            boolean visible = service.isMenuVisibleForMandate("AnyMenu", "test-mandate");
-
-            // Assert
-            assertTrue(visible, "Should show all items when hiddenMenus is null");
+            assertTrue(service.isMenuVisibleForMandate("AnyMenu", "test-mandate"));
         }
 
         @Test
-        @DisplayName("Should throw NullPointerException for null menu title (expected behavior)")
-        void shouldThrowForNullMenuTitle() {
-            // Arrange
-            testConfig.setWhitelistMode(false);
-            testConfig.setHiddenMenus(Set.of("Menu1"));
+        @DisplayName("Should treat null whitelistMode as blacklist mode")
+        void shouldTreatNullWhitelistModeAsBlacklist() {
+            testConfig.setWhitelistMode(null);
+            testConfig.setHiddenMenus(new HashSet<>());
             when(repository.findByMandateName("test-mandate")).thenReturn(Optional.of(testConfig));
 
-            // Act & Assert - null menu title will cause NPE in contains() check
-            // This is documented expected behavior - caller must provide valid menu title
-            assertThrows(NullPointerException.class, () -> {
-                service.isMenuVisibleForMandate(null, "test-mandate");
-            }, "Null menu title causes NullPointerException (expected - must validate input)");
-        }
-    }
-
-    @Nested
-    @DisplayName("Scenario 7: Edge Cases - Concurrent Modifications")
-    class EdgeCasesConcurrentModifications {
-
-        @Test
-        @DisplayName("Should handle modification of hiddenMenus while checking visibility")
-        void shouldHandleModificationWhileChecking() throws InterruptedException {
-            // Arrange
-            testConfig.setWhitelistMode(false);
-            testConfig.setHiddenMenus(new HashSet<>(Set.of("Menu1", "Menu2")));
-            when(repository.findByMandateName("test-mandate")).thenReturn(Optional.of(testConfig));
-
-            // Simulate concurrent modification
-            Thread modificationThread = new Thread(() -> {
-                testConfig.getHiddenMenus().add("Menu3");
-            });
-
-            Thread checkThread = new Thread(() -> {
-                // This should complete without exception
-                service.isMenuVisibleForMandate("Menu1", "test-mandate");
-            });
-
-            // Act
-            modificationThread.start();
-            checkThread.start();
-            modificationThread.join();
-            checkThread.join();
-
-            // Assert - if we get here without exception, the test passes
-            assertTrue(true, "Concurrent access should be handled gracefully");
+            assertTrue(service.isMenuVisibleForMandate("AnyMenu", "test-mandate"));
         }
 
         @Test
-        @DisplayName("Should handle rapid mode toggles")
-        void shouldHandleRapidModeToggles() {
-            // Arrange
+        @DisplayName("Should handle null menu title gracefully in blacklist mode with HashSet")
+        void shouldHandleNullMenuTitleGracefully() {
             testConfig.setWhitelistMode(false);
             testConfig.setHiddenMenus(new HashSet<>(Set.of("Menu1")));
             when(repository.findByMandateName("test-mandate")).thenReturn(Optional.of(testConfig));
 
-            // Act - rapid mode changes
-            for (int i = 0; i < 100; i++) {
-                boolean oldMode = Boolean.TRUE.equals(testConfig.getWhitelistMode());
-                testConfig.setWhitelistMode(!oldMode);
-            }
-
-            // Final state should be consistent
-            boolean finalVisible = service.isMenuVisibleForMandate("Menu1", "test-mandate");
-
-            // Assert
-            assertNotNull(finalVisible, "Should return a boolean after rapid toggles");
+            // HashSet.contains(null) returns false rather than throwing NPE
+            assertTrue(service.isMenuVisibleForMandate(null, "test-mandate"));
         }
-    }
-
-    @Nested
-    @DisplayName("Scenario 8: Case Sensitivity and Normalization")
-    class CaseSensitivityAndNormalization {
 
         @Test
-        @DisplayName("Should handle case-insensitive mandate names")
-        void shouldHandleCaseInsensitiveMandateNames() {
-            // Arrange
-            testConfig.setMandateName("test-mandate");
+        @DisplayName("Should normalize mandate to lowercase for case-insensitive lookup")
+        void shouldNormalizeMandateToLowercase() {
             when(repository.findByMandateName("test-mandate")).thenReturn(Optional.of(testConfig));
-            testConfig.setWhitelistMode(false);
-            testConfig.setHiddenMenus(new HashSet<>());
 
-            // Act - different case variations
-            boolean visible1 = service.isMenuVisibleForMandate("Menu", "TEST-MANDATE");
-            boolean visible2 = service.isMenuVisibleForMandate("Menu", "test-mandate");
-            boolean visible3 = service.isMenuVisibleForMandate("Menu", "Test-Mandate");
+            service.isMenuVisibleForMandate("Menu", "TEST-MANDATE");
+            service.isMenuVisibleForMandate("Menu", "Test-Mandate");
+            service.isMenuVisibleForMandate("Menu", "test-mandate");
 
-            // Assert
-            assertTrue(visible1, "Should find mandate with uppercase");
-            assertTrue(visible2, "Should find mandate with lowercase");
-            assertTrue(visible3, "Should find mandate with mixed case");
+            verify(repository, times(3)).findByMandateName("test-mandate");
         }
 
         @Test
-        @DisplayName("Should preserve case sensitivity for menu titles")
+        @DisplayName("Should preserve case sensitivity for menu titles in whitelist")
         void shouldPreserveCaseSensitivityForMenuTitles() {
-            // Arrange
             testConfig.setWhitelistMode(true);
-            testConfig.setHiddenMenus(Set.of("Menu1"));
+            testConfig.setHiddenMenus(new HashSet<>(Set.of("Menu1")));
             when(repository.findByMandateName("test-mandate")).thenReturn(Optional.of(testConfig));
 
-            // Act
-            boolean lowercase = service.isMenuVisibleForMandate("menu1", "test-mandate");
-            boolean uppercase = service.isMenuVisibleForMandate("MENU1", "test-mandate");
-            boolean exact = service.isMenuVisibleForMandate("Menu1", "test-mandate");
-
-            // Assert
-            assertFalse(lowercase, "Lowercase variant should not match whitelist entry");
-            assertFalse(uppercase, "Uppercase variant should not match whitelist entry");
-            assertTrue(exact, "Exact case match should be in whitelist");
+            assertTrue(service.isMenuVisibleForMandate("Menu1", "test-mandate"));
+            assertFalse(service.isMenuVisibleForMandate("menu1", "test-mandate"));
+            assertFalse(service.isMenuVisibleForMandate("MENU1", "test-mandate"));
         }
     }
 
@@ -487,15 +259,12 @@ class MandateMenuVisibilityServiceTest {
     class ModeTransitionToggleBehavior {
 
         @Test
-        @DisplayName("Should correctly invert menu selection when toggling from blacklist to whitelist")
+        @DisplayName("Should correctly invert selection when toggling blacklist to whitelist")
         void shouldInvertSelectionOnToggle() {
-            // Arrange
             Set<String> allMenus = Set.of("Menu1", "Menu2", "Menu3", "Menu4", "Menu5");
-            testConfig.setWhitelistMode(false); // Start in blacklist mode
-            testConfig.setHiddenMenus(new HashSet<>(Set.of("Menu1", "Menu2"))); // Hide these
+            testConfig.setWhitelistMode(false);
+            testConfig.setHiddenMenus(new HashSet<>(Set.of("Menu1", "Menu2")));
 
-            // In blacklist: Menu1, Menu2 are hidden; Menu3, Menu4, Menu5 are visible
-            // When toggling to whitelist: the visible items become the whitelist
             Set<String> invertedSelection = new HashSet<>();
             for (String menu : allMenus) {
                 if (!testConfig.getHiddenMenus().contains(menu)) {
@@ -504,17 +273,277 @@ class MandateMenuVisibilityServiceTest {
             }
 
             testConfig.setHiddenMenus(invertedSelection);
-            testConfig.setWhitelistMode(true); // Toggle to whitelist mode
+            testConfig.setWhitelistMode(true);
 
             when(repository.findByMandateName("test-mandate")).thenReturn(Optional.of(testConfig));
 
-            // Act & Assert
-            // Now in whitelist mode, only previously visible items should be visible
             assertTrue(service.isMenuVisibleForMandate("Menu3", "test-mandate"));
             assertTrue(service.isMenuVisibleForMandate("Menu4", "test-mandate"));
             assertTrue(service.isMenuVisibleForMandate("Menu5", "test-mandate"));
             assertFalse(service.isMenuVisibleForMandate("Menu1", "test-mandate"));
             assertFalse(service.isMenuVisibleForMandate("Menu2", "test-mandate"));
+        }
+    }
+
+    @Nested
+    @DisplayName("getOrCreateConfig")
+    class GetOrCreateConfig {
+
+        @Test
+        @DisplayName("Should return existing config when found")
+        void shouldReturnExistingConfig() {
+            when(repository.findByMandateName("test-mandate")).thenReturn(Optional.of(testConfig));
+
+            MandateMenuConfig result = service.getOrCreateConfig("test-mandate");
+
+            assertEquals(testConfig, result);
+            verify(repository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("Should create and save new config when not found")
+        void shouldCreateAndSaveNewConfig() {
+            when(repository.findByMandateName("new-mandate")).thenReturn(Optional.empty());
+            MandateMenuConfig newConfig = new MandateMenuConfig();
+            newConfig.setMandateName("new-mandate");
+            when(repository.save(any(MandateMenuConfig.class))).thenReturn(newConfig);
+
+            MandateMenuConfig result = service.getOrCreateConfig("new-mandate");
+
+            assertNotNull(result);
+            assertEquals("new-mandate", result.getMandateName());
+            verify(repository).save(any(MandateMenuConfig.class));
+        }
+
+        @Test
+        @DisplayName("Should return empty config when repository throws exception")
+        void shouldReturnEmptyConfigOnException() {
+            when(repository.findByMandateName("error-mandate")).thenThrow(new RuntimeException("DB error"));
+
+            MandateMenuConfig result = service.getOrCreateConfig("error-mandate");
+
+            assertNotNull(result);
+            assertEquals("error-mandate", result.getMandateName());
+        }
+
+        @Test
+        @DisplayName("Should return empty config when repository is null")
+        void shouldReturnEmptyConfigWhenRepositoryIsNull() {
+            MandateMenuVisibilityService serviceWithNullRepo =
+                    new MandateMenuVisibilityService(null, plaintextSecurity, menuRegistry);
+
+            MandateMenuConfig result = serviceWithNullRepo.getOrCreateConfig("test-mandate");
+
+            assertNotNull(result);
+            assertEquals("test-mandate", result.getMandateName());
+        }
+    }
+
+    @Nested
+    @DisplayName("saveConfig - Single Entity")
+    class SaveConfigSingleEntity {
+
+        @Test
+        @DisplayName("Should delegate to repository save")
+        void shouldDelegateToRepositorySave() {
+            when(repository.save(testConfig)).thenReturn(testConfig);
+
+            MandateMenuConfig result = service.saveConfig(testConfig);
+
+            assertEquals(testConfig, result);
+            verify(repository).save(testConfig);
+        }
+    }
+
+    @Nested
+    @DisplayName("saveConfig - By Mandate Name with Whitelist Mode")
+    class SaveConfigByMandateNameWithMode {
+
+        @Test
+        @DisplayName("Should update existing config with whitelist mode")
+        void shouldUpdateExistingConfigWithWhitelistMode() {
+            when(repository.findByMandateName("test-mandate")).thenReturn(Optional.of(testConfig));
+            when(repository.save(any(MandateMenuConfig.class))).thenReturn(testConfig);
+
+            Set<String> menus = new HashSet<>(Set.of("Menu1", "Menu2"));
+            service.saveConfig("test-mandate", menus, true);
+
+            verify(repository).save(any(MandateMenuConfig.class));
+        }
+
+        @Test
+        @DisplayName("Should create new config when mandate does not exist")
+        void shouldCreateNewConfigWhenMandateDoesNotExist() {
+            when(repository.findByMandateName("new-mandate")).thenReturn(Optional.empty());
+            MandateMenuConfig newConfig = new MandateMenuConfig();
+            when(repository.save(any(MandateMenuConfig.class))).thenReturn(newConfig);
+
+            service.saveConfig("new-mandate", Set.of("Menu1"), false);
+
+            verify(repository).save(any(MandateMenuConfig.class));
+        }
+
+        @Test
+        @DisplayName("Should handle null hiddenMenus in saveConfig")
+        void shouldHandleNullHiddenMenusInSaveConfig() {
+            when(repository.findByMandateName("test-mandate")).thenReturn(Optional.of(testConfig));
+            when(repository.save(any(MandateMenuConfig.class))).thenReturn(testConfig);
+
+            service.saveConfig("test-mandate", null, false);
+
+            verify(repository).save(any(MandateMenuConfig.class));
+        }
+    }
+
+    @Nested
+    @DisplayName("saveConfig - By Mandate Name (Two-Arg Overload)")
+    class SaveConfigByMandateNameTwoArgs {
+
+        @Test
+        @DisplayName("Should default to blacklist mode")
+        void shouldDefaultToBlacklistMode() {
+            when(repository.findByMandateName("test-mandate")).thenReturn(Optional.of(testConfig));
+            when(repository.save(any(MandateMenuConfig.class))).thenReturn(testConfig);
+
+            service.saveConfig("test-mandate", Set.of("Menu1"));
+
+            verify(repository).save(argThat(config ->
+                    !Boolean.TRUE.equals(config.getWhitelistMode())));
+        }
+    }
+
+    @Nested
+    @DisplayName("deleteConfig")
+    class DeleteConfig {
+
+        @Test
+        @DisplayName("Should delegate to repository delete")
+        void shouldDelegateToRepositoryDelete() {
+            service.deleteConfig(testConfig);
+            verify(repository).delete(testConfig);
+        }
+    }
+
+    @Nested
+    @DisplayName("getAllMenuTitles")
+    class GetAllMenuTitles {
+
+        @Test
+        @DisplayName("Should return menu titles from registry")
+        void shouldReturnMenuTitlesFromRegistry() {
+            List<String> titles = List.of("Root | Admin", "Zeiterfassung", "Root | Mandate");
+            when(menuRegistry.getAllMenuTitles()).thenReturn(titles);
+
+            List<String> result = service.getAllMenuTitles();
+
+            assertEquals(3, result.size());
+            assertEquals(titles, result);
+        }
+
+        @Test
+        @DisplayName("Should return empty list when registry throws exception")
+        void shouldReturnEmptyListOnException() {
+            when(menuRegistry.getAllMenuTitles()).thenThrow(new RuntimeException("Registry error"));
+
+            List<String> result = service.getAllMenuTitles();
+
+            assertNotNull(result);
+            assertTrue(result.isEmpty());
+        }
+    }
+
+    @Nested
+    @DisplayName("getAllConfigs")
+    class GetAllConfigs {
+
+        @Test
+        @DisplayName("Should return all configs from repository")
+        void shouldReturnAllConfigsFromRepository() {
+            MandateMenuConfig config1 = new MandateMenuConfig();
+            config1.setMandateName("mandate1");
+            MandateMenuConfig config2 = new MandateMenuConfig();
+            config2.setMandateName("mandate2");
+
+            when(repository.findAll()).thenReturn(List.of(config1, config2));
+
+            List<MandateMenuConfig> result = service.getAllConfigs();
+
+            assertEquals(2, result.size());
+        }
+
+        @Test
+        @DisplayName("Should return empty list when no configs exist")
+        void shouldReturnEmptyListWhenNoConfigsExist() {
+            when(repository.findAll()).thenReturn(List.of());
+
+            List<MandateMenuConfig> result = service.getAllConfigs();
+
+            assertTrue(result.isEmpty());
+        }
+    }
+
+    @Nested
+    @DisplayName("init")
+    class Init {
+
+        @Test
+        @DisplayName("Should not throw during initialization")
+        void shouldNotThrowDuringInit() {
+            assertDoesNotThrow(() -> service.init());
+        }
+    }
+
+    @Nested
+    @DisplayName("MenuVisibilityProvider Interface Contract")
+    class InterfaceContract {
+
+        @Test
+        @DisplayName("Should implement MenuVisibilityProvider")
+        void shouldImplementMenuVisibilityProvider() {
+            assertTrue(service instanceof ch.plaintext.MenuVisibilityProvider,
+                    "Service should implement MenuVisibilityProvider");
+        }
+    }
+
+    @Nested
+    @DisplayName("Concurrent Modifications")
+    class ConcurrentModifications {
+
+        @Test
+        @DisplayName("Should handle modification of hiddenMenus while checking visibility")
+        void shouldHandleModificationWhileChecking() throws InterruptedException {
+            testConfig.setWhitelistMode(false);
+            testConfig.setHiddenMenus(new HashSet<>(Set.of("Menu1", "Menu2")));
+            when(repository.findByMandateName("test-mandate")).thenReturn(Optional.of(testConfig));
+
+            Thread modificationThread = new Thread(() ->
+                    testConfig.getHiddenMenus().add("Menu3"));
+
+            Thread checkThread = new Thread(() ->
+                    service.isMenuVisibleForMandate("Menu1", "test-mandate"));
+
+            modificationThread.start();
+            checkThread.start();
+            modificationThread.join();
+            checkThread.join();
+
+            assertTrue(true, "Concurrent access should be handled gracefully");
+        }
+
+        @Test
+        @DisplayName("Should handle rapid mode toggles")
+        void shouldHandleRapidModeToggles() {
+            testConfig.setWhitelistMode(false);
+            testConfig.setHiddenMenus(new HashSet<>(Set.of("Menu1")));
+            when(repository.findByMandateName("test-mandate")).thenReturn(Optional.of(testConfig));
+
+            for (int i = 0; i < 100; i++) {
+                boolean oldMode = Boolean.TRUE.equals(testConfig.getWhitelistMode());
+                testConfig.setWhitelistMode(!oldMode);
+            }
+
+            boolean finalVisible = service.isMenuVisibleForMandate("Menu1", "test-mandate");
+            assertNotNull(finalVisible);
         }
     }
 
@@ -525,33 +554,27 @@ class MandateMenuVisibilityServiceTest {
         @Test
         @DisplayName("Should save whitelist configuration correctly")
         void shouldSaveWhitelistConfig() {
-            // Arrange
             Set<String> whitelist = Set.of("Menu1", "Menu2", "Menu3");
             when(repository.findByMandateName("test-mandate")).thenReturn(Optional.of(testConfig));
             when(repository.save(any(MandateMenuConfig.class))).thenReturn(testConfig);
 
-            // Act
             MandateMenuConfig saved = service.saveConfig("test-mandate", whitelist, true);
 
-            // Assert
             verify(repository).save(any(MandateMenuConfig.class));
-            assertTrue(Boolean.TRUE.equals(saved.getWhitelistMode()), "Whitelist mode should be true");
+            assertTrue(Boolean.TRUE.equals(saved.getWhitelistMode()));
         }
 
         @Test
         @DisplayName("Should save blacklist configuration correctly")
         void shouldSaveBlacklistConfig() {
-            // Arrange
             Set<String> blacklist = Set.of("HiddenMenu1", "HiddenMenu2");
             when(repository.findByMandateName("test-mandate")).thenReturn(Optional.of(testConfig));
             when(repository.save(any(MandateMenuConfig.class))).thenReturn(testConfig);
 
-            // Act
             MandateMenuConfig saved = service.saveConfig("test-mandate", blacklist, false);
 
-            // Assert
             verify(repository).save(any(MandateMenuConfig.class));
-            assertFalse(Boolean.TRUE.equals(saved.getWhitelistMode()), "Whitelist mode should be false");
+            assertFalse(Boolean.TRUE.equals(saved.getWhitelistMode()));
         }
     }
 }

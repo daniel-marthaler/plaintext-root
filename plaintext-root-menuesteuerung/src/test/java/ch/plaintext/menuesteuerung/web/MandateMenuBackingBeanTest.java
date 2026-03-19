@@ -21,19 +21,16 @@ import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 /**
- * Unit tests for MandateMenuBackingBean.
+ * Comprehensive unit tests for MandateMenuBackingBean.
  *
  * @author plaintext.ch
  * @since 1.39.0
  */
 @ExtendWith(MockitoExtension.class)
-@DisplayName("MandateMenuBackingBean - Whitelist/Blacklist Tests")
+@DisplayName("MandateMenuBackingBean Tests")
 class MandateMenuBackingBeanTest {
 
     @Mock
@@ -56,6 +53,157 @@ class MandateMenuBackingBeanTest {
     }
 
     @Nested
+    @DisplayName("selectAll")
+    class SelectAll {
+
+        @Test
+        @DisplayName("Should set all available menus as hidden")
+        void shouldSetAllAvailableMenusAsHidden() {
+            backingBean.setSelected(testConfig);
+            backingBean.setAvailableMenus(List.of("Menu1", "Menu2", "Menu3"));
+
+            backingBean.selectAll();
+
+            assertEquals(3, testConfig.getHiddenMenus().size());
+            assertTrue(testConfig.getHiddenMenus().containsAll(Set.of("Menu1", "Menu2", "Menu3")));
+        }
+
+        @Test
+        @DisplayName("Should handle empty available menus")
+        void shouldHandleEmptyAvailableMenus() {
+            backingBean.setSelected(testConfig);
+            backingBean.setAvailableMenus(new ArrayList<>());
+
+            backingBean.selectAll();
+
+            assertTrue(testConfig.getHiddenMenus().isEmpty());
+        }
+
+        @Test
+        @DisplayName("Should not throw when selected is null")
+        void shouldNotThrowWhenSelectedIsNull() {
+            backingBean.setSelected(null);
+            backingBean.setAvailableMenus(List.of("Menu1"));
+
+            assertDoesNotThrow(() -> backingBean.selectAll());
+        }
+
+        @Test
+        @DisplayName("Should replace existing selection with all menus")
+        void shouldReplaceExistingSelectionWithAllMenus() {
+            testConfig.setHiddenMenus(new HashSet<>(Set.of("Menu1")));
+            backingBean.setSelected(testConfig);
+            backingBean.setAvailableMenus(List.of("Menu1", "Menu2", "Menu3", "Menu4"));
+
+            backingBean.selectAll();
+
+            assertEquals(4, testConfig.getHiddenMenus().size());
+        }
+    }
+
+    @Nested
+    @DisplayName("deselectAll")
+    class DeselectAll {
+
+        @Test
+        @DisplayName("Should clear all hidden menus")
+        void shouldClearAllHiddenMenus() {
+            testConfig.setHiddenMenus(new HashSet<>(Set.of("Menu1", "Menu2", "Menu3")));
+            backingBean.setSelected(testConfig);
+
+            backingBean.deselectAll();
+
+            assertTrue(testConfig.getHiddenMenus().isEmpty());
+        }
+
+        @Test
+        @DisplayName("Should handle already empty hidden menus")
+        void shouldHandleAlreadyEmptyHiddenMenus() {
+            testConfig.setHiddenMenus(new HashSet<>());
+            backingBean.setSelected(testConfig);
+
+            backingBean.deselectAll();
+
+            assertTrue(testConfig.getHiddenMenus().isEmpty());
+        }
+
+        @Test
+        @DisplayName("Should not throw when selected is null")
+        void shouldNotThrowWhenSelectedIsNull() {
+            backingBean.setSelected(null);
+
+            assertDoesNotThrow(() -> backingBean.deselectAll());
+        }
+    }
+
+    @Nested
+    @DisplayName("invertSelection")
+    class InvertSelection {
+
+        @Test
+        @DisplayName("Should invert selection correctly")
+        void shouldInvertSelectionCorrectly() {
+            testConfig.setHiddenMenus(new HashSet<>(Set.of("Menu1", "Menu2")));
+            backingBean.setSelected(testConfig);
+            backingBean.setAvailableMenus(List.of("Menu1", "Menu2", "Menu3", "Menu4", "Menu5"));
+
+            backingBean.invertSelection();
+
+            assertEquals(3, testConfig.getHiddenMenus().size());
+            assertTrue(testConfig.getHiddenMenus().containsAll(Set.of("Menu3", "Menu4", "Menu5")));
+            assertFalse(testConfig.getHiddenMenus().contains("Menu1"));
+            assertFalse(testConfig.getHiddenMenus().contains("Menu2"));
+        }
+
+        @Test
+        @DisplayName("Should select all when none are selected")
+        void shouldSelectAllWhenNoneSelected() {
+            testConfig.setHiddenMenus(new HashSet<>());
+            backingBean.setSelected(testConfig);
+            backingBean.setAvailableMenus(List.of("Menu1", "Menu2", "Menu3"));
+
+            backingBean.invertSelection();
+
+            assertEquals(3, testConfig.getHiddenMenus().size());
+            assertTrue(testConfig.getHiddenMenus().containsAll(Set.of("Menu1", "Menu2", "Menu3")));
+        }
+
+        @Test
+        @DisplayName("Should deselect all when all are selected")
+        void shouldDeselectAllWhenAllSelected() {
+            testConfig.setHiddenMenus(new HashSet<>(Set.of("Menu1", "Menu2", "Menu3")));
+            backingBean.setSelected(testConfig);
+            backingBean.setAvailableMenus(List.of("Menu1", "Menu2", "Menu3"));
+
+            backingBean.invertSelection();
+
+            assertTrue(testConfig.getHiddenMenus().isEmpty());
+        }
+
+        @Test
+        @DisplayName("Should not throw when selected is null")
+        void shouldNotThrowWhenSelectedIsNull() {
+            backingBean.setSelected(null);
+            backingBean.setAvailableMenus(List.of("Menu1"));
+
+            assertDoesNotThrow(() -> backingBean.invertSelection());
+        }
+
+        @Test
+        @DisplayName("Should handle null hiddenMenus gracefully")
+        void shouldHandleNullHiddenMenusGracefully() {
+            testConfig.setHiddenMenus(null);
+            backingBean.setSelected(testConfig);
+            backingBean.setAvailableMenus(List.of("Menu1", "Menu2"));
+
+            backingBean.invertSelection();
+
+            assertEquals(2, testConfig.getHiddenMenus().size());
+            assertTrue(testConfig.getHiddenMenus().containsAll(Set.of("Menu1", "Menu2")));
+        }
+    }
+
+    @Nested
     @DisplayName("Mode Toggle - Whitelist to Blacklist")
     class ModeToggleWhitelistToBlacklist {
 
@@ -68,20 +216,13 @@ class MandateMenuBackingBeanTest {
         @Test
         @DisplayName("Should toggle from blacklist to whitelist and invert selection")
         void shouldToggleBlacklistToWhitelist() {
-            // Arrange
             testConfig.setWhitelistMode(false);
             testConfig.setHiddenMenus(new HashSet<>(Set.of("Menu1", "Menu2")));
-            // In blacklist: Menu1, Menu2 hidden; Menu3, Menu4, Menu5 visible
 
-            // Act
             backingBean.toggleMode();
 
-            // Assert
-            assertTrue(Boolean.TRUE.equals(testConfig.getWhitelistMode()), "Should switch to whitelist mode");
-            // Now the whitelist should contain the previously visible items
-            assertTrue(testConfig.getHiddenMenus().contains("Menu3"));
-            assertTrue(testConfig.getHiddenMenus().contains("Menu4"));
-            assertTrue(testConfig.getHiddenMenus().contains("Menu5"));
+            assertTrue(Boolean.TRUE.equals(testConfig.getWhitelistMode()));
+            assertTrue(testConfig.getHiddenMenus().containsAll(Set.of("Menu3", "Menu4", "Menu5")));
             assertFalse(testConfig.getHiddenMenus().contains("Menu1"));
             assertFalse(testConfig.getHiddenMenus().contains("Menu2"));
         }
@@ -89,20 +230,13 @@ class MandateMenuBackingBeanTest {
         @Test
         @DisplayName("Should toggle from whitelist to blacklist and invert selection")
         void shouldToggleWhitelistToBlacklist() {
-            // Arrange
             testConfig.setWhitelistMode(true);
             testConfig.setHiddenMenus(new HashSet<>(Set.of("Menu1", "Menu2")));
-            // In whitelist: Menu1, Menu2 visible; Menu3, Menu4, Menu5 hidden
 
-            // Act
             backingBean.toggleMode();
 
-            // Assert
-            assertFalse(Boolean.TRUE.equals(testConfig.getWhitelistMode()), "Should switch to blacklist mode");
-            // Now the blacklist should contain the previously hidden items
-            assertTrue(testConfig.getHiddenMenus().contains("Menu3"));
-            assertTrue(testConfig.getHiddenMenus().contains("Menu4"));
-            assertTrue(testConfig.getHiddenMenus().contains("Menu5"));
+            assertFalse(Boolean.TRUE.equals(testConfig.getWhitelistMode()));
+            assertTrue(testConfig.getHiddenMenus().containsAll(Set.of("Menu3", "Menu4", "Menu5")));
             assertFalse(testConfig.getHiddenMenus().contains("Menu1"));
             assertFalse(testConfig.getHiddenMenus().contains("Menu2"));
         }
@@ -121,192 +255,238 @@ class MandateMenuBackingBeanTest {
         @Test
         @DisplayName("Should handle toggle with null selected mandate")
         void shouldHandleToggleWithNullSelected() {
-            // Arrange
             backingBean.setSelected(null);
 
-            // Act & Assert
-            assertDoesNotThrow(() -> backingBean.toggleMode(), "Should not throw when selected is null");
+            assertDoesNotThrow(() -> backingBean.toggleMode());
         }
 
         @Test
         @DisplayName("Should handle toggle with empty available menus")
         void shouldHandleToggleWithEmptyMenus() {
-            // Arrange
             testConfig.setWhitelistMode(false);
             testConfig.setHiddenMenus(new HashSet<>(Set.of("Menu1")));
             backingBean.setAvailableMenus(new ArrayList<>());
 
-            // Act
             backingBean.toggleMode();
 
-            // Assert
-            assertNotNull(testConfig.getHiddenMenus(), "Hidden menus should not be null");
+            assertNotNull(testConfig.getHiddenMenus());
         }
 
         @Test
-        @DisplayName("Should have null hidden menus in configuration")
-        void shouldHaveNullHiddenMenusInConfiguration() {
-            // Arrange
-            testConfig.setWhitelistMode(false);
-            testConfig.setHiddenMenus(null);
-            backingBean.setAvailableMenus(List.of("Menu1", "Menu2"));
-            backingBean.setSelected(testConfig);
-
-            // Assert - verify null state
-            assertNull(testConfig.getHiddenMenus(),
-                "Hidden menus can be null in configuration");
-        }
-
-        @Test
-        @DisplayName("Should invert empty whitelist to all menus")
+        @DisplayName("Should invert empty whitelist to all menus as blacklist")
         void shouldInvertEmptyWhitelistToAllMenus() {
-            // Arrange
             testConfig.setWhitelistMode(true);
-            testConfig.setHiddenMenus(new HashSet<>()); // Empty whitelist
+            testConfig.setHiddenMenus(new HashSet<>());
             List<String> allMenus = List.of("Menu1", "Menu2", "Menu3");
             backingBean.setAvailableMenus(allMenus);
 
-            // Act
             backingBean.toggleMode();
 
-            // Assert
-            assertFalse(Boolean.TRUE.equals(testConfig.getWhitelistMode()), "Should be in blacklist mode");
-            assertEquals(3, testConfig.getHiddenMenus().size(), "Should have all menus as hidden");
+            assertFalse(Boolean.TRUE.equals(testConfig.getWhitelistMode()));
+            assertEquals(3, testConfig.getHiddenMenus().size());
+        }
+
+        @Test
+        @DisplayName("Double toggle should return to original state")
+        void doubleToggleShouldReturnToOriginalState() {
+            testConfig.setWhitelistMode(false);
+            testConfig.setHiddenMenus(new HashSet<>(Set.of("Menu1", "Menu2")));
+            backingBean.setAvailableMenus(List.of("Menu1", "Menu2", "Menu3", "Menu4"));
+
+            boolean originalMode = Boolean.TRUE.equals(testConfig.getWhitelistMode());
+            Set<String> originalHidden = new HashSet<>(testConfig.getHiddenMenus());
+
+            backingBean.toggleMode();
+            backingBean.toggleMode();
+
+            assertEquals(originalMode, Boolean.TRUE.equals(testConfig.getWhitelistMode()));
+            assertEquals(originalHidden, testConfig.getHiddenMenus());
         }
     }
 
     @Nested
-    @DisplayName("Configuration Save - Whitelist/Blacklist Preservation")
-    class ConfigurationSavePreservation {
+    @DisplayName("initDetail")
+    class InitDetail {
 
         @Test
-        @DisplayName("Should call service to save whitelist configuration")
-        void shouldCallServiceToSaveWhitelistConfig() {
-            // Arrange
-            testConfig.setMandateName("test-mandate");
+        @DisplayName("Should create new MandateMenuConfig when selected is null")
+        void shouldCreateNewConfigWhenSelectedIsNull() {
+            backingBean.setSelected(null);
+
+            backingBean.initDetail();
+
+            assertNotNull(backingBean.getSelected());
+        }
+
+        @Test
+        @DisplayName("Should preserve whitelist mode during initialization")
+        void shouldPreserveWhitelistModeDuringInit() {
             testConfig.setWhitelistMode(true);
-            testConfig.setHiddenMenus(new HashSet<>(Set.of("Menu1", "Menu2", "Menu3")));
+            testConfig.setHiddenMenus(new HashSet<>(Set.of("Menu1", "Menu2")));
             backingBean.setSelected(testConfig);
 
-            // Verify configuration is properly set
-            assertTrue(Boolean.TRUE.equals(testConfig.getWhitelistMode()),
-                "Should be in whitelist mode");
-            assertEquals(3, testConfig.getHiddenMenus().size(),
-                "Should have 3 items");
+            backingBean.initDetail();
+
+            assertTrue(Boolean.TRUE.equals(backingBean.getSelected().getWhitelistMode()));
+            assertNotNull(backingBean.getSelected().getHiddenMenus());
         }
 
         @Test
-        @DisplayName("Should have correct mode flag for blacklist configuration")
-        void shouldHaveCorrectModeFlagForBlacklistConfig() {
-            // Arrange
-            testConfig.setMandateName("test-mandate");
-            testConfig.setWhitelistMode(false);
-            testConfig.setHiddenMenus(new HashSet<>(Set.of("HiddenMenu1", "HiddenMenu2")));
+        @DisplayName("Should copy hiddenMenus to new HashSet to avoid lazy loading issues")
+        void shouldCopyHiddenMenusToNewHashSet() {
+            Set<String> originalSet = new HashSet<>(Set.of("Menu1"));
+            testConfig.setHiddenMenus(originalSet);
             backingBean.setSelected(testConfig);
 
-            // Assert
-            assertFalse(Boolean.TRUE.equals(testConfig.getWhitelistMode()),
-                "Should be in blacklist mode");
-            assertEquals(2, testConfig.getHiddenMenus().size(),
-                "Should have 2 items");
+            backingBean.initDetail();
+
+            assertNotNull(backingBean.getSelected().getHiddenMenus());
+            assertEquals(originalSet, backingBean.getSelected().getHiddenMenus());
+            // The content should be equal but ideally a different object
+            assertTrue(backingBean.getSelected().getHiddenMenus().contains("Menu1"));
         }
 
         @Test
-        @DisplayName("Should preserve mode flag in configuration")
+        @DisplayName("Should handle null hiddenMenus during initDetail")
+        void shouldHandleNullHiddenMenusDuringInitDetail() {
+            testConfig.setHiddenMenus(null);
+            backingBean.setSelected(testConfig);
+
+            assertDoesNotThrow(() -> backingBean.initDetail());
+        }
+    }
+
+    @Nested
+    @DisplayName("selectMandate")
+    class SelectMandate {
+
+        @Test
+        @DisplayName("Should not throw when selected is set")
+        void shouldNotThrowWhenSelectedIsSet() {
+            backingBean.setSelected(testConfig);
+            assertDoesNotThrow(() -> backingBean.selectMandate());
+        }
+
+        @Test
+        @DisplayName("Should not throw when selected is null")
+        void shouldNotThrowWhenSelectedIsNull() {
+            backingBean.setSelected(null);
+            assertDoesNotThrow(() -> backingBean.selectMandate());
+        }
+    }
+
+    @Nested
+    @DisplayName("getAllMandate")
+    class GetAllMandate {
+
+        @Test
+        @DisplayName("Should always include default mandate")
+        void shouldAlwaysIncludeDefaultMandate() {
+            List<String> result = backingBean.getAllMandate();
+            assertTrue(result.contains("default"));
+        }
+
+        @Test
+        @DisplayName("Should return sorted list")
+        void shouldReturnSortedList() {
+            when(plaintextSecurity.getAllMandate()).thenReturn(Set.of("zeta", "alpha", "beta"));
+
+            List<String> result = backingBean.getAllMandate();
+
+            for (int i = 0; i < result.size() - 1; i++) {
+                assertTrue(result.get(i).compareTo(result.get(i + 1)) <= 0,
+                        "List should be sorted: " + result.get(i) + " <= " + result.get(i + 1));
+            }
+        }
+
+        @Test
+        @DisplayName("Should include mandates from security system")
+        void shouldIncludeMandatesFromSecuritySystem() {
+            when(plaintextSecurity.getAllMandate()).thenReturn(Set.of("mandate1", "mandate2"));
+
+            List<String> result = backingBean.getAllMandate();
+
+            assertTrue(result.contains("mandate1"));
+            assertTrue(result.contains("mandate2"));
+            assertTrue(result.contains("default"));
+        }
+
+        @Test
+        @DisplayName("Should handle null from security system")
+        void shouldHandleNullFromSecuritySystem() {
+            when(plaintextSecurity.getAllMandate()).thenReturn(null);
+
+            List<String> result = backingBean.getAllMandate();
+
+            assertNotNull(result);
+            assertTrue(result.contains("default"));
+        }
+
+        @Test
+        @DisplayName("Should handle empty set from security system")
+        void shouldHandleEmptySetFromSecuritySystem() {
+            when(plaintextSecurity.getAllMandate()).thenReturn(Set.of());
+
+            List<String> result = backingBean.getAllMandate();
+
+            assertNotNull(result);
+            assertTrue(result.contains("default"));
+            assertEquals(1, result.size());
+        }
+
+        @Test
+        @DisplayName("Should handle exception from security system")
+        void shouldHandleExceptionFromSecuritySystem() {
+            when(plaintextSecurity.getAllMandate()).thenThrow(new RuntimeException("Security error"));
+
+            List<String> result = backingBean.getAllMandate();
+
+            assertNotNull(result);
+            assertTrue(result.contains("default"));
+        }
+    }
+
+    @Nested
+    @DisplayName("Configuration State Preservation")
+    class ConfigurationStatePreservation {
+
+        @Test
+        @DisplayName("Should preserve whitelist mode flag in configuration")
         void shouldPreserveModeFlag() {
-            // Arrange
             testConfig.setMandateName("mandate1");
             testConfig.setWhitelistMode(true);
             testConfig.setHiddenMenus(new HashSet<>(Set.of("Menu1")));
             backingBean.setSelected(testConfig);
 
-            // Assert - verify mode is preserved
-            assertTrue(Boolean.TRUE.equals(testConfig.getWhitelistMode()),
-                "Whitelist mode should be true");
-            assertTrue(testConfig.getHiddenMenus().contains("Menu1"),
-                "Menu1 should be in hidden menus");
+            assertTrue(Boolean.TRUE.equals(testConfig.getWhitelistMode()));
+            assertTrue(testConfig.getHiddenMenus().contains("Menu1"));
         }
-    }
-
-    @Nested
-    @DisplayName("Configuration Load and Initialize")
-    class ConfigurationLoadAndInitialize {
-
-        @Test
-        @DisplayName("Should correctly initialize detail page preserving mode")
-        void shouldInitializeDetailPreservingMode() {
-            // Arrange
-            testConfig.setWhitelistMode(true);
-            testConfig.setHiddenMenus(new HashSet<>(Set.of("Menu1", "Menu2")));
-            backingBean.setSelected(testConfig);
-            backingBean.setAvailableMenus(List.of("Menu1", "Menu2", "Menu3"));
-
-            // Act
-            backingBean.initDetail();
-
-            // Assert
-            assertTrue(Boolean.TRUE.equals(backingBean.getSelected().getWhitelistMode()),
-                "Whitelist mode should be preserved");
-            assertNotNull(backingBean.getSelected().getHiddenMenus(), "Hidden menus should not be null");
-        }
-
-        @Test
-        @DisplayName("Should handle Hibernate lazy loading by creating new HashSet")
-        void shouldHandleLazyLoadingInitialization() {
-            // Arrange
-            testConfig.setHiddenMenus(new HashSet<>(Set.of("Menu1")));
-            backingBean.setSelected(testConfig);
-            backingBean.setAvailableMenus(List.of("Menu1", "Menu2"));
-
-            Set<String> originalSet = testConfig.getHiddenMenus();
-
-            // Act
-            backingBean.initDetail();
-
-            // Assert
-            assertNotNull(backingBean.getSelected().getHiddenMenus());
-            assertEquals(originalSet, backingBean.getSelected().getHiddenMenus(),
-                "Content should be equal");
-        }
-    }
-
-    @Nested
-    @DisplayName("Validation - Configuration State")
-    class ValidationScenarios {
 
         @Test
         @DisplayName("Should handle null mandate name in configuration")
         void shouldHandleNullMandateName() {
-            // Arrange
             testConfig.setMandateName(null);
             backingBean.setSelected(testConfig);
 
-            // Assert - configuration is in invalid state
-            assertNull(testConfig.getMandateName(),
-                "Mandate name can be null but should be validated before save");
-        }
-
-        @Test
-        @DisplayName("Should handle empty mandate name in configuration")
-        void shouldHandleEmptyMandateName() {
-            // Arrange
-            testConfig.setMandateName("   ");
-            backingBean.setSelected(testConfig);
-
-            // Assert - configuration has whitespace-only name
-            assertEquals("   ", testConfig.getMandateName(),
-                "Mandate name can be whitespace but should be validated");
+            assertNull(testConfig.getMandateName());
         }
 
         @Test
         @DisplayName("Should handle null selected mandate gracefully")
         void shouldHandleNullSelectedMandate() {
-            // Arrange
             backingBean.setSelected(null);
+            assertNull(backingBean.getSelected());
+        }
+    }
 
-            // Assert - null selection is stored
-            assertNull(backingBean.getSelected(),
-                "Selected mandate can be null");
+    @Nested
+    @DisplayName("Serializable Contract")
+    class SerializableContract {
+
+        @Test
+        @DisplayName("Should implement Serializable")
+        void shouldImplementSerializable() {
+            assertTrue(backingBean instanceof java.io.Serializable);
         }
     }
 }

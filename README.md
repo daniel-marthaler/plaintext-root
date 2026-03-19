@@ -1,5 +1,6 @@
 # Plaintext Root
 
+[![Build & Test](https://github.com/daniel-marthaler/plaintext-root/actions/workflows/build-deploy.yaml/badge.svg)](https://github.com/daniel-marthaler/plaintext-root/actions/workflows/build-deploy.yaml)
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL_2.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
 [![Java](https://img.shields.io/badge/Java-25-blue.svg)](https://openjdk.org/)
 [![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.5-green.svg)](https://spring.io/projects/spring-boot)
