@@ -40,6 +40,6 @@ public class BrandingRestController {
                 .header(HttpHeaders.ETAG, String.valueOf(logo.getLastModifiedDate() != null
                         ? logo.getLastModifiedDate().hashCode()
                         : logo.getCreatedDate().hashCode()))
-                .body(logo.getImageData());
+                .body(brandingService.getLogoBytes(logo));
     }
 }
