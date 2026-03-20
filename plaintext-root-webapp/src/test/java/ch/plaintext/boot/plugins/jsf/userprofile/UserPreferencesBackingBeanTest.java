@@ -65,7 +65,7 @@ class UserPreferencesBackingBeanTest {
         assertEquals("light", bean.getDarkMode());
         assertEquals("green", bean.getComponentTheme());
         assertFalse(bean.getComponentThemes().isEmpty());
-        assertEquals(8, bean.getComponentThemes().size());
+        assertEquals(10, bean.getComponentThemes().size());
     }
 
     @Test
@@ -122,7 +122,7 @@ class UserPreferencesBackingBeanTest {
         bean.init();
 
         List<UserPreferencesBackingBean.ComponentTheme> themes = bean.getComponentThemes();
-        assertEquals(8, themes.size());
+        assertEquals(10, themes.size());
 
         assertEquals("Blue", themes.get(0).getName());
         assertEquals("blue", themes.get(0).getFile());
@@ -130,6 +130,8 @@ class UserPreferencesBackingBeanTest {
 
         assertEquals("Green", themes.get(1).getName());
         assertEquals("Yellow", themes.get(7).getName());
+        assertEquals("Indigo", themes.get(8).getName());
+        assertEquals("Pink", themes.get(9).getName());
     }
 
     @Test

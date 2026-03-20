@@ -113,6 +113,8 @@ public class UserPreferencesBackingBean implements Serializable {
         componentThemes.add(new ComponentTheme("Purple", "purple", "#464DF2"));
         componentThemes.add(new ComponentTheme("Red", "red", "#FF9B7B"));
         componentThemes.add(new ComponentTheme("Yellow", "yellow", "#FFB340"));
+        componentThemes.add(new ComponentTheme("Indigo", "indigo", "#3F51B5"));
+        componentThemes.add(new ComponentTheme("Pink", "pink", "#E91E63"));
     }
 
     /**
