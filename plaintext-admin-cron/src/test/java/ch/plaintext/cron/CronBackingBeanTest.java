@@ -4,18 +4,26 @@
 package ch.plaintext.cron;
 
 import ch.plaintext.PlaintextSecurity;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.context.FacesContext;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
+import java.lang.reflect.Field;
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -98,6 +106,35 @@ class CronBackingBeanTest {
         assertThat(backingBean.getCrons()).hasSize(2);
     }
 
+    @Test
+    void refreshCrons_rootSeesNullListsInMap() {
+        Map<String, List<CronConfigEntity>> cronsMap = new HashMap<>();
+        cronsMap.put("mandatA", null);
+        cronsMap.put("mandatB", new ArrayList<>(List.of(createEntity("Cron1", "mandatB"))));
+
+        when(cronController.getCronsMap()).thenReturn(cronsMap);
+        when(plaintextSecurity.getMandat()).thenReturn("mandatA");
+        when(plaintextSecurity.ifGranted("root")).thenReturn(true);
+
+        backingBean.refreshCrons();
+
+        assertThat(backingBean.getCrons()).hasSize(1);
+    }
+
+    @Test
+    void refreshCrons_nonRootNullListForMandat() {
+        Map<String, List<CronConfigEntity>> cronsMap = new HashMap<>();
+        cronsMap.put("mandatA", null);
+
+        when(cronController.getCronsMap()).thenReturn(cronsMap);
+        when(plaintextSecurity.getMandat()).thenReturn("mandatA");
+        when(plaintextSecurity.ifGranted("root")).thenReturn(false);
+
+        backingBean.refreshCrons();
+
+        assertThat(backingBean.getCrons()).isEmpty();
+    }
+
     // --- select ---
 
     @Test
@@ -147,6 +184,215 @@ class CronBackingBeanTest {
         backingBean.select("Cron1", "mandatA");
 
         assertThat(backingBean.getCrone()).isNull();
+    }
+
+    @Test
+    void select_callsValidateWhenExpressionIsNotEmpty() {
+        setupCronsMapAndRefresh("mandatA", false);
+
+        FacesContext facesContext = mock(FacesContext.class);
+        try (MockedStatic<FacesContext> fcs = mockStatic(FacesContext.class)) {
+            fcs.when(FacesContext::getCurrentInstance).thenReturn(facesContext);
+
+            backingBean.select("Cron1", "mandatA");
+
+            // validate() was called, which calls FacesContext.getCurrentInstance()
+            assertThat(backingBean.getCrone()).isEqualTo("0 6 * * *");
+            verify(facesContext, atLeastOnce()).addMessage(isNull(), any(FacesMessage.class));
+        }
+    }
+
+    // --- validate ---
+
+    @Test
+    void validate_nullCroneAddsErrorMessage() {
+        FacesContext facesContext = mock(FacesContext.class);
+        try (MockedStatic<FacesContext> fcs = mockStatic(FacesContext.class)) {
+            fcs.when(FacesContext::getCurrentInstance).thenReturn(facesContext);
+
+            backingBean.setCrone(null);
+            backingBean.validate();
+
+            ArgumentCaptor<FacesMessage> captor = ArgumentCaptor.forClass(FacesMessage.class);
+            verify(facesContext).addMessage(isNull(), captor.capture());
+            assertThat(captor.getValue().getSeverity()).isEqualTo(FacesMessage.SEVERITY_ERROR);
+            assertThat(captor.getValue().getSummary()).isEqualTo("Wert ist nicht gesetzt");
+        }
+    }
+
+    @Test
+    void validate_emptyCroneAddsErrorMessage() {
+        FacesContext facesContext = mock(FacesContext.class);
+        try (MockedStatic<FacesContext> fcs = mockStatic(FacesContext.class)) {
+            fcs.when(FacesContext::getCurrentInstance).thenReturn(facesContext);
+
+            backingBean.setCrone("");
+            backingBean.validate();
+
+            ArgumentCaptor<FacesMessage> captor = ArgumentCaptor.forClass(FacesMessage.class);
+            verify(facesContext).addMessage(isNull(), captor.capture());
+            assertThat(captor.getValue().getSeverity()).isEqualTo(FacesMessage.SEVERITY_ERROR);
+            assertThat(captor.getValue().getSummary()).isEqualTo("Wert ist nicht gesetzt");
+        }
+    }
+
+    @Test
+    void validate_validPatternAddsInfoMessages() {
+        FacesContext facesContext = mock(FacesContext.class);
+        try (MockedStatic<FacesContext> fcs = mockStatic(FacesContext.class)) {
+            fcs.when(FacesContext::getCurrentInstance).thenReturn(facesContext);
+
+            backingBean.setCrone("0 6 * * *");
+            backingBean.validate();
+
+            // 1 header message + 5 next execution messages = 6 total
+            verify(facesContext, times(6)).addMessage(isNull(), any(FacesMessage.class));
+        }
+    }
+
+    @Test
+    void validate_invalidPatternAddsErrorMessage() {
+        FacesContext facesContext = mock(FacesContext.class);
+        try (MockedStatic<FacesContext> fcs = mockStatic(FacesContext.class)) {
+            fcs.when(FacesContext::getCurrentInstance).thenReturn(facesContext);
+
+            backingBean.setCrone("invalid cron pattern");
+            backingBean.validate();
+
+            ArgumentCaptor<FacesMessage> captor = ArgumentCaptor.forClass(FacesMessage.class);
+            verify(facesContext).addMessage(isNull(), captor.capture());
+            assertThat(captor.getValue().getSeverity()).isEqualTo(FacesMessage.SEVERITY_ERROR);
+            assertThat(captor.getValue().getSummary()).isEqualTo("Wert ist nicht gueltig");
+        }
+    }
+
+    // --- save ---
+
+    @Test
+    void save_noSelectedCronAddsWarning() {
+        FacesContext facesContext = mock(FacesContext.class);
+        try (MockedStatic<FacesContext> fcs = mockStatic(FacesContext.class)) {
+            fcs.when(FacesContext::getCurrentInstance).thenReturn(facesContext);
+
+            // selected is null by default
+            backingBean.save();
+
+            ArgumentCaptor<FacesMessage> captor = ArgumentCaptor.forClass(FacesMessage.class);
+            verify(facesContext).addMessage(isNull(), captor.capture());
+            assertThat(captor.getValue().getSeverity()).isEqualTo(FacesMessage.SEVERITY_WARN);
+            assertThat(captor.getValue().getSummary()).isEqualTo("Kein Cron selektiert");
+        }
+    }
+
+    @Test
+    void save_withSelectedEnabledCronReschedulesAndSaves() throws Exception {
+        setupCronsMapAndRefresh("mandatA", false);
+
+        // Select a cron (use select with null expression to avoid validate needing FacesContext)
+        backingBean.getCrons().get(0).setCronExpression(null);
+        backingBean.select("Cron1", "mandatA");
+
+        // Now set the crone expression for save
+        backingBean.setCrone("30 8 * * *");
+
+        FacesContext facesContext = mock(FacesContext.class);
+        try (MockedStatic<FacesContext> fcs = mockStatic(FacesContext.class)) {
+            fcs.when(FacesContext::getCurrentInstance).thenReturn(facesContext);
+
+            backingBean.save();
+
+            verify(cronController).save(any(CronConfigEntity.class));
+            verify(cronController).unschedule(any(CronConfigEntity.class));
+            verify(cronController).schedule(any(CronConfigEntity.class));
+
+            ArgumentCaptor<FacesMessage> captor = ArgumentCaptor.forClass(FacesMessage.class);
+            verify(facesContext).addMessage(isNull(), captor.capture());
+            assertThat(captor.getValue().getSeverity()).isEqualTo(FacesMessage.SEVERITY_INFO);
+            assertThat(captor.getValue().getSummary()).isEqualTo("Cron wurde gespeichert und neu geplant");
+        }
+    }
+
+    @Test
+    void save_withSelectedDisabledCronSavesWithoutReschedule() throws Exception {
+        setupCronsMapAndRefresh("mandatA", false);
+
+        // Disable the entity
+        backingBean.getCrons().get(0).setEnabled(false);
+        backingBean.getCrons().get(0).setCronExpression(null);
+        backingBean.select("Cron1", "mandatA");
+        backingBean.setCrone("30 8 * * *");
+
+        FacesContext facesContext = mock(FacesContext.class);
+        try (MockedStatic<FacesContext> fcs = mockStatic(FacesContext.class)) {
+            fcs.when(FacesContext::getCurrentInstance).thenReturn(facesContext);
+
+            backingBean.save();
+
+            verify(cronController).save(any(CronConfigEntity.class));
+            verify(cronController, never()).unschedule(any(CronConfigEntity.class));
+            verify(cronController, never()).schedule(any(CronConfigEntity.class));
+        }
+    }
+
+    // --- trigger ---
+
+    @Test
+    void trigger_foundCronTriggersAndAddsInfoMessage() {
+        setupCronsMapAndRefresh("mandatA", false);
+
+        FacesContext facesContext = mock(FacesContext.class);
+        try (MockedStatic<FacesContext> fcs = mockStatic(FacesContext.class)) {
+            fcs.when(FacesContext::getCurrentInstance).thenReturn(facesContext);
+
+            backingBean.trigger("Cron1", "mandatA");
+
+            verify(cronController).trigger("Cron1", "mandatA");
+
+            ArgumentCaptor<FacesMessage> captor = ArgumentCaptor.forClass(FacesMessage.class);
+            verify(facesContext).addMessage(isNull(), captor.capture());
+            assertThat(captor.getValue().getSeverity()).isEqualTo(FacesMessage.SEVERITY_INFO);
+            assertThat(captor.getValue().getSummary()).contains("Cron Job wird ausgeführt");
+        }
+    }
+
+    @Test
+    void trigger_notFoundCronAddsWarningMessage() {
+        setupCronsMapAndRefresh("mandatA", false);
+
+        FacesContext facesContext = mock(FacesContext.class);
+        try (MockedStatic<FacesContext> fcs = mockStatic(FacesContext.class)) {
+            fcs.when(FacesContext::getCurrentInstance).thenReturn(facesContext);
+
+            backingBean.trigger("NonExistent", "mandatA");
+
+            verify(cronController, never()).trigger(anyString(), anyString());
+
+            ArgumentCaptor<FacesMessage> captor = ArgumentCaptor.forClass(FacesMessage.class);
+            verify(facesContext).addMessage(isNull(), captor.capture());
+            assertThat(captor.getValue().getSeverity()).isEqualTo(FacesMessage.SEVERITY_WARN);
+            assertThat(captor.getValue().getSummary()).contains("Cron Job nicht gefunden");
+        }
+    }
+
+    @Test
+    void trigger_foundCronWithDisplayName() {
+        setupCronsMapAndRefresh("mandatA", false);
+
+        // Add a display name to the entity's cron
+        SuperCron sc = mock(SuperCron.class);
+        when(sc.getDisplayName()).thenReturn("My Nice Cron");
+        backingBean.getCrons().get(0).setCron(sc);
+
+        FacesContext facesContext = mock(FacesContext.class);
+        try (MockedStatic<FacesContext> fcs = mockStatic(FacesContext.class)) {
+            fcs.when(FacesContext::getCurrentInstance).thenReturn(facesContext);
+
+            backingBean.trigger("Cron1", "mandatA");
+
+            ArgumentCaptor<FacesMessage> captor = ArgumentCaptor.forClass(FacesMessage.class);
+            verify(facesContext).addMessage(isNull(), captor.capture());
+            assertThat(captor.getValue().getDetail()).contains("My Nice Cron");
+        }
     }
 
     // --- isEnabled / isStartup ---
@@ -256,6 +502,32 @@ class CronBackingBeanTest {
         backingBean.toggleStartup("NotExist", "mandatA");
 
         verify(cronController, never()).save(any());
+    }
+
+    @Test
+    void toggleStartup_togglesFromFalseToTrue() {
+        setupCronsMapAndRefresh("mandatA", false);
+
+        CronConfigEntity entity = backingBean.getCrons().get(0);
+        assertThat(entity.isStartup()).isFalse();
+
+        backingBean.toggleStartup("Cron1", "mandatA");
+
+        assertThat(entity.isStartup()).isTrue();
+        verify(cronController).save(entity);
+    }
+
+    @Test
+    void toggleStartup_togglesFromTrueToFalse() {
+        setupCronsMapAndRefresh("mandatA", false);
+
+        CronConfigEntity entity = backingBean.getCrons().get(0);
+        entity.setStartup(true);
+
+        backingBean.toggleStartup("Cron1", "mandatA");
+
+        assertThat(entity.isStartup()).isFalse();
+        verify(cronController).save(entity);
     }
 
     // --- getNextRun ---
@@ -434,6 +706,19 @@ class CronBackingBeanTest {
     @Test
     void getCrons_returnsEmptyListByDefault() {
         assertThat(backingBean.getCrons()).isNotNull();
+        assertThat(backingBean.getCrons()).isEmpty();
+    }
+
+    // --- init calls refreshCrons ---
+
+    @Test
+    void init_callsRefreshCrons() {
+        when(cronController.getCronsMap()).thenReturn(new HashMap<>());
+        when(plaintextSecurity.getMandat()).thenReturn("test");
+        when(plaintextSecurity.ifGranted("root")).thenReturn(false);
+
+        backingBean.init();
+
         assertThat(backingBean.getCrons()).isEmpty();
     }
 }
