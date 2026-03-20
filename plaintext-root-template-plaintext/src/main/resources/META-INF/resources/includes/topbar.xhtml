@@ -8,6 +8,15 @@
         <nav class="layout-topbar-wrapper" role="navigation">
 
             <div class="layout-topbar-left">
+                <ui:fragment rendered="#{brandingBean.hasAnyLogo()}">
+                    <a href="#{request.contextPath}/index.html" class="topbar-logo" style="display:flex; align-items:center; margin-right:10px;">
+                        <img id="branding-logo"
+                             src="#{request.contextPath}/api/branding/logo?theme=#{userPreferencesBackingBean.darkMode}"
+                             width="#{userPreferencesBackingBean.darkMode == 'dark' ? brandingBean.darkLogoWidth : brandingBean.lightLogoWidth}"
+                             height="#{userPreferencesBackingBean.darkMode == 'dark' ? brandingBean.darkLogoHeight : brandingBean.lightLogoHeight}"
+                             alt="Logo" style="object-fit:contain;"/>
+                    </a>
+                </ui:fragment>
                 <a href="#" class="menu-button" aria-label="Menu">
                     <i class="pi pi-bars"/>
                 </a>
