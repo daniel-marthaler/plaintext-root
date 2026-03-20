@@ -126,12 +126,12 @@ class UserPreferencesBackingBeanTest {
 
         assertEquals("Blue", themes.get(0).getName());
         assertEquals("blue", themes.get(0).getFile());
-        assertEquals("#2196F3", themes.get(0).getColor());
+        assertEquals("#2c84d8", themes.get(0).getColor());
 
         assertEquals("Green", themes.get(1).getName());
         assertEquals("Yellow", themes.get(7).getName());
-        assertEquals("Lime", themes.get(8).getName());
-        assertEquals("Crimson", themes.get(9).getName());
+        assertEquals("Indigo", themes.get(8).getName());
+        assertEquals("Pink", themes.get(9).getName());
     }
 
     @Test
