@@ -16,6 +16,10 @@ public class SimpleStorableEntity implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Version
+    @Getter
+    private Long version;
+
     @Column(length = 30000)
     @Getter @Setter
     @Convert(converter = SimpleStorableConverter.class)

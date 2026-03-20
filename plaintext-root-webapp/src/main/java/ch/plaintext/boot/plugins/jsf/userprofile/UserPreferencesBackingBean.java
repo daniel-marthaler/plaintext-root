@@ -115,9 +115,25 @@ public class UserPreferencesBackingBean implements Serializable {
         componentThemes.add(new ComponentTheme("Yellow", "yellow", "#FFB340"));
     }
 
-    public synchronized void save() {
+    /**
+     * Save preferences with optimistic locking retry.
+     * No longer synchronized — uses JPA @Version for concurrency control.
+     */
+    public void save() {
         try {
             storage.save(prefs);
+        } catch (org.springframework.orm.ObjectOptimisticLockingFailureException e) {
+            log.debug("Optimistic lock conflict on preferences save, retrying...");
+            try {
+                // Reload and re-apply
+                UserPreference fresh = storage.findByUniqueId(prefs.getUniqueId());
+                if (fresh != null) {
+                    prefs = fresh;
+                }
+                storage.save(prefs);
+            } catch (Exception retryEx) {
+                log.error("Retry failed for preferences save: " + retryEx.getMessage(), retryEx);
+            }
         } catch (Exception e) {
             log.error("Error saving user preferences: " + e.getMessage(), e);
         }
