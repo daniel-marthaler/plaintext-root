@@ -6,10 +6,14 @@
         <div class="grid">
             <div class="col-12">
                 <p style="margin:0; color:var(--pt-text-secondary, #6c757d); font-size:0.8rem;">
-                    Copyright &#169; Plaintext.ch |
-                    Version #{versionBean.version} |
-                    Root #{versionBean.rootVersion} |
-                    #{versionBean.buildTimestamp}
+                    <h:outputText value="#{brandingBean.effectiveFooterText}"/>
+                    <ui:fragment rendered="#{brandingBean.showVersion}">
+                        | Version #{versionBean.version}
+                    </ui:fragment>
+                    <ui:fragment rendered="#{brandingBean.showRootVersion}">
+                        | Root #{versionBean.rootVersion}
+                    </ui:fragment>
+                    | #{versionBean.buildTimestamp}
                 </p>
             </div>
         </div>

@@ -91,6 +91,7 @@ public class PlaintextSecurityConfig {
                     authorize
                             .requestMatchers(permitAllArray).permitAll()
                             .requestMatchers("/actuator/**").hasRole("ADMIN")
+                            .requestMatchers("/api/branding/logo").authenticated()
                             .requestMatchers("/api/preferences/**").authenticated()
                             .anyRequest().authenticated();
                 })
