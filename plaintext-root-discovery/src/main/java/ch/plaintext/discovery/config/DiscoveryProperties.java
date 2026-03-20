@@ -37,9 +37,10 @@ public class DiscoveryProperties {
     @Data
     public static class Mqtt {
         /**
-         * MQTT broker URL (default: tcp://192.168.1.224:1883)
+         * MQTT broker URL. Leave empty to run without MQTT (standalone mode).
+         * Example: tcp://localhost:1883
          */
-        private String broker = "tcp://192.168.1.224:1883";
+        private String broker = "";
         
         /**
          * Client ID prefix (default: plaintext-discovery)

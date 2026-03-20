@@ -126,7 +126,7 @@ Extern: Eclipse Paho MQTT Client 1.2.5
 | Property                              | Default                    | Bemerkung              |
 |---------------------------------------|----------------------------|------------------------|
 | `discovery.enabled`                   | `true`                     | Modul an/aus           |
-| `discovery.mqtt.broker`               | `tcp://192.168.1.224:1883` | MQTT-Broker            |
+| `discovery.mqtt.broker`               | `tcp://localhost:1883` | MQTT-Broker            |
 | `discovery.mqtt.clientId`             | `plaintext-discovery`      | Client-ID Prefix       |
 | `discovery.app.id`                    | `${spring.application.name}`| Instanz-ID            |
 | `discovery.app.name`                  | `Plaintext App`            | Anzeigename            |
@@ -144,7 +144,7 @@ Extern: Eclipse Paho MQTT Client 1.2.5
 - **CSRF**: `<input type="hidden" name="_csrf" value="#{_csrf.token}"/>` in discoveryStats.xhtml
 - **Verschlüsselung**: RSA 2048-bit für Token-Austausch
 - **Tokens**: UUID, 5 Min TTL, Einmal-Verwendung, DB-gespeichert
-- **MQTT**: Internes Netzwerk (192.168.1.224), kein Internet-Exposure
+- **MQTT**: Internes Netzwerk (localhost), kein Internet-Exposure
 - **Schlüssel**: Ephemer, bei jedem Start neu generiert
 
 ## Offene Punkte / TODOs

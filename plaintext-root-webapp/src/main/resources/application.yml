@@ -12,17 +12,23 @@ spring:
   servlet:
     multipart:
       max-file-size: 10MB
+  # Default: H2 in-memory with PostgreSQL compatibility mode
+  # Switch to real PostgreSQL: add spring.profiles.active=postgres
   datasource:
-    url: jdbc:postgresql://localhost:5434/plaintext_root
-    username: plaintext
-    password: plaintext
-    driver-class-name: org.postgresql.Driver
+    url: jdbc:h2:mem:plaintext_root;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
   jpa:
     hibernate:
       ddl-auto: none
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
+        dialect: org.hibernate.dialect.H2Dialect
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
   docker:
     compose:
       enabled: false
@@ -57,6 +63,8 @@ plaintext:
   menu:
     scan-package: ch.plaintext
 
+# Discovery: works without MQTT broker (shows only own instance)
+# To connect multiple apps, configure a MQTT broker
 discovery:
   enabled: true
   app:
@@ -64,5 +72,5 @@ discovery:
     name: ${PLAINTEXT_APP_NAME:Plaintext Root}
     url: ${PLAINTEXT_APP_URL:http://localhost:8080}
   mqtt:
-    broker: tcp://${DISCOVERY_MQTT_HOST:192.168.1.224}:${DISCOVERY_MQTT_PORT:1883}
+    broker: ${DISCOVERY_MQTT_BROKER:}
     client-id: plaintext-root-discovery

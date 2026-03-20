@@ -63,7 +63,7 @@ Main web application module containing the application entry point, security con
 - Jakarta Faces
 - SpringDoc OpenAPI
 - Lombok
-- HSQLDB
+- H2 (PostgreSQL mode)
 
 ### Internal Module Dependencies
 - plaintext-root-interfaces
