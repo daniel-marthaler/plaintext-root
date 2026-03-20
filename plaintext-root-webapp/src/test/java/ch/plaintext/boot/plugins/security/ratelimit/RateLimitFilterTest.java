@@ -36,7 +36,7 @@ class RateLimitFilterTest {
     @Test
     void shouldAllowNormalRequests() throws Exception {
         when(request.getRequestURI()).thenReturn("/index.xhtml");
-        filter.doFilterInternal(request, response, filterChain);
+        filter.doFilter(request, response, filterChain);
         verify(filterChain).doFilter(request, response);
     }
 
@@ -49,12 +49,12 @@ class RateLimitFilterTest {
 
         // First 5 should pass
         for (int i = 0; i < 5; i++) {
-            filter.doFilterInternal(request, response, filterChain);
+            filter.doFilter(request, response, filterChain);
         }
         verify(filterChain, times(5)).doFilter(request, response);
 
         // 6th should be blocked
-        filter.doFilterInternal(request, response, filterChain);
+        filter.doFilter(request, response, filterChain);
         verify(response).setStatus(429);
         verify(filterChain, times(5)).doFilter(request, response); // still 5
     }
@@ -67,12 +67,12 @@ class RateLimitFilterTest {
 
         // First 3 should pass
         for (int i = 0; i < 3; i++) {
-            filter.doFilterInternal(request, response, filterChain);
+            filter.doFilter(request, response, filterChain);
         }
         verify(filterChain, times(3)).doFilter(request, response);
 
         // 4th should be blocked
-        filter.doFilterInternal(request, response, filterChain);
+        filter.doFilter(request, response, filterChain);
         verify(response).setStatus(429);
         verify(response).sendRedirect("/login.xhtml?error=rate_limited");
     }
@@ -83,11 +83,11 @@ class RateLimitFilterTest {
         when(request.getRemoteAddr()).thenReturn("10.0.0.2");
 
         for (int i = 0; i < 3; i++) {
-            filter.doFilterInternal(request, response, filterChain);
+            filter.doFilter(request, response, filterChain);
         }
         verify(filterChain, times(3)).doFilter(request, response);
 
-        filter.doFilterInternal(request, response, filterChain);
+        filter.doFilter(request, response, filterChain);
         verify(response).setStatus(429);
     }
 
@@ -117,7 +117,7 @@ class RateLimitFilterTest {
         when(request.getRequestURI()).thenReturn("/api/data");
         when(request.getRemoteAddr()).thenReturn("10.0.0.5");
 
-        filter.doFilterInternal(request, response, filterChain);
+        filter.doFilter(request, response, filterChain);
         verify(response).setHeader(eq("X-RateLimit-Remaining"), anyString());
     }
 
@@ -128,7 +128,7 @@ class RateLimitFilterTest {
 
         // GET /login should not be rate limited (only POST)
         for (int i = 0; i < 10; i++) {
-            filter.doFilterInternal(request, response, filterChain);
+            filter.doFilter(request, response, filterChain);
         }
         verify(filterChain, times(10)).doFilter(request, response);
     }

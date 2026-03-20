@@ -9,8 +9,8 @@ import org.apache.catalina.Container;
 import org.apache.catalina.Manager;
 import org.apache.catalina.Session;
 import org.apache.catalina.core.StandardContext;
-import org.springframework.boot.web.embedded.tomcat.TomcatWebServer;
-import org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext;
+import org.springframework.boot.tomcat.TomcatWebServer;
+import org.springframework.boot.web.server.servlet.context.AnnotationConfigServletWebServerApplicationContext;
 import org.springframework.stereotype.Component;
 
 /**
@@ -24,9 +24,9 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class TomcatSessionManager {
 
-    private final ServletWebServerApplicationContext applicationContext;
+    private final AnnotationConfigServletWebServerApplicationContext applicationContext;
 
-    public TomcatSessionManager(ServletWebServerApplicationContext applicationContext) {
+    public TomcatSessionManager(AnnotationConfigServletWebServerApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
     }
 

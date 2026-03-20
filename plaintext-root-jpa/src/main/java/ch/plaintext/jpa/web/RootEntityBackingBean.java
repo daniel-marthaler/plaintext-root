@@ -14,7 +14,6 @@ import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.hibernate6.Hibernate6Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.annotation.PostConstruct;
 import jakarta.faces.application.FacesMessage;
@@ -95,11 +94,8 @@ public class RootEntityBackingBean implements Serializable {
     private void initializeObjectMapper() {
         objectMapper = new ObjectMapper();
 
-        // Register Hibernate module to handle lazy loading and proxies
-        Hibernate6Module hibernate6Module = new Hibernate6Module();
-        hibernate6Module.enable(Hibernate6Module.Feature.FORCE_LAZY_LOADING);
-        hibernate6Module.disable(Hibernate6Module.Feature.USE_TRANSIENT_ANNOTATION);
-        objectMapper.registerModule(hibernate6Module);
+        // Hibernate module disabled (not yet compatible with Hibernate 7/SB4)
+        // TODO: Re-enable when jackson-datatype-hibernate7 is released
 
         // Register JavaTime module for date/time handling
         objectMapper.registerModule(new JavaTimeModule());

@@ -1,4 +1,4 @@
-name: Build & Test
+name: Build, Test & Deploy
 
 on:
   push:
@@ -14,6 +14,10 @@ jobs:
   build:
     if: ${{ !contains(github.event.head_commit.message, '[skip-ci]') }}
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
 
     services:
       postgres:
@@ -40,6 +44,9 @@ jobs:
           java-version: '25'
           distribution: 'temurin'
           cache: maven
+          server-id: plaintext
+          server-username: GITHUB_ACTOR
+          server-password: GITHUB_TOKEN
 
       - name: Build & Test with Coverage
         run: mvn clean install -B
@@ -47,6 +54,13 @@ jobs:
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5434/plaintext_root
           SPRING_DATASOURCE_USERNAME: plaintext
           SPRING_DATASOURCE_PASSWORD: plaintext
+
+      - name: Deploy to GitHub Packages
+        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+        run: mvn deploy -B -DskipTests -DaltDeploymentRepository=plaintext::https://maven.pkg.github.com/daniel-marthaler/plaintext-mvn
+        env:
+          GITHUB_ACTOR: ${{ github.actor }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Generate JaCoCo aggregate report
         run: mvn jacoco:report -B
@@ -78,7 +92,6 @@ jobs:
           for report in $(find . -path "*/target/site/jacoco/jacoco.csv" 2>/dev/null); do
             module=$(echo "$report" | sed 's|./\(.*\)/target/.*|\1|')
             if [ -f "$report" ]; then
-              # Parse CSV: columns are GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,...
               missed=$(tail -n +2 "$report" | awk -F',' '{sum+=$4} END {print sum+0}')
               covered=$(tail -n +2 "$report" | awk -F',' '{sum+=$5} END {print sum+0}')
               total=$((missed + covered))

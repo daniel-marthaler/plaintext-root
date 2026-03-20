@@ -5,7 +5,7 @@ package ch.plaintext.menuesteuerung.config;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.boot.persistence.autoconfigure.EntityScan;
 import org.springframework.context.annotation.Configuration;
 
 import static org.junit.jupiter.api.Assertions.*;

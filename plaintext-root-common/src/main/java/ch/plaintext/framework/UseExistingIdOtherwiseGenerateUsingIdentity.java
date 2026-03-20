@@ -18,7 +18,9 @@ public class UseExistingIdOtherwiseGenerateUsingIdentity extends IdentityGenerat
     public Serializable generate(SharedSessionContractImplementor session, Object object) throws HibernateException {
 
         synchronized (this) {
-            Serializable id = (Serializable) session.getEntityPersister(null, object).getClassMetadata().getIdentifier(object, session);
+            // Get the entity persister and extract the identifier
+            var persister = session.getEntityPersister(null, object);
+            Serializable id = (Serializable) persister.getIdentifier(object, session);
 
             if (id != null) {
                 return id;
