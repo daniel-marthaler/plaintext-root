@@ -255,6 +255,8 @@
                         optimizedChangeComponentsTheme(currentComponentTheme, mode);
                         Plaintext.Configurator.changeSectionTheme(mode, 'layout-menu');
                         Plaintext.Configurator.changeSectionTheme(mode, 'layout-topbar');
+                        var logo = document.getElementById('branding-logo');
+                        if (logo) { logo.setAttribute('src', logo.getAttribute('src').replace(/theme=(light|dark)/, 'theme=' + mode)); }
                     });
 
                     if (!isInitializing) {
