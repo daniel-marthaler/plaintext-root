@@ -6,52 +6,70 @@ package ch.plaintext.rechnungen;
 import java.util.Date;
 
 /**
- * Interface für eine Rechnung
+ * Interface representing an invoice (Rechnung).
  */
 public interface IRechnung {
 
     /**
-     * Gibt die ID der Rechnung zurück
+     * Gets the unique identifier of the invoice.
+     *
+     * @return the invoice ID
      */
     Long getId();
 
     /**
-     * Gibt die Rechnungsnummer zurück (z.B. "R-2026-001")
+     * Gets the invoice number (e.g. "R-2026-001").
+     *
+     * @return the invoice number
      */
     String getRechnungsnummer();
 
     /**
-     * Gibt die Kontakt-ID zurück
+     * Gets the contact ID of the invoice recipient.
+     *
+     * @return the contact ID
      */
     Long getKontaktId();
 
     /**
-     * Gibt die Betreffzeile zurück
+     * Gets the subject line of the invoice.
+     *
+     * @return the subject
      */
     String getBetreff();
 
     /**
-     * Gibt den Preis pro Stunde zurück
+     * Gets the hourly rate in CHF.
+     *
+     * @return the price per hour
      */
     double getPreisProStunde();
 
     /**
-     * Gibt die Gesamtstunden zurück
+     * Gets the total number of hours billed.
+     *
+     * @return the total hours
      */
     double getGesamtStunden();
 
     /**
-     * Gibt den Gesamtbetrag zurück
+     * Gets the total amount of the invoice in CHF.
+     *
+     * @return the total amount
      */
     double getGesamtbetrag();
 
     /**
-     * Gibt das Rechnungsdatum zurück
+     * Gets the invoice date.
+     *
+     * @return the invoice date
      */
     Date getRechnungsdatum();
 
     /**
-     * Gibt den Zeitraum zurück (z.B. "Januar 2026")
+     * Gets the billing period description (e.g. "Januar 2026").
+     *
+     * @return the billing period
      */
     String getZeitraum();
 }

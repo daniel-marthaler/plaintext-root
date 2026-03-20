@@ -14,37 +14,64 @@ import java.util.List;
 public interface ChatService {
 
     /**
-     * Create a new chat
+     * Create a new chat.
+     *
+     * @param chatName the name of the chat
+     * @param owner    the email address of the chat owner
+     * @param mandat   the mandate/tenant identifier
+     * @return the created chat DTO
      */
     ChatDTO createChat(String chatName, String owner, String mandat);
 
     /**
-     * Add a member to a chat
+     * Add a member to a chat.
+     *
+     * @param chatId    the chat ID
+     * @param userEmail the email address of the user to add
      */
     void addMember(Long chatId, String userEmail);
 
     /**
-     * Remove a member from a chat
+     * Remove a member from a chat.
+     *
+     * @param chatId    the chat ID
+     * @param userEmail the email address of the user to remove
      */
     void removeMember(Long chatId, String userEmail);
 
     /**
-     * Send a message in a chat
+     * Send a message in a chat.
+     *
+     * @param chatId      the chat ID
+     * @param senderEmail the email address of the sender
+     * @param messageText the message text
+     * @return the created message DTO
      */
     ChatMessageDTO sendMessage(Long chatId, String senderEmail, String messageText);
 
     /**
-     * Get all chats owned by a user
+     * Get all chats owned by a user.
+     *
+     * @param owner  the email address of the owner
+     * @param mandat the mandate/tenant identifier
+     * @return list of owned chat DTOs
      */
     List<ChatDTO> getOwnedChats(String owner, String mandat);
 
     /**
-     * Get all chats where user is a member
+     * Get all chats where user is a member.
+     *
+     * @param userEmail the email address of the user
+     * @param mandat    the mandate/tenant identifier
+     * @return list of chat DTOs the user is a member of
      */
     List<ChatDTO> getChatsByMember(String userEmail, String mandat);
 
     /**
-     * Get all messages in a chat
+     * Get all messages in a chat.
+     *
+     * @param chatId the chat ID
+     * @return list of all messages in the chat
      */
     List<ChatMessageDTO> getMessages(Long chatId);
 
@@ -58,40 +85,63 @@ public interface ChatService {
     ChatMessagesPageDTO getMessages(Long chatId, int page, int size);
 
     /**
-     * Get a chat by ID
+     * Get a chat by ID.
+     *
+     * @param chatId the chat ID
+     * @return the chat DTO
      */
     ChatDTO getChat(Long chatId);
 
     /**
-     * Delete a chat
+     * Delete a chat and all its messages.
+     *
+     * @param chatId the chat ID
      */
     void deleteChat(Long chatId);
 
     /**
-     * Check if user is member of chat
+     * Check if a user is a member of a chat.
+     *
+     * @param chatId    the chat ID
+     * @param userEmail the email address of the user
+     * @return true if the user is a member, false otherwise
      */
     boolean isMember(Long chatId, String userEmail);
 
     /**
-     * Create invitation for a user to join a chat
-     * This will also send a direct message to the invitee
+     * Create an invitation for a user to join a chat.
+     * This will also send a direct message to the invitee.
+     *
+     * @param chatId       the chat ID
+     * @param inviterEmail the email address of the inviter
+     * @param inviteeEmail the email address of the invitee
+     * @return the created invitation DTO
      */
     ChatInvitationDTO createInvitation(Long chatId, String inviterEmail, String inviteeEmail);
 
     /**
-     * Get all pending invitations for a user
+     * Get all pending invitations for a user.
+     *
+     * @param userEmail the email address of the user
+     * @return list of pending invitation DTOs
      */
     List<ChatInvitationDTO> getPendingInvitations(String userEmail);
 
     /**
-     * Accept an invitation
-     * This will send a direct message to the inviter
+     * Accept an invitation to join a chat.
+     * This will send a direct message to the inviter.
+     *
+     * @param invitationId the invitation ID
+     * @param userEmail    the email address of the accepting user
      */
     void acceptInvitation(Long invitationId, String userEmail);
 
     /**
-     * Decline an invitation
-     * This will send a direct message to the inviter
+     * Decline an invitation to join a chat.
+     * This will send a direct message to the inviter.
+     *
+     * @param invitationId the invitation ID
+     * @param userEmail    the email address of the declining user
      */
     void declineInvitation(Long invitationId, String userEmail);
 }
