@@ -154,7 +154,7 @@ public class DiscoveryService {
                 } catch (Exception e) {
                     // No security context (MQTT handler thread)
                 }
-                return newApp;
+                return appRepository.save(newApp);
             });
     }
 
