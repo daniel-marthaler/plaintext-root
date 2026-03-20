@@ -25,9 +25,6 @@ COPY plaintext-admin-value-lists/pom.xml plaintext-admin-value-lists/
 COPY plaintext-admin-filelist/pom.xml plaintext-admin-filelist/
 COPY plaintext-admin-requirements/pom.xml plaintext-admin-requirements/
 
-# Download dependencies (cached unless pom.xml changes)
-RUN mvn dependency:go-offline -B
-
 # Copy source and build
 COPY . .
 RUN mvn clean package -DskipTests -B
