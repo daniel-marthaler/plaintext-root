@@ -30,7 +30,7 @@ import java.util.Set;
 public class UserPreferencesRestController {
 
     private static final Set<String> VALID_DARK_MODES = Set.of("dark", "light");
-    private static final Set<String> VALID_MENU_MODES = Set.of("static", "overlay", "slim", "horizontal");
+    private static final Set<String> VALID_MENU_MODES = Set.of("layout-sidebar", "layout-overlay", "layout-slim", "layout-horizontal");
     private static final Set<String> VALID_INPUT_STYLES = Set.of("outlined", "filled");
     private static final int MAX_PARAM_LENGTH = 100;
 
