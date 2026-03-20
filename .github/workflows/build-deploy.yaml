@@ -55,9 +55,16 @@ jobs:
           SPRING_DATASOURCE_USERNAME: plaintext
           SPRING_DATASOURCE_PASSWORD: plaintext
 
-      - name: Deploy to GitHub Packages
-        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
-        run: mvn deploy -B -DskipTests -DaltDeploymentRepository=plaintext::https://maven.pkg.github.com/daniel-marthaler/plaintext-mvn
+      - name: Deploy to GitHub Packages (releases only)
+        if: github.ref == 'refs/heads/master' && github.event_name == 'push' && !contains(needs.build.outputs.version || '', 'SNAPSHOT')
+        run: |
+          VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          if [[ "$VERSION" == *SNAPSHOT* ]]; then
+            echo "Skipping deploy: SNAPSHOT version ($VERSION)"
+          else
+            echo "Deploying release version: $VERSION"
+            mvn deploy -B -DskipTests -DaltDeploymentRepository=plaintext::https://maven.pkg.github.com/daniel-marthaler/plaintext-mvn
+          fi
         env:
           GITHUB_ACTOR: ${{ github.actor }}
           GITHUB_TOKEN: ${{ secrets.MVN_DEPLOY_TOKEN }}
