@@ -155,9 +155,6 @@
 
                             <h:outputText value="Build-Zeitpunkt anzeigen:" style="font-weight:bold;"/>
                             <p:toggleSwitch id="showBuildTimestamp" value="#{brandingBackingBean.showBuildTimestamp}"/>
-
-                            <h:outputText value="Build-Zeitpunkt anzeigen:" style="font-weight:bold;"/>
-                            <p:toggleSwitch id="showBuildTimestamp" value="#{brandingBackingBean.showBuildTimestamp}"/>
                         </h:panelGrid>
 
                         <p:commandButton value="Footer speichern" icon="pi pi-save"
@@ -178,8 +175,6 @@
                                           rendered="#{brandingBackingBean.showVersion}"/>
                             <h:outputText value=" | Root #{versionBean.rootVersion}"
                                           rendered="#{brandingBackingBean.showRootVersion}"/>
-                            <h:outputText value=" | #{versionBean.buildTimestamp}"
-                                          rendered="#{brandingBackingBean.showBuildTimestamp}"/>
                             <h:outputText value=" | #{versionBean.buildTimestamp}"
                                           rendered="#{brandingBackingBean.showBuildTimestamp}"/>
                         </div>
