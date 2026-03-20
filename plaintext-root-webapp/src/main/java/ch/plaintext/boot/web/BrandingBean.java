@@ -24,7 +24,6 @@ public class BrandingBean {
     private boolean showVersion = true;
     private boolean showRootVersion = true;
     private boolean showBuildTimestamp = true;
-    private boolean showBuildTimestamp = true;
     private boolean hasLightLogo;
     private boolean hasDarkLogo;
     private int lightLogoWidth = 180;

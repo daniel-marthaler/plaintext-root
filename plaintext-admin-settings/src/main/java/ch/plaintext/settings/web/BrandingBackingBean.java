@@ -37,7 +37,6 @@ public class BrandingBackingBean implements Serializable {
     private boolean showVersion;
     private boolean showRootVersion;
     private boolean showBuildTimestamp;
-    private boolean showBuildTimestamp;
 
     private Integer lightLogoWidth = 180;
     private Integer lightLogoHeight = 40;

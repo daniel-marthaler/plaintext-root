@@ -23,7 +23,6 @@ public class BrandingService {
     private static final String KEY_SHOW_VERSION = "branding.footer.showVersion";
     private static final String KEY_SHOW_ROOT_VERSION = "branding.footer.showRootVersion";
     private static final String KEY_SHOW_BUILD_TIMESTAMP = "branding.footer.showBuildTimestamp";
-    private static final String KEY_SHOW_BUILD_TIMESTAMP = "branding.footer.showBuildTimestamp";
 
     private static final Set<String> ALLOWED_CONTENT_TYPES = Set.of(
             "image/png", "image/svg+xml", "image/webp", "image/jpeg"
@@ -113,7 +112,6 @@ public class BrandingService {
         settingsService.setSetting(KEY_FOOTER_TEXT, mandat, footerText, "STRING", "Custom footer text");
         settingsService.setSetting(KEY_SHOW_VERSION, mandat, String.valueOf(showVersion), "BOOLEAN", "Show app version in footer");
         settingsService.setSetting(KEY_SHOW_ROOT_VERSION, mandat, String.valueOf(showRootVersion), "BOOLEAN", "Show root version in footer");
-        settingsService.setSetting(KEY_SHOW_BUILD_TIMESTAMP, mandat, String.valueOf(showBuildTimestamp), "BOOLEAN", "Show build timestamp in footer");
         settingsService.setSetting(KEY_SHOW_BUILD_TIMESTAMP, mandat, String.valueOf(showBuildTimestamp), "BOOLEAN", "Show build timestamp in footer");
         log.info("Saved branding footer settings: mandat={}", mandat);
     }
