@@ -6,7 +6,9 @@ package ch.plaintext.chat;
 import java.util.List;
 
 /**
- * Chat Service Interface
+ * Service interface for managing chat rooms, memberships, messages, and invitations.
+ * Provides operations for creating chats, sending messages, and handling
+ * user invitations with notification support.
  *
  * @author info@plaintext.ch
  * @since 2026
@@ -76,11 +78,12 @@ public interface ChatService {
     List<ChatMessageDTO> getMessages(Long chatId);
 
     /**
-     * Get messages in a chat with pagination support
-     * @param chatId The chat ID
-     * @param page The page number (0-based)
-     * @param size The page size (number of messages per page)
-     * @return ChatMessagesPageDTO containing messages and pagination info
+     * Get messages in a chat with pagination support.
+     *
+     * @param chatId the chat ID
+     * @param page   the page number (0-based)
+     * @param size   the page size (number of messages per page)
+     * @return paginated messages with pagination metadata
      */
     ChatMessagesPageDTO getMessages(Long chatId, int page, int size);
 

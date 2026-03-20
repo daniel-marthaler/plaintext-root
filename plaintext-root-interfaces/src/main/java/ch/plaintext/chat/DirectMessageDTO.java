@@ -9,7 +9,8 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * Direct Message DTO
+ * Data transfer object representing a direct message between two users.
+ * Direct messages are private, one-to-one communications outside of chat rooms.
  *
  * @author info@plaintext.ch
  * @since 2026
@@ -18,10 +19,16 @@ import java.util.Date;
 public class DirectMessageDTO implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    /** The unique identifier of the direct message. */
     private Long id;
+    /** The email address of the message sender. */
     private String senderEmail;
+    /** The email address of the message recipient. */
     private String recipientEmail;
+    /** The content of the message. */
     private String messageText;
+    /** The timestamp when the message was sent. */
     private Date sentAt;
+    /** Whether the message has been read by the recipient. */
     private Boolean isRead;
 }

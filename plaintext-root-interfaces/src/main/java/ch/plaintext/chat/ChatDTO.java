@@ -11,7 +11,9 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * Chat Data Transfer Object
+ * Data transfer object representing a chat room.
+ * Contains the chat metadata including its owner, mandate,
+ * and the list of member email addresses.
  *
  * @author info@plaintext.ch
  * @since 2026
@@ -20,10 +22,16 @@ import java.util.List;
 public class ChatDTO implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    /** The unique identifier of the chat. */
     private Long id;
+    /** The display name of the chat. */
     private String name;
+    /** The email address of the chat owner. */
     private String owner;
+    /** The mandate/tenant this chat belongs to. */
     private String mandat;
+    /** The timestamp when the chat was created. */
     private Date createdAt;
+    /** The email addresses of all chat members. */
     private List<String> memberEmails = new ArrayList<>();
 }

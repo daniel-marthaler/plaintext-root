@@ -9,8 +9,9 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * Chat Messages Page Data Transfer Object
- * Contains paginated chat messages with pagination metadata
+ * Data transfer object for paginated chat messages.
+ * Contains a page of chat messages along with pagination metadata
+ * such as current page, total pages, and navigation flags.
  *
  * @author info@plaintext.ch
  * @since 2026
@@ -19,11 +20,18 @@ import java.util.List;
 public class ChatMessagesPageDTO implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    /** The list of chat messages for the current page. */
     private List<ChatMessageDTO> messages;
+    /** The current page number (0-based). */
     private int currentPage;
+    /** The number of messages per page. */
     private int pageSize;
+    /** The total number of messages across all pages. */
     private long totalElements;
+    /** The total number of pages. */
     private int totalPages;
+    /** Whether there is a next page available. */
     private boolean hasNext;
+    /** Whether there is a previous page available. */
     private boolean hasPrevious;
 }
