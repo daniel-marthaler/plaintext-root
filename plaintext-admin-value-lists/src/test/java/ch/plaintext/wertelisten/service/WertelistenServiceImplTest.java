@@ -281,4 +281,191 @@ class WertelistenServiceImplTest {
         List<Werteliste> result = service.getAllWertelistenForCurrentUser();
         assertThat(result).isEmpty();
     }
+
+    @Test
+    void getWerteReturnsEmptyListForEmptyMandat() {
+        List<String> result = service.getWerte("farben", "  ");
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void getWerteWithCurrentMandatReturnsEmptyForNoUser() {
+        when(security.getMandat()).thenReturn("NO_USER");
+
+        List<String> result = service.getWerte("farben");
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void getWerteWithCurrentMandatReturnsEmptyForError() {
+        when(security.getMandat()).thenReturn("ERROR");
+
+        List<String> result = service.getWerte("farben");
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void getWerteWithCurrentMandatReturnsEmptyForNullMandat() {
+        when(security.getMandat()).thenReturn(null);
+
+        List<String> result = service.getWerte("farben");
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void getWerteHandlesRepositoryException() {
+        when(repository.findByKeyAndMandat("farben", "mandatA")).thenThrow(new RuntimeException("DB error"));
+
+        List<String> result = service.getWerte("farben", "mandatA");
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void getAllKeysReturnsEmptyForEmptyMandat() {
+        List<String> result = service.getAllKeys("  ");
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void getAllKeysHandlesRepositoryException() {
+        when(repository.findAllKeysByMandat("mandatA")).thenThrow(new RuntimeException("DB error"));
+
+        List<String> result = service.getAllKeys("mandatA");
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void getAllKeysWithCurrentMandatReturnsEmptyForNoAuth() {
+        when(security.getMandat()).thenReturn("NO_AUTH");
+
+        List<String> result = service.getAllKeys();
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void getAllKeysWithCurrentMandatReturnsEmptyForError() {
+        when(security.getMandat()).thenReturn("ERROR");
+
+        List<String> result = service.getAllKeys();
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void getAllKeysWithCurrentMandatReturnsEmptyForNull() {
+        when(security.getMandat()).thenReturn(null);
+
+        List<String> result = service.getAllKeys();
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void saveWertelisteThrowsForEmptyMandat() {
+        assertThatThrownBy(() -> service.saveWerteliste("farben", "  ", List.of()))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void saveWertelisteHandlesRepositoryException() {
+        when(repository.findByKeyAndMandat("farben", "mandatA")).thenThrow(new RuntimeException("DB error"));
+
+        assertThatThrownBy(() -> service.saveWerteliste("farben", "mandatA", List.of("Rot")))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("Failed to save");
+    }
+
+    @Test
+    void saveWertelisteSkipsNullValuesInList() {
+        when(repository.findByKeyAndMandat("farben", "mandatA")).thenReturn(Optional.empty());
+        when(repository.save(any(Werteliste.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        List<String> values = new ArrayList<>();
+        values.add("Rot");
+        values.add(null);
+        values.add("Blau");
+        service.saveWerteliste("farben", "mandatA", values);
+
+        ArgumentCaptor<Werteliste> captor = ArgumentCaptor.forClass(Werteliste.class);
+        verify(repository).save(captor.capture());
+        assertThat(captor.getValue().getEntries()).hasSize(2);
+    }
+
+    @Test
+    void deleteWertelisteThrowsForEmptyKey() {
+        assertThatThrownBy(() -> service.deleteWerteliste("  ", "mandatA"))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void deleteWertelisteThrowsForEmptyMandat() {
+        assertThatThrownBy(() -> service.deleteWerteliste("farben", "  "))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void deleteWertelisteHandlesRepositoryException() {
+        doThrow(new RuntimeException("DB error")).when(repository).deleteByKeyAndMandat("farben", "mandatA");
+
+        assertThatThrownBy(() -> service.deleteWerteliste("farben", "mandatA"))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("Failed to delete");
+    }
+
+    @Test
+    void existsReturnsFalseForEmptyKey() {
+        assertThat(service.exists("  ", "mandatA")).isFalse();
+    }
+
+    @Test
+    void existsReturnsFalseForEmptyMandat() {
+        assertThat(service.exists("farben", "  ")).isFalse();
+    }
+
+    @Test
+    void existsHandlesRepositoryException() {
+        when(repository.existsByKeyAndMandat("farben", "mandatA")).thenThrow(new RuntimeException("DB error"));
+
+        assertThat(service.exists("farben", "mandatA")).isFalse();
+    }
+
+    @Test
+    void getAllWertelistenReturnsEmptyForEmptyMandat() {
+        List<Werteliste> result = service.getAllWertelisten("  ");
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void getAllWertelistenForCurrentUserReturnsEmptyForNoAuth() {
+        when(security.getMandat()).thenReturn("NO_AUTH");
+
+        List<Werteliste> result = service.getAllWertelistenForCurrentUser();
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void getAllWertelistenForCurrentUserReturnsEmptyForError() {
+        when(security.getMandat()).thenReturn("ERROR");
+
+        List<Werteliste> result = service.getAllWertelistenForCurrentUser();
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void getAllWertelistenForCurrentUserReturnsEmptyForNull() {
+        when(security.getMandat()).thenReturn(null);
+
+        List<Werteliste> result = service.getAllWertelistenForCurrentUser();
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void saveWertelisteTrimsValues() {
+        when(repository.findByKeyAndMandat("farben", "mandatA")).thenReturn(Optional.empty());
+        when(repository.save(any(Werteliste.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        service.saveWerteliste("farben", "mandatA", List.of("  Rot  "));
+
+        ArgumentCaptor<Werteliste> captor = ArgumentCaptor.forClass(Werteliste.class);
+        verify(repository).save(captor.capture());
+        assertThat(captor.getValue().getEntries().get(0).getValue()).isEqualTo("Rot");
+    }
 }

@@ -274,6 +274,67 @@ class JpaEntityServiceTest {
         assertEquals("sub-value", service.getFieldValue(sub, "subField"));
     }
 
+    @Test
+    void findByMandat_usesPlaintextRepository() {
+        ch.plaintext.framework.PlaintextRepository<Object> ptRepo = mock(ch.plaintext.framework.PlaintextRepository.class);
+        when(registryService.getRepository("MandatEntity")).thenReturn(ptRepo);
+        List<Object> expected = List.of("a", "b");
+        when(ptRepo.findByMandat("m1")).thenReturn(expected);
+
+        List<?> result = service.findByMandat("MandatEntity", "m1");
+        assertEquals(expected, result);
+    }
+
+    @Test
+    void findByMandat_fallsBackToFindAll_whenNoFindByMandatMethod() {
+        // Use a plain JpaRepository that doesn't have findByMandat
+        Object repoWithoutFindByMandat = mock(JpaRepository.class);
+        when(registryService.getRepository("NoMandatEntity")).thenReturn(repoWithoutFindByMandat);
+        // For findAll fallback, it needs to call getRepository again
+        when(((JpaRepository) repoWithoutFindByMandat).findAll()).thenReturn(List.of("x"));
+
+        List<?> result = service.findByMandat("NoMandatEntity", "m1");
+        assertEquals(List.of("x"), result);
+    }
+
+    @Test
+    void setFieldValue_withAlreadyCorrectType_setsDirectly() {
+        TestPojo pojo = new TestPojo();
+        service.setFieldValue(pojo, "name", "directValue");
+        assertEquals("directValue", pojo.name);
+    }
+
+    @Test
+    void setFieldValue_handlesNonexistentField() {
+        TestPojo pojo = new TestPojo();
+        // Should not throw
+        assertDoesNotThrow(() -> service.setFieldValue(pojo, "nonexistent", "value"));
+    }
+
+    @Test
+    void getFieldValueAsString_numericValue_returnsString() {
+        TestPojo pojo = new TestPojo();
+        pojo.count = 42L;
+
+        FieldMetadata fm = new FieldMetadata();
+        fm.setFieldName("count");
+
+        String result = service.getFieldValueAsString(pojo, fm);
+        assertEquals("42", result);
+    }
+
+    @Test
+    void getFieldValueAsString_booleanValue_returnsString() {
+        TestPojo pojo = new TestPojo();
+        pojo.active = true;
+
+        FieldMetadata fm = new FieldMetadata();
+        fm.setFieldName("active");
+
+        String result = service.getFieldValueAsString(pojo, fm);
+        assertEquals("true", result);
+    }
+
     // Test POJOs
     public static class TestPojo {
         String name;
