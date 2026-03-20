@@ -197,8 +197,9 @@ public class BrandingBackingBean implements Serializable {
         try {
             String mandat = security.getMandat();
             brandingService.getLogo(mandat, theme).ifPresent(logo -> {
-                brandingService.saveLogo(mandat, theme, logo.getImageData(),
-                        logo.getContentType(), logo.getFileName(), width, height);
+                logo.setLogoWidth(width);
+                logo.setLogoHeight(height);
+                brandingService.updateLogoDimensions(logo);
             });
             refreshBrandingBean();
             addMessage(FacesMessage.SEVERITY_INFO, "Erfolg", "Dimensionen gespeichert");
@@ -210,7 +211,7 @@ public class BrandingBackingBean implements Serializable {
 
     private String buildDataUri(BrandingLogo logo) {
         return "data:" + logo.getContentType() + ";base64,"
-                + Base64.getEncoder().encodeToString(logo.getImageData());
+                + logo.getImageData();
     }
 
     private void refreshBrandingBean() {

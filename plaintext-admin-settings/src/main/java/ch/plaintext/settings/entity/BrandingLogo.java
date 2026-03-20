@@ -35,9 +35,10 @@ public class BrandingLogo {
     @Column(name = "theme", nullable = false, length = 10)
     private String theme; // "light" or "dark"
 
+    
     @Lob
     @Column(name = "image_data", nullable = false)
-    private byte[] imageData;
+    private String imageData; // Base64-encoded
 
     @Column(name = "content_type", nullable = false, length = 100)
     private String contentType;

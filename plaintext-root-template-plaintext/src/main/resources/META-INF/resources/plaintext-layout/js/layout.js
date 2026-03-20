@@ -23,7 +23,7 @@ Plaintext.Layout = {
         this.initialized = true;
         var self = this;
 
-        // ===== Menu button (hamburger) =====
+        // ===== Menu button (hamburger) - always visible, toggles sidebar =====
         var menuButton = document.querySelector('.menu-button');
         if (menuButton) {
             menuButton.addEventListener('click', function(e) {
@@ -32,21 +32,9 @@ Plaintext.Layout = {
                 if (self.isMobile()) {
                     self.wrapper.classList.toggle('layout-mobile-active');
                     document.body.classList.toggle('blocked-scroll');
-                }
-            });
-        }
-
-        // ===== Sidebar hover (non-static) =====
-        if (this.menuWrapper) {
-            this.menuWrapper.addEventListener('mouseenter', function() {
-                if (self.wrapper.classList.contains('layout-sidebar') &&
-                    !self.wrapper.classList.contains('layout-static')) {
-                    self.menuWrapper.classList.add('layout-sidebar-active');
-                }
-            });
-            this.menuWrapper.addEventListener('mouseleave', function() {
-                if (!self.wrapper.classList.contains('layout-static')) {
-                    self.menuWrapper.classList.remove('layout-sidebar-active');
+                } else {
+                    // Desktop: toggle sidebar static (pinned/unpinned)
+                    self.wrapper.classList.toggle('layout-static');
                 }
             });
         }

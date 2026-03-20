@@ -14,7 +14,8 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
         <meta name="mobile-web-app-capable" content="yes"/>
         <link rel="icon" href="#{request.contextPath}/resources/plaintext-layout/images/favicon.ico" type="image/x-icon"></link>
-        <h:outputStylesheet library="primefaces-#{userPreferencesBackingBean.darkMode == 'dark' ? 'arya' : 'saga'}-blue" name="theme.css"/>
+        <!-- Single dynamic theme - uses CSS variables set below -->
+        <h:outputStylesheet library="primefaces-plaintext" name="theme.css"/>
         <style>
             /* Prevent menu flickering on page load */
             body:not(.plaintext-menu-ready) .layout-menu li > ul {
@@ -24,33 +25,44 @@
                 visibility: visible;
             }
 
-            /* Prevent theme flash with CSS variables */
-            html[data-theme="light"] {
-                --surface-0: #ffffff;
-                --surface-50: #f8f9fa;
-                --surface-100: #e9ecef;
-                --surface-200: #dee2e6;
-                --surface-border: #dee2e6;
-                --text-color: #495057;
-                --primary-color: #2c84d8;
-                --success-color: #28a745;
-                --danger-color: #dc3545;
-                --info-bg: #f5f9ff;
-                --info-text: #1976d2;
+            /* === Dynamic theme colors (server-rendered per user preference) === */
+            :root {
+                --pt-primary-color: #{themeColorProvider.getPrimaryColor(userPreferencesBackingBean.componentTheme, userPreferencesBackingBean.darkMode)};
+                --pt-primary-color-text: #{themeColorProvider.getPrimaryColorText(userPreferencesBackingBean.componentTheme)};
+                --pt-primary-lighter: #{themeColorProvider.getPrimaryLighter(userPreferencesBackingBean.componentTheme, userPreferencesBackingBean.darkMode)};
+                --pt-primary-bg-16: #{themeColorProvider.getPrimaryBg16(userPreferencesBackingBean.componentTheme, userPreferencesBackingBean.darkMode)};
+                --pt-primary-bg-04: #{themeColorProvider.getPrimaryBg04(userPreferencesBackingBean.componentTheme, userPreferencesBackingBean.darkMode)};
+                --pt-focus-ring-color: #{themeColorProvider.getFocusRing(userPreferencesBackingBean.componentTheme, userPreferencesBackingBean.darkMode)};
             }
 
+            /* Light mode surface colors */
+            html[data-theme="light"] {
+                color-scheme: light;
+                --pt-surface-0: #ffffff;
+                --pt-surface-50: #FAFAFA;
+                --pt-surface-hover: #e9ecef;
+                --pt-surface-300: #ced4da;
+                --pt-surface-400: #adb5bd;
+                --pt-surface-border: #dee2e6;
+                --pt-text-color: #495057;
+                --pt-text-color-secondary: #6c757d;
+                --pt-text-dark: #212529;
+                --pt-mask-bg: rgba(0, 0, 0, 0.4);
+            }
+
+            /* Dark mode surface colors */
             html[data-theme="dark"] {
-                --surface-0: #1e1e2f;
-                --surface-50: #2a2b3d;
-                --surface-100: #3c3d4f;
-                --surface-200: #4e4f62;
-                --surface-border: #3c3d4f;
-                --text-color: #d4d4dc;
-                --primary-color: #5eb3f6;
-                --success-color: #4caf50;
-                --danger-color: #f44336;
-                --info-bg: #2a2b3d;
-                --info-text: #5eb3f6;
+                color-scheme: dark;
+                --pt-surface-0: #1e1e2f;
+                --pt-surface-50: #2a2b3d;
+                --pt-surface-hover: #3c3d4f;
+                --pt-surface-300: #606174;
+                --pt-surface-400: #8b8ca0;
+                --pt-surface-border: #3c3d4f;
+                --pt-text-color: #d4d4dc;
+                --pt-text-color-secondary: #a9aabe;
+                --pt-text-dark: #d4d4dc;
+                --pt-mask-bg: rgba(0, 0, 0, 0.6);
             }
         </style>
     </f:facet>
@@ -126,7 +138,6 @@
     <h:outputStylesheet name="css/primeicons.css" library="plaintext-layout"/>
     <h:outputStylesheet name="css/primeflex.min.css" library="plaintext-layout"/>
     <h:outputStylesheet name="css/#{userPreferencesBackingBean.layout}.css" library="plaintext-layout"/>
-    <h:outputStylesheet library="plaintext-layout" name="css/colors/color-#{userPreferencesBackingBean.componentTheme}.css"/>
 
 </h:body>
 

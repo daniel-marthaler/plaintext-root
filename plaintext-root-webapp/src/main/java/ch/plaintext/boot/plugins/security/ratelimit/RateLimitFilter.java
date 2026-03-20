@@ -13,6 +13,10 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
+/**
+ * Rate limiting filter for REST API endpoints.
+ * Limits requests per IP address to prevent abuse.
+ */
 @Slf4j
 @Component
 public class RateLimitFilter implements Filter {
@@ -39,6 +43,7 @@ public class RateLimitFilter implements Filter {
             filterChain.doFilter(servletRequest, servletResponse);
             return;
         }
+
         String path = request.getRequestURI();
 
         if (path.startsWith("/api/")) {
@@ -76,10 +81,14 @@ public class RateLimitFilter implements Filter {
     }
 
     String getClientIp(HttpServletRequest request) {
-        String xff = request.getHeader("X-Forwarded-For");
-        if (xff != null && !xff.isBlank()) return xff.split(",")[0].trim();
-        String xri = request.getHeader("X-Real-IP");
-        if (xri != null && !xri.isBlank()) return xri.trim();
+        String xForwardedFor = request.getHeader("X-Forwarded-For");
+        if (xForwardedFor != null && !xForwardedFor.isBlank()) {
+            return xForwardedFor.split(",")[0].trim();
+        }
+        String xRealIp = request.getHeader("X-Real-IP");
+        if (xRealIp != null && !xRealIp.isBlank()) {
+            return xRealIp.trim();
+        }
         return request.getRemoteAddr();
     }
 

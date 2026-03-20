@@ -11,6 +11,7 @@ import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.Base64;
 import java.util.Optional;
 import java.util.Set;
 
@@ -59,13 +60,22 @@ public class BrandingService {
                 .orElse(new BrandingLogo());
         logo.setMandat(mandat);
         logo.setTheme(theme);
-        logo.setImageData(imageData);
+        logo.setImageData(Base64.getEncoder().encodeToString(imageData));
         logo.setContentType(contentType);
         logo.setFileName(fileName);
         logo.setLogoWidth(width != null ? width : 180);
         logo.setLogoHeight(height != null ? height : 40);
         logoRepository.save(logo);
         log.info("Saved branding logo: mandat={}, theme={}, file={}", mandat, theme, fileName);
+    }
+
+    public byte[] getLogoBytes(BrandingLogo logo) {
+        return Base64.getDecoder().decode(logo.getImageData());
+    }
+
+    @Transactional
+    public void updateLogoDimensions(BrandingLogo logo) {
+        logoRepository.save(logo);
     }
 
     @Transactional

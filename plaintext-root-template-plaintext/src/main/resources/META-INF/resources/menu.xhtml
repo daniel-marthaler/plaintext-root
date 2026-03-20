@@ -6,30 +6,6 @@
                 xmlns:c="http://java.sun.com/jsp/jstl/core">
 
 <div class="menu-wrapper">
-    <div class="sidebar-logo">
-        <h:form id="pinForm">
-            <input type="hidden" name="_csrf" value="#{_csrf.token}"/>
-            <h:inputHidden id="menuStaticValue" value="#{userPreferencesBackingBean.menuStatic}" />
-            <p:commandLink styleClass="sidebar-pin" title="Toggle Menu"
-                           actionListener="#{userPreferencesBackingBean.toggleMenuStatic()}"
-                           update="pinForm:menuStaticValue"
-                           process="@this"
-                           oncomplete="handleMenuPinToggle();">
-                <span class="pin"></span>
-            </p:commandLink>
-        </h:form>
-        <script>
-            function handleMenuPinToggle() {
-                var menuStaticValue = document.getElementById('pinForm:menuStaticValue').value;
-                var wrapper = document.querySelector('.layout-wrapper');
-                if (menuStaticValue === 'true') {
-                    wrapper.classList.add('layout-static');
-                } else {
-                    wrapper.classList.remove('layout-static');
-                }
-            }
-        </script>
-    </div>
     <div class="layout-menu-container">
         <h:form id="menuform">
             <ul id="menuform:plaintext-menu" class="layout-menu">
@@ -124,6 +100,15 @@
                     var parentLabel = parentMenuItem.children('a').first().text().trim();
                     sessionStorage.setItem('openSubmenuLabel', parentLabel);
                     e.stopPropagation();
+
+                    // Close sidebar on mobile after clicking a menu item
+                    if (window.innerWidth < 992) {
+                        var wrapper = document.querySelector('.layout-wrapper');
+                        if (wrapper) {
+                            wrapper.classList.remove('layout-mobile-active');
+                            document.body.classList.remove('blocked-scroll');
+                        }
+                    }
                 });
 
                 $('.layout-menu > li').each(function() {

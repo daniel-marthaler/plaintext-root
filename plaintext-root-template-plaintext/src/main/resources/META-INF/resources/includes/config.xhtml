@@ -12,7 +12,6 @@
                               onchange="handleChange('menuMode', this.value, function(val) { changeMenuMode(val); });">
                 <f:selectItem itemLabel="Horizontal" itemValue="layout-horizontal" />
                 <f:selectItem itemLabel="Sidebar" itemValue="layout-sidebar" />
-                <f:selectItem itemLabel="Slim" itemValue="layout-slim" />
             </p:selectOneRadio>
 
             <hr/>
@@ -53,8 +52,6 @@
                 var currentComponentTheme = '#{userPreferencesBackingBean.componentTheme}';
                 var currentDarkMode = '#{userPreferencesBackingBean.darkMode}';
                 var currentMenuMode = '#{userPreferencesBackingBean.menuMode}';
-                var currentTopbarTheme = '#{userPreferencesBackingBean.topbarTheme}';
-                var currentMenuTheme = '#{userPreferencesBackingBean.menuTheme}';
                 var currentInputStyle = '#{userPreferencesBackingBean.inputStyle}';
 
                 var pendingPreferences = {};
@@ -62,124 +59,116 @@
                 var isInitializing = true;
                 var autoSaveTimer = null;
                 var AUTO_SAVE_DELAY = 2000;
-                var cssChangeQueue = [];
-                var isCssChangeInProgress = false;
 
-                // Optimized CSS replacement
-                function optimizedChangeLayoutsTheme(darkMode) {
-                    try {
-                        var linkElement = document.querySelector('link[href*="layout-"]');
-                        if (linkElement) {
-                            var href = linkElement.getAttribute('href');
-                            var startIndexOf = href.indexOf('layout-') + 6;
-                            var endIndexOf = href.indexOf('.css');
-                            var currentColor = href.substring(startIndexOf, endIndexOf);
-                            linkElement.setAttribute('href', href.replace(currentColor, '-' + darkMode));
-                        }
-                    } catch (e) {
-                        console.error('Error in optimizedChangeLayoutsTheme:', e);
-                    }
-                }
+                // Color palette data (server-rendered)
+                var themeColors = #{themeColorProvider.colorsJson};
 
-                function optimizedChangeComponentsTheme(themeColor, darkMode) {
-                    try {
-                        // Switch between saga (light) and arya (dark) PrimeFaces themes
-                        var newLibrary = darkMode === 'dark' ? 'arya' : 'saga';
-                        var linkElement = document.querySelector('link[href*="theme.css"]');
-                        if (linkElement) {
-                            var href = linkElement.getAttribute('href');
-                            // Replace saga-blue or arya-blue with the correct variant
-                            var newHref = href.replace(/primefaces-(saga|arya)-blue/, 'primefaces-' + newLibrary + '-blue');
-                            linkElement.setAttribute('href', newHref);
-                        }
-                    } catch (e) {
-                        console.error('Error in optimizedChangeComponentsTheme:', e);
-                    }
-                }
-
-                // Initialize UI
-                (function initializeUI() {
-                    try {
+                // Initialize
+                (function() {
+                    setTimeout(function() {
+                        try {
+                            Plaintext.Configurator.changeSectionTheme(currentDarkMode, 'layout-topbar');
+                            Plaintext.Configurator.changeSectionTheme(currentDarkMode, 'layout-menu');
+                            Plaintext.Configurator.updateInputStyle(currentInputStyle);
+                        } catch (e) { }
                         setTimeout(function() {
-                            try {
-                                Plaintext.Configurator.changeLayoutsTheme(currentDarkMode);
-                                Plaintext.Configurator.changeSectionTheme(currentDarkMode, 'layout-topbar');
-                                Plaintext.Configurator.changeSectionTheme(currentDarkMode, 'layout-menu');
-                                Plaintext.Configurator.updateInputStyle(currentInputStyle);
-                            } catch (e) {
-                                console.error('Error applying visual themes:', e);
-                            }
-
-                            setTimeout(function() {
-                                cleanupOrphanedLinks();
-                                pendingPreferences = {};
-                                hasUnsavedChanges = false;
-                                isInitializing = false;
-                            }, 1000);
+                            pendingPreferences = {};
+                            hasUnsavedChanges = false;
+                            isInitializing = false;
                         }, 500);
-                    } catch (e) {
-                        console.error('Error initializing UI:', e);
-                        isInitializing = false;
-                    }
+                    }, 300);
                 })();
 
-                function handleChange(key, value, visualChangeFunc) {
-                    if (isInitializing) return;
+                // ===== Apply CSS variables for a color =====
+                function applyColorVariables(colorName, mode) {
+                    var colors = themeColors[colorName];
+                    if (!colors) return;
+                    var c = colors[mode] || colors['light'];
+                    var root = document.documentElement.style;
+                    root.setProperty('--pt-primary-color', c.primary);
+                    root.setProperty('--pt-primary-color-text', c.primaryText);
+                    root.setProperty('--pt-primary-lighter', c.primaryLighter);
+                    root.setProperty('--pt-primary-bg-16', c.primaryBg16);
+                    root.setProperty('--pt-primary-bg-04', c.primaryBg04);
+                    root.setProperty('--pt-focus-ring-color', c.focusRing);
+                }
 
-                    pendingPreferences[key] = value;
+                // ===== Change handlers =====
+                function changeThemeColor(themeFile) {
+                    applyColorVariables(themeFile, currentDarkMode);
+                    currentComponentTheme = themeFile;
+                    pendingPreferences['componentTheme'] = themeFile;
                     hasUnsavedChanges = true;
-
-                    if (visualChangeFunc) {
-                        queueCssChange(key, value, visualChangeFunc);
-                    }
-
                     scheduleAutoSave();
                 }
 
+                function changeDarkMode(darkMode) {
+                    // Update data-theme attribute (triggers CSS variable switch for surfaces)
+                    document.documentElement.setAttribute('data-theme', darkMode);
+                    // Update primary color for the new mode
+                    applyColorVariables(currentComponentTheme, darkMode);
+                    // Update layout sections
+                    Plaintext.Configurator.changeSectionTheme(darkMode, 'layout-menu');
+                    Plaintext.Configurator.changeSectionTheme(darkMode, 'layout-topbar');
+                    // Update branding logo theme
+                    var logo = document.getElementById('branding-logo');
+                    if (logo) { logo.setAttribute('src', logo.getAttribute('src').replace(/theme=(light|dark)/, 'theme=' + darkMode)); }
+                    // Update layout CSS
+                    var layoutLink = document.querySelector('link[href*="layout-"]');
+                    if (layoutLink) {
+                        var href = layoutLink.getAttribute('href');
+                        var idx = href.indexOf('layout-') + 6;
+                        var end = href.indexOf('.css');
+                        layoutLink.setAttribute('href', href.replace(href.substring(idx, end), '-' + darkMode));
+                    }
+
+                    currentDarkMode = darkMode;
+                    pendingPreferences['darkMode'] = darkMode;
+                    pendingPreferences['topbarTheme'] = darkMode;
+                    pendingPreferences['menuTheme'] = darkMode;
+                    hasUnsavedChanges = true;
+                    scheduleAutoSave();
+                }
+
+                function changeMenuMode(menuMode) {
+                    var wrapper = document.querySelector('.layout-wrapper');
+                    if (wrapper) {
+                        wrapper.classList.remove('layout-sidebar', 'layout-slim', 'layout-horizontal', 'layout-static');
+                        wrapper.classList.add(menuMode);
+                        if (menuMode === 'layout-sidebar') {
+                            wrapper.classList.add('layout-static');
+                            pendingPreferences['menuStatic'] = 'true';
+                        } else {
+                            pendingPreferences['menuStatic'] = 'false';
+                        }
+                    }
+                    Plaintext.Configurator.clearLayoutState();
+                    currentMenuMode = menuMode;
+                    pendingPreferences['menuMode'] = menuMode;
+                    hasUnsavedChanges = true;
+                    scheduleAutoSave();
+                }
+
+                function changeInputStyle(inputStyle) {
+                    Plaintext.Configurator.updateInputStyle(inputStyle);
+                    currentInputStyle = inputStyle;
+                    pendingPreferences['inputStyle'] = inputStyle;
+                    hasUnsavedChanges = true;
+                    scheduleAutoSave();
+                }
+
+                // ===== Generic change handler for radio buttons =====
+                function handleChange(key, value, visualChangeFunc) {
+                    if (isInitializing) return;
+                    if (visualChangeFunc) visualChangeFunc(value);
+                }
+
+                // ===== Auto-save =====
                 function scheduleAutoSave() {
                     if (autoSaveTimer) clearTimeout(autoSaveTimer);
                     autoSaveTimer = setTimeout(function() {
                         if (hasUnsavedChanges) saveAllPendingChanges();
                     }, AUTO_SAVE_DELAY);
-                }
-
-                function queueCssChange(key, value, changeFunc) {
-                    cssChangeQueue = cssChangeQueue.filter(function(item) { return item.key !== key; });
-                    cssChangeQueue.push({ key: key, value: value, changeFunc: changeFunc });
-                    if (!isCssChangeInProgress) processCssQueue();
-                }
-
-                function processCssQueue() {
-                    if (cssChangeQueue.length === 0) { isCssChangeInProgress = false; return; }
-                    isCssChangeInProgress = true;
-                    var change = cssChangeQueue.shift();
-                    try {
-                        cleanupOrphanedLinks();
-                        change.changeFunc(change.value);
-                        switch(change.key) {
-                            case 'componentTheme': currentComponentTheme = change.value; break;
-                            case 'darkMode': currentDarkMode = change.value; break;
-                            case 'menuMode': currentMenuMode = change.value; break;
-                            case 'inputStyle': currentInputStyle = change.value; break;
-                        }
-                        setTimeout(processCssQueue, 300);
-                    } catch (e) {
-                        console.error('Error processing CSS change:', e);
-                        setTimeout(processCssQueue, 100);
-                    }
-                }
-
-                function cleanupOrphanedLinks() {
-                    try {
-                        ['theme.css', 'layout-'].forEach(function(pattern) {
-                            var links = document.querySelectorAll('link[href*="' + pattern + '"]');
-                            if (links.length > 1) {
-                                for (var i = 0; i < links.length - 1; i++) {
-                                    links[i].parentNode.removeChild(links[i]);
-                                }
-                            }
-                        });
-                    } catch (e) { }
                 }
 
                 window.addEventListener('beforeunload', function() {
@@ -200,96 +189,18 @@
                         for (var key in pendingPreferences) {
                             params.append(key, pendingPreferences[key]);
                         }
-                        // Add CSRF token
                         var csrfInput = document.querySelector('#config-form input[name="_csrf"]');
-                        if (csrfInput) {
-                            params.append('_csrf', csrfInput.value);
-                        }
+                        if (csrfInput) params.append('_csrf', csrfInput.value);
 
                         fetch('/api/preferences/save', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                             body: params.toString(),
                             keepalive: true
-                        })
-                        .then(function(response) {
-                            if (response.ok) {
-                                hasUnsavedChanges = false;
-                                pendingPreferences = {};
-                            }
-                        })
-                        .catch(function(error) {
-                            console.error('Error saving preferences:', error);
-                        });
-                    } catch (e) {
-                        console.error('Exception saving preferences:', e);
-                    }
-                }
-
-                function changeThemeColor(themeFile) {
-                    // 1. Find and swap color CSS
-                    var allLinks = document.getElementsByTagName('link');
-                    for (var i = 0; i < allLinks.length; i++) {
-                        var h = allLinks[i].getAttribute('href');
-                        if (h && h.indexOf('colors%2Fcolor-') > -1) {
-                            allLinks[i].setAttribute('href', h.replace(/color-[a-z]+/, 'color-' + themeFile));
-                            break;
-                        }
-                        if (h && h.indexOf('colors/color-') > -1) {
-                            allLinks[i].setAttribute('href', h.replace(/color-[a-z]+/, 'color-' + themeFile));
-                            break;
-                        }
-                    }
-
-                    // 2. Save to backend
-                    currentComponentTheme = themeFile;
-                    pendingPreferences['componentTheme'] = themeFile;
-                    hasUnsavedChanges = true;
-                    scheduleAutoSave();
-                }
-
-                function changeDarkMode(darkMode) {
-                    handleChange('darkMode', darkMode, function(mode) {
-                        document.documentElement.setAttribute('data-theme', mode);
-                        optimizedChangeLayoutsTheme(mode);
-                        optimizedChangeComponentsTheme(currentComponentTheme, mode);
-                        Plaintext.Configurator.changeSectionTheme(mode, 'layout-menu');
-                        Plaintext.Configurator.changeSectionTheme(mode, 'layout-topbar');
-                        var logo = document.getElementById('branding-logo');
-                        if (logo) { logo.setAttribute('src', logo.getAttribute('src').replace(/theme=(light|dark)/, 'theme=' + mode)); }
-                    });
-
-                    if (!isInitializing) {
-                        pendingPreferences['topbarTheme'] = darkMode;
-                        pendingPreferences['menuTheme'] = darkMode;
-                        currentTopbarTheme = darkMode;
-                        currentMenuTheme = darkMode;
-                    }
-                }
-
-                function changeMenuMode(menuMode) {
-                    try {
-                        var wrapper = document.querySelector('.layout-wrapper');
-                        if (wrapper) {
-                            wrapper.classList.remove('layout-sidebar', 'layout-slim', 'layout-horizontal', 'layout-static');
-                            wrapper.classList.add(menuMode);
-                            if (!isInitializing) {
-                                if (menuMode === 'layout-sidebar') {
-                                    wrapper.classList.add('layout-static');
-                                    pendingPreferences['menuStatic'] = 'true';
-                                } else {
-                                    pendingPreferences['menuStatic'] = 'false';
-                                }
-                            }
-                        }
-                        Plaintext.Configurator.clearLayoutState();
-                    } catch (e) {
-                        console.error('Error changing menu mode:', e);
-                    }
-                }
-
-                function changeInputStyle(inputStyle) {
-                    Plaintext.Configurator.updateInputStyle(inputStyle);
+                        }).then(function(r) {
+                            if (r.ok) { hasUnsavedChanges = false; pendingPreferences = {}; }
+                        }).catch(function(e) { console.error('Save error:', e); });
+                    } catch (e) { console.error('Save exception:', e); }
                 }
                 //]]>
             </script>
