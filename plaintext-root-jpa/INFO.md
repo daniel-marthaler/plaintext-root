@@ -20,7 +20,7 @@ Provides JPA/Hibernate configuration and base entity classes for database persis
 ### External Dependencies
 - Spring Boot Data JPA
 - Hibernate
-- HSQLDB
+- H2 (PostgreSQL mode)
 
 ### Internal Module Dependencies
 - plaintext-root-interfaces

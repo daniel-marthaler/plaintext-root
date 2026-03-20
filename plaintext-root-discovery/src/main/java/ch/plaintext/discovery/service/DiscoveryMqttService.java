@@ -24,7 +24,7 @@ import java.util.concurrent.CompletableFuture;
 @RequiredArgsConstructor
 public class DiscoveryMqttService {
 
-    @Value("${discovery.mqtt.broker:tcp://192.168.1.224:1883}")
+    @Value("${discovery.mqtt.broker:}")
     private String brokerUrl;
     
     @Value("${discovery.mqtt.clientId:plaintext-discovery}")
@@ -42,6 +42,10 @@ public class DiscoveryMqttService {
     
     @PostConstruct
     public void init() {
+        if (brokerUrl == null || brokerUrl.isBlank()) {
+            log.info("Discovery MQTT broker not configured - running in standalone mode (only own instance visible)");
+            return;
+        }
         CompletableFuture.runAsync(() -> {
             try {
                 connectToMqtt();

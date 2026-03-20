@@ -35,8 +35,8 @@ graph TB
         COMMON[plaintext-root-common<br/>Utilities]
         JPA[plaintext-root-jpa<br/>Base Entities, Auditing]
         MENU[plaintext-root-menu<br/>Menu Builder]
-        SECURITY[plaintext-root-menuesteuerung<br/>Menu Visibility]
-        ROLES[plaintext-root-rollenzuteilung<br/>Role Management]
+        SECURITY[plaintext-root-menu-visibility<br/>Menu Visibility]
+        ROLES[plaintext-root-role-assignment<br/>Role Management]
         EMAIL[plaintext-root-email<br/>Email Send/Receive]
         FLYWAY[plaintext-root-flyway<br/>DB Migrations]
         DISCOVERY[plaintext-root-discovery<br/>MQTT Service Discovery]
@@ -46,9 +46,9 @@ graph TB
         ADMIN_SET[plaintext-admin-settings]
         ADMIN_SES[plaintext-admin-sessions]
         ADMIN_CRON[plaintext-admin-cron]
-        ADMIN_WL[plaintext-admin-wertelisten]
+        ADMIN_WL[plaintext-admin-value-lists]
         ADMIN_FL[plaintext-admin-filelist]
-        ADMIN_ANF[plaintext-admin-anforderungen]
+        ADMIN_ANF[plaintext-admin-requirements]
     end
 
     WEBAPP --> TEMPLATE
@@ -80,8 +80,8 @@ graph TB
 | `plaintext-root-common` | Common utilities, XStream serialization, object storage |
 | `plaintext-root-jpa` | Base JPA entities with audit fields, generic repositories |
 | `plaintext-root-menu` | Annotation-driven menu system with hierarchical support |
-| `plaintext-root-menuesteuerung` | Mandate-based menu visibility control |
-| `plaintext-root-rollenzuteilung` | User role assignment and management |
+| `plaintext-root-menu-visibility` | Mandate-based menu visibility control |
+| `plaintext-root-role-assignment` | User role assignment and management |
 | `plaintext-root-email` | Email send (SMTP) and receive (IMAP) with configuration UI |
 | `plaintext-root-flyway` | Database migration management |
 | `plaintext-root-discovery` | MQTT-based service discovery between Plaintext apps |
@@ -90,9 +90,9 @@ graph TB
 | `plaintext-admin-settings` | Application settings management UI |
 | `plaintext-admin-sessions` | Active session monitoring and insights |
 | `plaintext-admin-cron` | Cron job monitoring and management UI |
-| `plaintext-admin-wertelisten` | Key-value list management (lookup tables) |
+| `plaintext-admin-value-lists` | Key-value list management (lookup tables) |
 | `plaintext-admin-filelist` | File management module |
-| `plaintext-admin-anforderungen` | Requirements management with AI integration |
+| `plaintext-admin-requirements` | Requirements management with AI integration |
 
 ## Tech Stack
 
@@ -114,7 +114,7 @@ graph TB
 
 - **Java 25+** (e.g., via [SDKMAN](https://sdkman.io/): `sdk install java 25-open`)
 - **Maven 3.9+**
-- **Docker** or **Podman** (for PostgreSQL)
+- **Docker** or **Podman** (optional, only for PostgreSQL)
 
 ### 1. Clone and Build
 
@@ -122,10 +122,7 @@ graph TB
 git clone https://github.com/daniel-marthaler/plaintext-root.git
 cd plaintext-root
 
-# Start PostgreSQL
-docker compose up -d
-
-# Build all modules
+# Build all modules (no database needed!)
 mvn clean install -DskipTests
 ```
 
@@ -135,25 +132,33 @@ mvn clean install -DskipTests
 mvn spring-boot:run -pl plaintext-root-webapp
 ```
 
-Or via JAR:
+The application starts at **http://localhost:8080** with an **in-memory H2 database** (PostgreSQL compatibility mode). No external database setup needed!
+
+> **Note:** Data is lost on restart with H2. For persistent storage, switch to PostgreSQL (see below).
+
+### 3. Switch to PostgreSQL (Optional)
+
+For production or persistent data, switch to PostgreSQL:
 
 ```bash
-java -jar plaintext-root-webapp/target/plaintext-root-webapp-*-exec.jar
+# Start PostgreSQL
+docker compose up -d
+
+# Run with PostgreSQL profile
+mvn spring-boot:run -pl plaintext-root-webapp -Dspring-boot.run.profiles=postgres
 ```
 
-The application starts at **http://localhost:8080**.
-
-### 3. Default Configuration
-
-The default `application.yml` connects to a local PostgreSQL on port 5434:
-
-```yaml
-spring:
-  datasource:
-    url: jdbc:postgresql://localhost:5434/plaintext_root
-    username: plaintext
-    password: plaintext
+Or set the environment variable:
+```bash
+SPRING_PROFILES_ACTIVE=postgres mvn spring-boot:run -pl plaintext-root-webapp
 ```
+
+### 4. H2 Console
+
+In dev mode, the H2 database console is available at **http://localhost:8080/h2-console** with:
+- JDBC URL: `jdbc:h2:mem:plaintext_root`
+- Username: `sa`
+- Password: *(empty)*
 
 ## Multi-Tenancy
 
@@ -225,7 +230,7 @@ Connected apps appear in the globe icon dropdown in the topbar, enabling single-
 
 ## Database Migrations
 
-Flyway migrations use HSQLDB-compatible SQL syntax and are located in each module's `src/main/resources/db/migration/` directory. Migration file names follow the pattern:
+Flyway migrations use H2 (PostgreSQL mode) compatible SQL syntax and are located in each module's `src/main/resources/db/migration/` directory. Migration file names follow the pattern:
 
 ```
 V{timestamp}__description.sql
@@ -249,8 +254,8 @@ plaintext-root/
 ├── plaintext-root-common/              # Utilities
 ├── plaintext-root-jpa/                 # Base JPA entities
 ├── plaintext-root-menu/                # Menu builder
-├── plaintext-root-menuesteuerung/      # Menu visibility
-├── plaintext-root-rollenzuteilung/     # Role management
+├── plaintext-root-menu-visibility/      # Menu visibility
+├── plaintext-root-role-assignment/     # Role management
 ├── plaintext-root-email/               # Email system
 ├── plaintext-root-flyway/              # DB migrations
 ├── plaintext-root-discovery/           # MQTT discovery
@@ -259,9 +264,9 @@ plaintext-root/
 ├── plaintext-admin-settings/           # Settings admin
 ├── plaintext-admin-sessions/           # Session monitoring
 ├── plaintext-admin-cron/               # Cron job admin
-├── plaintext-admin-wertelisten/        # Lookup tables
+├── plaintext-admin-value-lists/        # Lookup tables
 ├── plaintext-admin-filelist/           # File management
-├── plaintext-admin-anforderungen/      # Requirements + AI
+├── plaintext-admin-requirements/      # Requirements + AI
 ├── compose.yaml                        # PostgreSQL dev setup
 ├── Dockerfile                          # Production container
 └── LICENSE                             # MPL 2.0

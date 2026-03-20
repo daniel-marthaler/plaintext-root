@@ -21,7 +21,7 @@
          │                                     │
          ▼                                     ▼
     ┌──────────────────────────────────────────────────┐
-    │           MQTT Broker (192.168.1.224)           │
+    │           MQTT Broker (localhost)           │
     │                                                  │
     │  Topics:                                         │
     │  • plaintext/discovery    - User login announce │
@@ -87,7 +87,7 @@
 ### Environment Variables
 ```bash
 PLAINTEXT_ENV=prod                    # Environment: prod, dev, int, test
-DISCOVERY_MQTT_BROKER=tcp://192.168.1.224:1883
+DISCOVERY_MQTT_BROKER=tcp://localhost:1883
 DISCOVERY_APP_NAME="BIT Production"
 ```
 
@@ -100,7 +100,7 @@ discovery.app.name=Plaintext App
 discovery.app.environment=${PLAINTEXT_ENV:dev}
 
 # MQTT Configuration  
-discovery.mqtt.broker=tcp://192.168.1.224:1883
+discovery.mqtt.broker=tcp://localhost:1883
 discovery.mqtt.client-id=plaintext-discovery
 
 # Heartbeat & Cleanup
@@ -218,7 +218,7 @@ Access: `/discoveryStats.xhtml`
 - Automatic cleanup of expired tokens
 
 ### Network Security
-- MQTT traffic on internal network only (192.168.1.224)
+- MQTT traffic on internal network only (localhost)
 - No internet-facing discovery endpoints
 - App URLs must be whitelisted/trusted
 
@@ -229,7 +229,7 @@ Access: `/discoveryStats.xhtml`
 **MQTT Connection Failures**
 ```bash
 # Check MQTT broker connectivity
-telnet 192.168.1.224 1883
+telnet localhost 1883
 ```
 
 **Missing Remote Apps in Menu**

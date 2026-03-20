@@ -75,8 +75,8 @@ plaintext-root/
 ├── plaintext-root-common/              # Common utilities
 ├── plaintext-root-jpa/                 # JPA base entities
 ├── plaintext-root-menu/                # Menu system
-├── plaintext-root-menuesteuerung/      # Menu visibility
-├── plaintext-root-rollenzuteilung/     # Role management
+├── plaintext-root-menu-visibility/      # Menu visibility
+├── plaintext-root-role-assignment/     # Role management
 ├── plaintext-root-email/               # Email system
 ├── plaintext-root-flyway/              # DB migrations
 ├── plaintext-root-discovery/           # Service discovery

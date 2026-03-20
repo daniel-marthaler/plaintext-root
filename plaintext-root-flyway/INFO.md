@@ -8,7 +8,7 @@ Manages database schema migrations using Flyway for version-controlled database 
 - Database versioning
 - Migration script validation
 - Cross-module migration coordination
-- HSQLDB-specific syntax support
+- H2 with PostgreSQL compatibility mode
 
 ## Main Components
 - Flyway configuration
@@ -19,7 +19,7 @@ Manages database schema migrations using Flyway for version-controlled database 
 ### External Dependencies
 - Flyway Core
 - Spring Boot
-- HSQLDB
+- H2 (PostgreSQL mode)
 
 ### Internal Module Dependencies
 - plaintext-root-jpa
@@ -28,4 +28,4 @@ Manages database schema migrations using Flyway for version-controlled database 
 - Migration scripts in `db/migration`
 - Flyway properties in application.properties
 - Use `./getflywaynr` script to generate patch numbers (calculates seconds since 2000, checks for conflicts)
-- Use HSQLDB syntax for migration scripts
+- Use H2 (PostgreSQL mode) syntax for migration scripts

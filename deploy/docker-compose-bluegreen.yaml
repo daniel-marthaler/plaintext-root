@@ -56,7 +56,7 @@ services:
       MAD_ROLLENZUWEISUNGSTOKEN: "true"
       PLAINTEXT_APP_NAME: "Plaintext Root DEV"
       PLAINTEXT_ENV: "int"
-      PLAINTEXT_APP_URL: "http://192.168.1.224:1123"
+      PLAINTEXT_APP_URL: "http://localhost:1123"
     deploy:
       resources:
         limits:
@@ -98,7 +98,7 @@ services:
       MAD_ROLLENZUWEISUNGSTOKEN: "true"
       PLAINTEXT_APP_NAME: "Plaintext Root DEV"
       PLAINTEXT_ENV: "int"
-      PLAINTEXT_APP_URL: "http://192.168.1.224:1123"
+      PLAINTEXT_APP_URL: "http://localhost:1123"
     deploy:
       resources:
         limits:

@@ -18,7 +18,7 @@ class DiscoveryPropertiesTest {
             DiscoveryProperties props = new DiscoveryProperties();
 
             assertNotNull(props.getMqtt());
-            assertEquals("tcp://192.168.1.224:1883", props.getMqtt().getBroker());
+            assertEquals("", props.getMqtt().getBroker());
             assertEquals("plaintext-discovery", props.getMqtt().getClientId());
             assertEquals(10, props.getMqtt().getConnectionTimeoutSeconds());
             assertEquals(60, props.getMqtt().getKeepAliveIntervalSeconds());

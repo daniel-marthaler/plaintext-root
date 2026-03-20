@@ -94,8 +94,8 @@
         <module>plaintext-root-flyway</module>
         <module>plaintext-root-jpa</module>
         <module>plaintext-root-menu</module>
-        <module>plaintext-root-menuesteuerung</module>
-        <module>plaintext-root-rollenzuteilung</module>
+        <module>plaintext-root-menu-visibility</module>
+        <module>plaintext-root-role-assignment</module>
         <module>plaintext-root-discovery</module>
 
         <!-- templates -->
@@ -105,12 +105,12 @@
         <module>plaintext-root-webapp</module>
 
         <!-- admin -->
-        <module>plaintext-admin-anforderungen</module>
+        <module>plaintext-admin-requirements</module>
         <module>plaintext-admin-cron</module>
         <module>plaintext-admin-filelist</module>
         <module>plaintext-admin-sessions</module>
         <module>plaintext-admin-settings</module>
-        <module>plaintext-admin-wertelisten</module>
+        <module>plaintext-admin-value-lists</module>
     </modules>
 
     <dependencyManagement>
@@ -133,7 +133,7 @@
             </dependency>
             <dependency>
                 <groupId>ch.plaintext</groupId>
-                <artifactId>plaintext-root-menuesteuerung</artifactId>
+                <artifactId>plaintext-root-menu-visibility</artifactId>
                 <version>${plaintext.version}</version>
             </dependency>
             <dependency>
@@ -153,7 +153,7 @@
             </dependency>
             <dependency>
                 <groupId>ch.plaintext</groupId>
-                <artifactId>plaintext-root-rollenzuteilung</artifactId>
+                <artifactId>plaintext-root-role-assignment</artifactId>
                 <version>${plaintext.version}</version>
             </dependency>
             <dependency>
@@ -183,12 +183,12 @@
             </dependency>
             <dependency>
                 <groupId>ch.plaintext</groupId>
-                <artifactId>plaintext-admin-wertelisten</artifactId>
+                <artifactId>plaintext-admin-value-lists</artifactId>
                 <version>${plaintext.version}</version>
             </dependency>
             <dependency>
                 <groupId>ch.plaintext</groupId>
-                <artifactId>plaintext-admin-anforderungen</artifactId>
+                <artifactId>plaintext-admin-requirements</artifactId>
                 <version>${plaintext.version}</version>
             </dependency>
             <dependency>

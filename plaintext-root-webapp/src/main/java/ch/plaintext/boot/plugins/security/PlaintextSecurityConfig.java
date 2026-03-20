@@ -40,6 +40,7 @@ public class PlaintextSecurityConfig {
             "/discovery/login",
             "/login.xhtml", "/login.html", "/javax.faces.resource/**", "/jakarta.faces.resource/**",
             "/actuator/health",
+            "/h2-console/**",
             "/nosec/**"
     );
 
@@ -73,6 +74,7 @@ public class PlaintextSecurityConfig {
                         .ignoringRequestMatchers(csrfIgnoreArray)
                 )
                 .headers(headers -> headers
+                        .frameOptions(frame -> frame.sameOrigin())
                         .contentSecurityPolicy(csp -> csp
                                 .policyDirectives("default-src 'self'; " +
                                         "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com; " +
@@ -80,7 +82,7 @@ public class PlaintextSecurityConfig {
                                         "img-src 'self' data: https://*.tile.openstreetmap.org https://raw.githubusercontent.com; " +
                                         "font-src 'self' data:; " +
                                         "connect-src 'self'; " +
-                                        "frame-ancestors 'none'; " +
+                                        "frame-ancestors 'self'; " +
                                         "base-uri 'self'; " +
                                         "form-action 'self'")
                         )

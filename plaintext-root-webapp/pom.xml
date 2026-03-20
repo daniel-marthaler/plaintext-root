@@ -29,7 +29,7 @@
         </dependency>
         <dependency>
             <groupId>ch.plaintext</groupId>
-            <artifactId>plaintext-root-menuesteuerung</artifactId>
+            <artifactId>plaintext-root-menu-visibility</artifactId>
         </dependency>
         <!-- root-flyway enthält api_token Migrationen - nur in plaintext-app mit z-apitoken verwenden -->
         <dependency>
@@ -42,7 +42,7 @@
         </dependency>
         <dependency>
             <groupId>ch.plaintext</groupId>
-            <artifactId>plaintext-root-rollenzuteilung</artifactId>
+            <artifactId>plaintext-root-role-assignment</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -54,7 +54,7 @@
         <!-- === Admin Framework Modules === -->
         <dependency>
             <groupId>ch.plaintext</groupId>
-            <artifactId>plaintext-admin-wertelisten</artifactId>
+            <artifactId>plaintext-admin-value-lists</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -117,6 +117,13 @@
         </dependency>
 
         <!-- === Database === -->
+        <!-- H2 (default, in-memory with PostgreSQL mode) -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <!-- PostgreSQL (activate with spring.profiles.active=postgres) -->
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
