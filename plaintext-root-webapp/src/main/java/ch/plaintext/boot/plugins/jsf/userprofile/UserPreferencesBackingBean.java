@@ -105,14 +105,16 @@ public class UserPreferencesBackingBean implements Serializable {
             save();
         }
 
-        componentThemes.add(new ComponentTheme("Blue", "blue", "#2c84d8"));
-        componentThemes.add(new ComponentTheme("Green", "green", "#34B56F"));
-        componentThemes.add(new ComponentTheme("Orange", "orange", "#FF810E"));
-        componentThemes.add(new ComponentTheme("Turquoise", "turquoise", "#58AED3"));
+        componentThemes.add(new ComponentTheme("Blue", "blue", "#2196F3"));
+        componentThemes.add(new ComponentTheme("Green", "green", "#4CAF50"));
+        componentThemes.add(new ComponentTheme("Orange", "orange", "#FF9800"));
+        componentThemes.add(new ComponentTheme("Turquoise", "turquoise", "#00BCD4"));
         componentThemes.add(new ComponentTheme("Avocado", "avocado", "#AEC523"));
-        componentThemes.add(new ComponentTheme("Purple", "purple", "#464DF2"));
-        componentThemes.add(new ComponentTheme("Red", "red", "#FF9B7B"));
-        componentThemes.add(new ComponentTheme("Yellow", "yellow", "#FFB340"));
+        componentThemes.add(new ComponentTheme("Purple", "purple", "#7B1FA2"));
+        componentThemes.add(new ComponentTheme("Red", "red", "#F44336"));
+        componentThemes.add(new ComponentTheme("Yellow", "yellow", "#FFC107"));
+        componentThemes.add(new ComponentTheme("Lime", "lime", "#8BC34A"));
+        componentThemes.add(new ComponentTheme("Crimson", "crimson", "#B71C1C"));
     }
 
     /**
