@@ -1,35 +1,5 @@
-# Multi-stage Dockerfile for plaintext-root
-# Stage 1: Build with Maven
-# Stage 2: Run with minimal JRE
-
-# ── Build stage ──────────────────────────────────────────────────────────────
-FROM maven:3.9-eclipse-temurin-25 AS build
-
-WORKDIR /build
-COPY pom.xml .
-COPY plaintext-root-interfaces/pom.xml plaintext-root-interfaces/
-COPY plaintext-root-common/pom.xml plaintext-root-common/
-COPY plaintext-root-jpa/pom.xml plaintext-root-jpa/
-COPY plaintext-root-menu/pom.xml plaintext-root-menu/
-COPY plaintext-root-menu-visibility/pom.xml plaintext-root-menu-visibility/
-COPY plaintext-root-role-assignment/pom.xml plaintext-root-role-assignment/
-COPY plaintext-root-email/pom.xml plaintext-root-email/
-COPY plaintext-root-flyway/pom.xml plaintext-root-flyway/
-COPY plaintext-root-discovery/pom.xml plaintext-root-discovery/
-COPY plaintext-root-webapp/pom.xml plaintext-root-webapp/
-COPY plaintext-root-template-plaintext/pom.xml plaintext-root-template-plaintext/
-COPY plaintext-admin-settings/pom.xml plaintext-admin-settings/
-COPY plaintext-admin-sessions/pom.xml plaintext-admin-sessions/
-COPY plaintext-admin-cron/pom.xml plaintext-admin-cron/
-COPY plaintext-admin-value-lists/pom.xml plaintext-admin-value-lists/
-COPY plaintext-admin-filelist/pom.xml plaintext-admin-filelist/
-COPY plaintext-admin-requirements/pom.xml plaintext-admin-requirements/
-
-# Copy source and build
-COPY . .
-RUN mvn clean package -DskipTests -B
-
-# ── Runtime stage ────────────────────────────────────────────────────────────
+# Runtime-only Dockerfile for plaintext-root
+# JAR must be pre-built: mvn clean package -DskipTests
 FROM eclipse-temurin:25.0.2_10-jre-alpine
 
 # Install bash and wget for healthcheck
@@ -41,8 +11,8 @@ RUN addgroup -g 1000 appgroup && adduser -u 1000 -G appgroup -s /bin/sh -D appus
 # Create application directory
 WORKDIR /app
 
-# Copy built JAR from build stage
-COPY --from=build /build/plaintext-root-webapp/target/*-exec.jar app.jar
+# Copy pre-built JAR
+COPY plaintext-root-webapp/target/*-exec.jar app.jar
 
 # Copy version files for version display (with graceful fallback)
 COPY --chown=1000:1000 version.txt versionRelease.txt ./
