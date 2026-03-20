@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @Testcontainers
-@ActiveProfiles("testcontainers")
+@ActiveProfiles("test")
 class FlywayMigrationIT {
 
     @Container

@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Testcontainers
-@ActiveProfiles("testcontainers")
+@ActiveProfiles("test")
 class SecurityTest {
 
     @Container
