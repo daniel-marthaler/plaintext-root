@@ -4,6 +4,8 @@
 
 Plaintext Root uses [Flyway](https://flywaydb.org/) for database schema management. Migrations are SQL files that are automatically executed on application startup.
 
+**Database:** PostgreSQL (development via Docker Compose, tests via Testcontainers).
+
 ## Migration File Location
 
 Each module can have its own migrations in:
@@ -41,41 +43,13 @@ V1772661684__create_discovery_tables.sql
 ./getflywaynr
 ```
 
-The script generates a Unix timestamp, checks all existing migrations for conflicts, and confirms the version is safe to use. Example output:
-
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🔢 Flyway Version Generator
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Generierte Versionsnummer: 1742493600
-
-🔍 Prüfe existierende Migrationen...
-Höchste existierende Version: 827340596
-Datei: ./plaintext-root-webapp/src/main/resources/db/migration/V827340596__...
-
-✅ Version 1742493600 kann verwendet werden
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Verwendung: V1742493600__<beschreibung>.sql
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-```
-
-### Manual alternatives
-
-```bash
-# Unix timestamp (seconds since 1970-01-01)
-date +%s
-
-# Python equivalent
-python3 -c "import time; print(int(time.time()))"
-```
+The script generates a Unix timestamp, checks all existing migrations for conflicts, and confirms the version is safe to use.
 
 ## Writing Migrations
 
 ### SQL Syntax
 
-Write migrations in **standard SQL** compatible with both **H2 (PostgreSQL mode)** and **PostgreSQL**:
+Write migrations in **PostgreSQL SQL syntax**:
 
 ```sql
 -- Use IF NOT EXISTS for idempotent table creation
@@ -96,19 +70,19 @@ ALTER TABLE my_table ADD COLUMN IF NOT EXISTS new_column VARCHAR(100);
 CREATE INDEX IF NOT EXISTS idx_my_table_name ON my_table(name);
 ```
 
-### Supported Data Types
+### Common Data Types
 
-| Type | H2 (PostgreSQL mode) | PostgreSQL |
-|------|---------------------|------------|
-| `BIGSERIAL` | Auto-increment BIGINT | Native BIGSERIAL |
-| `SERIAL` | Auto-increment INT | Native SERIAL |
-| `VARCHAR(n)` | Supported | Supported |
-| `TEXT` | Supported | Supported |
-| `BOOLEAN` | Supported | Supported |
-| `TIMESTAMP` | Supported | Supported |
-| `BYTEA` | Supported | Supported |
-| `INTEGER` | Supported | Supported |
-| `BIGINT` | Supported | Supported |
+| Type | Description |
+|------|-------------|
+| `BIGSERIAL` | Auto-increment BIGINT |
+| `SERIAL` | Auto-increment INT |
+| `VARCHAR(n)` | Variable-length string |
+| `TEXT` | Unlimited text |
+| `BOOLEAN` | True/false |
+| `TIMESTAMP` | Date and time |
+| `BYTEA` | Binary data |
+| `INTEGER` | 32-bit integer |
+| `BIGINT` | 64-bit integer |
 
 ### Base Entity Columns
 
@@ -137,9 +111,19 @@ CREATE TABLE IF NOT EXISTS my_entity (
 1. **Never modify existing migrations** — Create new ones instead
 2. **Use `IF NOT EXISTS`** — Makes migrations idempotent
 3. **One change per migration** — Easier to debug
-4. **Test with H2 first** — Faster iteration than PostgreSQL
+4. **Test locally** — `docker compose up` starts PostgreSQL, app runs migrations on startup
 5. **Include rollback comments** — Document how to undo if needed
 6. **Add indexes for foreign keys** — PostgreSQL doesn't auto-index FKs
+
+## Development Setup
+
+```bash
+# Start PostgreSQL (Docker Compose starts automatically with the app)
+docker compose up -d
+
+# Or let Spring Boot start it automatically:
+mvn spring-boot:run -pl plaintext-root-webapp
+```
 
 ## Configuration
 
@@ -157,13 +141,11 @@ spring:
 
 ### Migration fails on startup
 
+The app automatically repairs failed migrations via `FlywayRepairCallback`.
+
+### Reset local database
+
 ```bash
-# Repair Flyway metadata (marks failed migrations as resolved)
-# The app does this automatically via FlywayRepairCallback
+docker compose down -v   # Removes volumes (data)
+docker compose up -d     # Fresh database
 ```
-
-### H2 vs PostgreSQL differences
-
-- H2's PostgreSQL mode covers most syntax, but some edge cases differ
-- Test with both databases before releasing
-- Use `CREATE ... IF NOT EXISTS` to handle both cleanly

@@ -24,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @Testcontainers
-@ActiveProfiles("testcontainers")
+@ActiveProfiles("test")
 @Transactional
 class RepositoryTest {
 
