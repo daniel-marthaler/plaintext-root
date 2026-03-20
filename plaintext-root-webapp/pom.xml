@@ -166,6 +166,12 @@
             <artifactId>lombok</artifactId>
         </dependency>
 
+        <!-- === OpenAPI / Swagger === -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+        </dependency>
+
         <!-- === Test === -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

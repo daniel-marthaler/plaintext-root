@@ -62,13 +62,30 @@ public interface IApiTokenService {
 
     /**
      * Get names of all active (non-expired, non-invalidated) tokens for a user.
+     *
+     * @param userId the user ID
+     * @param mandat the mandate identifier
+     * @return list of active token names
      */
     List<String> getActiveTokenNames(Long userId, String mandat);
 
     /**
      * Check if a token with the given name is still active (not expired, not invalidated).
+     *
+     * @param tokenName the token name to check
+     * @param mandat    the mandate identifier
+     * @return true if the token is active, false otherwise
      */
     boolean isTokenActiveByName(String tokenName, String mandat);
 
+    /**
+     * Result of a successful API token validation, containing the user and token metadata.
+     *
+     * @param userId    the ID of the user who owns the token
+     * @param mandat    the mandate identifier
+     * @param email     the email address associated with the token
+     * @param tokenName the user-defined name of the token
+     * @param expiresAt the expiration time of the token
+     */
     record ApiTokenValidationResult(Long userId, String mandat, String email, String tokenName, Instant expiresAt) {}
 }

@@ -168,7 +168,7 @@ a:hover { text-decoration: none; }
 }
 
 .menu-button {
-    display: none;
+    display: flex;
     align-items: center;
     justify-content: center;
     width: 40px;
@@ -222,7 +222,7 @@ a:hover { text-decoration: none; }
     background-color: rgba(255, 255, 255, 0.08);
 }
 
-.sidebar-logo {
+.sidebar-logo { display: none; /*
     display: flex;
     align-items: center;
     justify-content: flex-end;

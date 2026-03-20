@@ -35,23 +35,40 @@ V1772661684__create_discovery_tables.sql
 
 ## Generating a Timestamp
 
-### Option 1: Shell Command
-
-```bash
-# Seconds since January 1, 2000 (Unix epoch + offset)
-echo $(( $(date +%s) - 946684800 ))
-```
-
-### Option 2: Python
-
-```bash
-python3 -c "import time; print(int(time.time()) - 946684800)"
-```
-
-### Option 3: Use the included script (if available)
+### Recommended: Use the included script
 
 ```bash
 ./getflywaynr
+```
+
+The script generates a Unix timestamp, checks all existing migrations for conflicts, and confirms the version is safe to use. Example output:
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔢 Flyway Version Generator
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Generierte Versionsnummer: 1742493600
+
+🔍 Prüfe existierende Migrationen...
+Höchste existierende Version: 827340596
+Datei: ./plaintext-root-webapp/src/main/resources/db/migration/V827340596__...
+
+✅ Version 1742493600 kann verwendet werden
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Verwendung: V1742493600__<beschreibung>.sql
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+### Manual alternatives
+
+```bash
+# Unix timestamp (seconds since 1970-01-01)
+date +%s
+
+# Python equivalent
+python3 -c "import time; print(int(time.time()))"
 ```
 
 ## Writing Migrations

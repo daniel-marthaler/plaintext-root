@@ -9,19 +9,48 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * @author : mad
- * @since : 15.11.2025
- **/
+ * Interface providing security context information for the current user.
+ * Gives access to the current mandate, user identity, roles, and
+ * impersonation capabilities.
+ *
+ * @author mad
+ * @since 15.11.2025
+ */
 public interface PlaintextSecurity {
 
+    /**
+     * Gets the current mandate/tenant identifier for the logged-in user.
+     *
+     * @return the current mandate identifier
+     */
     String getMandat();
 
+    /**
+     * Gets all mandates the current user has access to.
+     *
+     * @return set of all mandate identifiers
+     */
     Set<String> getAllMandate();
 
+    /**
+     * Gets the database ID of the current user.
+     *
+     * @return the user ID
+     */
     Long getId();
 
+    /**
+     * Gets the username (login name) of the current user.
+     *
+     * @return the username
+     */
     String getUser();
 
+    /**
+     * Gets the Spring Security authentication object for the current user.
+     *
+     * @return the current authentication
+     */
     Authentication getAuthentication();
     /**
      * Gets the mandat for a specific user by their ID
@@ -30,6 +59,12 @@ public interface PlaintextSecurity {
      */
     String getMandatForUser(long userId);
 
+    /**
+     * Checks if the current user has been granted the specified role.
+     *
+     * @param role the role name to check
+     * @return true if the user has the role, false otherwise
+     */
     boolean ifGranted(String role);
 
     /**

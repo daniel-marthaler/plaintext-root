@@ -3,8 +3,19 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 package ch.plaintext;
 
+/**
+ * Interface for scheduled cron jobs in the Plaintext application.
+ * Implementations are auto-discovered and can be managed (enabled/disabled,
+ * schedule changed) via the admin cron UI. Each cron job runs per mandate
+ * unless {@link #isGlobal()} returns true.
+ */
 public interface PlaintextCron {
 
+    /**
+     * Indicates whether this cron job runs globally (once) or per mandate.
+     *
+     * @return true if the job should run once globally, false if it should run per mandate
+     */
     default boolean isGlobal() {
         return false;
     }
@@ -29,6 +40,11 @@ public interface PlaintextCron {
         return "0 0 * * *";
     }
 
+    /**
+     * Executes the cron job logic for the given mandate.
+     *
+     * @param mandant the mandate/tenant identifier for which the job runs
+     */
     void run(String mandant);
 
 }
