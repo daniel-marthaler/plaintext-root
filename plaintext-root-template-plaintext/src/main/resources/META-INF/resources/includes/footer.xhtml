@@ -13,7 +13,9 @@
                     <ui:fragment rendered="#{brandingBean.showRootVersion}">
                         | Root #{versionBean.rootVersion}
                     </ui:fragment>
-                    | #{versionBean.buildTimestamp}
+                    <ui:fragment rendered="#{brandingBean.showBuildTimestamp}">
+                        | #{versionBean.buildTimestamp}
+                    </ui:fragment>
                 </p>
             </div>
         </div>

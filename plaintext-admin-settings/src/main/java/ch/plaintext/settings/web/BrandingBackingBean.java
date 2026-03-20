@@ -36,6 +36,8 @@ public class BrandingBackingBean implements Serializable {
     private String footerText;
     private boolean showVersion;
     private boolean showRootVersion;
+    private boolean showBuildTimestamp;
+    private boolean showBuildTimestamp;
 
     private Integer lightLogoWidth = 180;
     private Integer lightLogoHeight = 40;
@@ -80,6 +82,8 @@ public class BrandingBackingBean implements Serializable {
         footerText = brandingService.getFooterText(mandat);
         showVersion = brandingService.isShowVersion(mandat);
         showRootVersion = brandingService.isShowRootVersion(mandat);
+        showBuildTimestamp = brandingService.isShowBuildTimestamp(mandat);
+        showBuildTimestamp = brandingService.isShowBuildTimestamp(mandat);
 
         brandingService.getLogo(mandat, "light").ifPresent(logo -> {
             hasLightLogo = true;
@@ -176,7 +180,7 @@ public class BrandingBackingBean implements Serializable {
     public void saveFooterSettings() {
         try {
             brandingService.saveFooterSettings(security.getMandat(),
-                    footerText, showVersion, showRootVersion);
+                    footerText, showVersion, showRootVersion, showBuildTimestamp);
             refreshBrandingBean();
             addMessage(FacesMessage.SEVERITY_INFO, "Erfolg", "Footer-Einstellungen gespeichert");
         } catch (Exception e) {

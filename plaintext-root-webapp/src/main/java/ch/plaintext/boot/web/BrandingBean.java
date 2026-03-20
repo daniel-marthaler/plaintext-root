@@ -23,6 +23,8 @@ public class BrandingBean {
     private String footerText;
     private boolean showVersion = true;
     private boolean showRootVersion = true;
+    private boolean showBuildTimestamp = true;
+    private boolean showBuildTimestamp = true;
     private boolean hasLightLogo;
     private boolean hasDarkLogo;
     private int lightLogoWidth = 180;
@@ -51,6 +53,8 @@ public class BrandingBean {
             footerText = brandingService.getFooterText(mandat);
             showVersion = brandingService.isShowVersion(mandat);
             showRootVersion = brandingService.isShowRootVersion(mandat);
+            showBuildTimestamp = brandingService.isShowBuildTimestamp(mandat);
+            showBuildTimestamp = brandingService.isShowBuildTimestamp(mandat);
             hasLightLogo = brandingService.hasLogo(mandat, "light");
             hasDarkLogo = brandingService.hasLogo(mandat, "dark");
             lightLogoWidth = brandingService.getLogoWidth(mandat, "light");
