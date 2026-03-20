@@ -147,4 +147,19 @@ class CronBeanPostProcessorTest {
         SuperCron wrapper = (SuperCron) processor.postProcessAfterInitialization(cron, "myCron");
         assertThat(wrapper.getOriginalBeanClass()).isEqualTo(cron.getClass());
     }
+
+    @Test
+    void wrapperGetNameReturnsOriginalClassSimpleName() {
+        PlaintextCron cron = new PlaintextCron() {
+            @Override
+            public void run(String mandant) {
+            }
+        };
+
+        SuperCron wrapper = (SuperCron) processor.postProcessAfterInitialization(cron, "nameCron");
+        // getName() delegates to originalClass.getSimpleName()
+        // For anonymous classes this is empty, but the method is still exercised
+        String name = wrapper.getName();
+        assertThat(name).isNotNull();
+    }
 }

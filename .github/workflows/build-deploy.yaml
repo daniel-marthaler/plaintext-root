@@ -41,12 +41,16 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Build & Test
+      - name: Build & Test with Coverage
         run: mvn clean install -B
         env:
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5434/plaintext_root
           SPRING_DATASOURCE_USERNAME: plaintext
           SPRING_DATASOURCE_PASSWORD: plaintext
+
+      - name: Generate JaCoCo aggregate report
+        run: mvn jacoco:report -B
+        if: always()
 
       - name: Upload test results
         if: always()
@@ -55,3 +59,32 @@ jobs:
           name: test-results
           path: '**/target/surefire-reports/*.xml'
           retention-days: 7
+
+      - name: Upload coverage reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-reports
+          path: '**/target/site/jacoco/'
+          retention-days: 14
+
+      - name: JaCoCo Coverage Summary
+        if: always()
+        run: |
+          echo "## Code Coverage Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Module | Instructions | Branches |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------------|----------|" >> $GITHUB_STEP_SUMMARY
+          for report in $(find . -path "*/target/site/jacoco/jacoco.csv" 2>/dev/null); do
+            module=$(echo "$report" | sed 's|./\(.*\)/target/.*|\1|')
+            if [ -f "$report" ]; then
+              # Parse CSV: columns are GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,...
+              missed=$(tail -n +2 "$report" | awk -F',' '{sum+=$4} END {print sum+0}')
+              covered=$(tail -n +2 "$report" | awk -F',' '{sum+=$5} END {print sum+0}')
+              total=$((missed + covered))
+              if [ "$total" -gt 0 ]; then
+                pct=$((covered * 100 / total))
+                echo "| $module | ${pct}% (${covered}/${total}) | - |" >> $GITHUB_STEP_SUMMARY
+              fi
+            fi
+          done

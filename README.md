@@ -5,6 +5,7 @@
 [![Java](https://img.shields.io/badge/Java-25-blue.svg)](https://openjdk.org/)
 [![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.5-green.svg)](https://spring.io/projects/spring-boot)
 [![PrimeFaces](https://img.shields.io/badge/PrimeFaces-15.0-orange.svg)](https://www.primefaces.org/)
+[![Coverage](https://img.shields.io/badge/Coverage-JaCoCo-green.svg)](#code-coverage)
 
 **Plaintext Root** is an open-source application framework for rapidly building multi-tenant web applications with Jakarta Faces (JSF), PrimeFaces, and Spring Boot. It provides a complete foundation including security, navigation, admin panels, user management, and a pluggable template system — so you can focus on your business logic.
 
@@ -275,6 +276,20 @@ plaintext-root/
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to contribute.
+
+## Code Coverage
+
+Coverage reports are generated with [JaCoCo](https://www.jacoco.org/) during `mvn test`. Reports are available in each module's `target/site/jacoco/` directory.
+
+```bash
+# Run tests with coverage
+mvn clean test
+
+# Open report (example for webapp module)
+open plaintext-root-webapp/target/site/jacoco/index.html
+```
+
+Coverage reports are also uploaded as artifacts in the [CI pipeline](https://github.com/daniel-marthaler/plaintext-root/actions).
 
 ## License
 
