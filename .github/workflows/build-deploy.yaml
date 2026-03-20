@@ -60,7 +60,7 @@ jobs:
         run: mvn deploy -B -DskipTests -DaltDeploymentRepository=plaintext::https://maven.pkg.github.com/daniel-marthaler/plaintext-mvn
         env:
           GITHUB_ACTOR: ${{ github.actor }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.MVN_DEPLOY_TOKEN }}
 
       - name: Generate JaCoCo aggregate report
         run: mvn jacoco:report -B
