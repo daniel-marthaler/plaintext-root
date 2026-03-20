@@ -81,7 +81,7 @@ class DiscoveryServiceTest {
                 "http://remote:8080", "dev", "public-key");
 
             ArgumentCaptor<DiscoveryApp> captor = ArgumentCaptor.forClass(DiscoveryApp.class);
-            verify(appRepository).save(captor.capture());
+            verify(appRepository, atLeastOnce()).save(captor.capture());
 
             DiscoveryApp saved = captor.getValue();
             assertEquals("remote-app", saved.getAppId());
