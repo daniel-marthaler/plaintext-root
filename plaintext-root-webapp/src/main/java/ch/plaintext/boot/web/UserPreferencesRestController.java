@@ -21,11 +21,18 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Set;
+
 @Slf4j
 @RestController
 @RequestMapping("/api/preferences")
 @Tag(name = "User Preferences", description = "Manage user UI preferences such as theme, menu mode, and dark mode")
 public class UserPreferencesRestController {
+
+    private static final Set<String> VALID_DARK_MODES = Set.of("dark", "light");
+    private static final Set<String> VALID_MENU_MODES = Set.of("static", "overlay", "slim", "horizontal");
+    private static final Set<String> VALID_INPUT_STYLES = Set.of("outlined", "filled");
+    private static final int MAX_PARAM_LENGTH = 100;
 
     @Autowired
     private UserPrefsSimpleStorage storage;
@@ -64,6 +71,14 @@ public class UserPreferencesRestController {
 
             User user = (User) auth.getPrincipal();
             String username = user.getUsername();
+
+            // Validate input parameters
+            validateParam("darkMode", darkMode, VALID_DARK_MODES);
+            validateParam("menuMode", menuMode, VALID_MENU_MODES);
+            validateParam("inputStyle", inputStyle, VALID_INPUT_STYLES);
+            validateLength("componentTheme", componentTheme);
+            validateLength("topbarTheme", topbarTheme);
+            validateLength("menuTheme", menuTheme);
 
             // Load or create user prefs
             UserPreference prefs = storage.findByUniqueId(username);
@@ -121,6 +136,20 @@ public class UserPreferencesRestController {
         } catch (Exception e) {
             log.error("Error saving preferences", e);
             return ResponseEntity.status(500).body("ERROR: " + e.getMessage());
+        }
+    }
+
+    private void validateParam(String name, String value, Set<String> allowed) {
+        if (value != null && !value.isEmpty() && !allowed.contains(value)) {
+            throw new IllegalArgumentException(
+                    "Invalid value for '" + name + "': '" + value + "'. Allowed: " + allowed);
+        }
+    }
+
+    private void validateLength(String name, String value) {
+        if (value != null && value.length() > MAX_PARAM_LENGTH) {
+            throw new IllegalArgumentException(
+                    "Parameter '" + name + "' exceeds maximum length of " + MAX_PARAM_LENGTH);
         }
     }
 

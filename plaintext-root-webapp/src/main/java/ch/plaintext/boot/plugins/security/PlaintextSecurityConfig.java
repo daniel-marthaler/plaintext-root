@@ -38,7 +38,7 @@ public class PlaintextSecurityConfig {
     private static final List<String> DEFAULT_PERMIT_ALL = List.of(
             "/autologin", "/autologin/**",
             "/discovery/login",
-            "/login.xhtml", "/login.html", "/javax.faces.resource/**", "/jakarta.faces.resource/**",
+            "/login.xhtml", "/login.html", "/jakarta.faces.resource/**",
             "/actuator/health",
             "/h2-console/**",
             "/nosec/**"
