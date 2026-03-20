@@ -6,6 +6,11 @@ package ch.plaintext.boot.web;
 import ch.plaintext.boot.plugins.jsf.userprofile.UserPreferencesBackingBean;
 import ch.plaintext.boot.plugins.jsf.userprofile.UserPreference;
 import ch.plaintext.boot.plugins.jsf.userprofile.UserPrefsSimpleStorage;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 @RestController
 @RequestMapping("/api/preferences")
+@Tag(name = "User Preferences", description = "Manage user UI preferences such as theme, menu mode, and dark mode")
 public class UserPreferencesRestController {
 
     @Autowired
@@ -27,15 +33,24 @@ public class UserPreferencesRestController {
     @Autowired
     private UserPreferencesBackingBean userPreferencesBackingBean;
 
+    @Operation(summary = "Save user preferences",
+               description = "Persists UI preferences (theme, dark mode, menu layout, etc.) for the currently authenticated user. "
+                           + "Only provided parameters are updated; omitted parameters retain their previous values. "
+                           + "The dark-mode setting is also stored as a cookie for consistent login-page theming.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Preferences saved successfully"),
+            @ApiResponse(responseCode = "401", description = "User is not authenticated"),
+            @ApiResponse(responseCode = "500", description = "Internal server error while saving preferences")
+    })
     @PostMapping("/save")
     public ResponseEntity<String> savePreferences(
-            @RequestParam(required = false) String componentTheme,
-            @RequestParam(required = false) String darkMode,
-            @RequestParam(required = false) String menuMode,
-            @RequestParam(required = false) String topbarTheme,
-            @RequestParam(required = false) String menuTheme,
-            @RequestParam(required = false) String inputStyle,
-            @RequestParam(required = false) String menuStatic,
+            @Parameter(description = "PrimeFaces component theme name") @RequestParam(required = false) String componentTheme,
+            @Parameter(description = "Dark mode setting (e.g. 'dark' or 'light')") @RequestParam(required = false) String darkMode,
+            @Parameter(description = "Menu mode (e.g. 'static', 'overlay', 'slim')") @RequestParam(required = false) String menuMode,
+            @Parameter(description = "Topbar theme identifier") @RequestParam(required = false) String topbarTheme,
+            @Parameter(description = "Menu theme identifier") @RequestParam(required = false) String menuTheme,
+            @Parameter(description = "Input style (e.g. 'outlined', 'filled')") @RequestParam(required = false) String inputStyle,
+            @Parameter(description = "Whether the menu is pinned in static mode") @RequestParam(required = false) String menuStatic,
             HttpServletResponse response) {
         try {
             log.debug("🔵 REST /api/preferences/save called with: componentTheme={}, darkMode={}, menuMode={}, topbarTheme={}, menuTheme={}, inputStyle={}, menuStatic={}",

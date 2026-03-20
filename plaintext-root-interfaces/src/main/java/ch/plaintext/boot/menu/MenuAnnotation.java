@@ -17,32 +17,44 @@ import java.lang.annotation.Target;
 public @interface MenuAnnotation {
 
     /**
-     * The title/label of the menu item
+     * The title/label of the menu item.
+     *
+     * @return the menu title
      */
     String title() default "Dashboard";
 
     /**
-     * The link/URL of the menu item
+     * The link/URL of the menu item.
+     *
+     * @return the navigation link
      */
     String link() default "dashboard.html";
 
     /**
-     * The parent menu item (empty for root menu items)
+     * The parent menu item (empty for root menu items).
+     *
+     * @return the parent menu identifier
      */
     String parent() default "";
 
     /**
-     * The order of the menu item (lower numbers appear first)
+     * The order of the menu item (lower numbers appear first).
+     *
+     * @return the display order
      */
     int order() default 0;
 
     /**
-     * The icon for the menu item (PrimeFaces icon class)
+     * The icon for the menu item (PrimeFaces icon class).
+     *
+     * @return the icon class name
      */
     String icon() default "";
 
     /**
-     * The roles that can see this menu item (empty means visible to all)
+     * The roles that can see this menu item (empty means visible to all).
+     *
+     * @return array of role names
      */
     String[] roles() default {};
 

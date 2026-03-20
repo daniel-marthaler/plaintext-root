@@ -23,7 +23,6 @@ Plaintext Root provides a complete foundation for building enterprise web applic
 ```bash
 git clone https://github.com/daniel-marthaler/plaintext-root.git
 cd plaintext-root
-docker compose up -d
 mvn clean install -DskipTests
 mvn spring-boot:run -pl plaintext-root-webapp
 ```
@@ -32,9 +31,29 @@ Open [http://localhost:8080](http://localhost:8080) in your browser.
 
 ## Documentation
 
-- [Architecture Overview](ARCHITECTURE.md)
-- [Contributing Guide](../CONTRIBUTING.md)
-- [Security Policy](../SECURITY.md)
+### Guides
+
+| Document | Description |
+|----------|-------------|
+| [Getting Started](GETTING_STARTED.md) | Setup, build, and run the application |
+| [Architecture Overview](ARCHITECTURE.md) | System design, module dependencies, and data flow |
+| [Module Reference](MODULE_REFERENCE.md) | Detailed reference for all 17 modules |
+| [Flyway Migrations](FLYWAY_MIGRATIONS.md) | Database migration conventions and tooling |
+
+### Reference
+
+| Document | Description |
+|----------|-------------|
+| [German Terms](GERMAN_TERMS.md) | Mapping of German class/module names to English equivalents |
+| [Spring Boot 4 Migration](SPRING_BOOT_4_MIGRATION.md) | Analysis and plan for Spring Boot 4 upgrade |
+| [REST API (Swagger UI)](/swagger-ui/index.html) | Interactive API documentation (when app is running) |
+
+### Project
+
+| Document | Description |
+|----------|-------------|
+| [Contributing Guide](../CONTRIBUTING.md) | How to contribute to the project |
+| [Security Policy](../SECURITY.md) | Vulnerability reporting process |
 
 ## Tech Stack
 

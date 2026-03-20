@@ -9,7 +9,8 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * Chat Message Data Transfer Object
+ * Data transfer object representing a message within a chat room.
+ * Contains the message content, sender information, and read status.
  *
  * @author info@plaintext.ch
  * @since 2026
@@ -18,10 +19,16 @@ import java.util.Date;
 public class ChatMessageDTO implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    /** The unique identifier of the message. */
     private Long id;
+    /** The ID of the chat this message belongs to. */
     private Long chatId;
+    /** The email address of the message sender. */
     private String senderEmail;
+    /** The content of the message. */
     private String messageText;
+    /** The timestamp when the message was sent. */
     private Date sentAt;
+    /** Whether the message has been read. */
     private Boolean isRead;
 }

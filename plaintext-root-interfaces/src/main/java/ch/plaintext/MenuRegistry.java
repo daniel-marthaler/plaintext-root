@@ -37,12 +37,53 @@ public interface MenuRegistry {
      * Represents a menu item with its properties.
      */
     interface MenuItem {
+        /**
+         * Gets the title/label of this menu item.
+         *
+         * @return the menu item title
+         */
         String getTitle();
+
+        /**
+         * Gets the parent menu item identifier.
+         *
+         * @return the parent menu title, or empty string for root-level items
+         */
         String getParent();
+
+        /**
+         * Gets the full title including the parent hierarchy.
+         *
+         * @return the full menu title (e.g. "Root | Mandate")
+         */
         String getFullTitle();
+
+        /**
+         * Gets the icon class for the menu item.
+         *
+         * @return the PrimeFaces icon class, or empty string if none
+         */
         String getIcon();
+
+        /**
+         * Gets the navigation link/URL for the menu item.
+         *
+         * @return the link URL
+         */
         String getLink();
+
+        /**
+         * Gets the display order of this menu item among its siblings.
+         *
+         * @return the order value (lower numbers appear first)
+         */
         int getOrder();
+
+        /**
+         * Gets the roles that are allowed to see this menu item.
+         *
+         * @return list of role names, or empty list if visible to all
+         */
         List<String> getRoles();
 
         /**

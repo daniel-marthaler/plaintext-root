@@ -168,7 +168,7 @@ a:hover { text-decoration: none; }
 }
 
 .menu-button {
-    display: none;
+    display: flex;
     align-items: center;
     justify-content: center;
     width: 40px;
@@ -219,7 +219,7 @@ a:hover { text-decoration: none; }
     border-right-color: var(--pt-surface-border);
 }
 
-.sidebar-logo {
+.sidebar-logo { display: none; /*
     display: flex;
     align-items: center;
     justify-content: flex-end;

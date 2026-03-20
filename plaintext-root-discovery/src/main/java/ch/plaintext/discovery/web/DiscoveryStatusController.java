@@ -6,6 +6,10 @@ package ch.plaintext.discovery.web;
 import ch.plaintext.discovery.repository.DiscoveryAppRepository;
 import ch.plaintext.discovery.repository.DiscoveryUserSessionRepository;
 import ch.plaintext.discovery.service.DiscoveryEncryptionService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,6 +31,7 @@ import java.util.Map;
 @RequestMapping("/nosec/discovery")
 @Slf4j
 @RequiredArgsConstructor
+@Tag(name = "Discovery Status", description = "Public discovery status and diagnostics endpoint (no authentication required)")
 public class DiscoveryStatusController {
 
     private final DiscoveryAppRepository appRepository;
@@ -39,6 +44,13 @@ public class DiscoveryStatusController {
     @Value("${discovery.app.name:Plaintext App}")
     private String appName;
 
+    @Operation(summary = "Get discovery status",
+               description = "Returns a diagnostic overview of the discovery service including this app's identity, "
+                           + "known peer applications, active session count, and an encryption self-test result. "
+                           + "This endpoint is publicly accessible without authentication.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Status information returned successfully")
+    })
     @GetMapping("/status")
     public ResponseEntity<Map<String, Object>> status() {
         Map<String, Object> result = new LinkedHashMap<>();
