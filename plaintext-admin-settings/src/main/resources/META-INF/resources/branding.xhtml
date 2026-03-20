@@ -30,7 +30,7 @@
                         <div style="margin-top:10px;">
                             <p:fileUpload listener="#{brandingBackingBean.handleLightLogoUpload}"
                                           mode="advanced" auto="true" allowTypes="/(\.|\/)(png|svg|webp|jpe?g)$/i"
-                                          sizeLimit="2097152" fileLimit="1"
+                                          maxFileSize="2097152" fileLimit="1"
                                           update="messages lightPreviewPanel"
                                           label="Light-Logo hochladen" uploadLabel="Upload"
                                           cancelLabel="Abbrechen"
@@ -92,7 +92,7 @@
                         <div style="margin-top:10px;">
                             <p:fileUpload listener="#{brandingBackingBean.handleDarkLogoUpload}"
                                           mode="advanced" auto="true" allowTypes="/(\.|\/)(png|svg|webp|jpe?g)$/i"
-                                          sizeLimit="2097152" fileLimit="1"
+                                          maxFileSize="2097152" fileLimit="1"
                                           update="messages darkPreviewPanel"
                                           label="Dark-Logo hochladen" uploadLabel="Upload"
                                           cancelLabel="Abbrechen"
