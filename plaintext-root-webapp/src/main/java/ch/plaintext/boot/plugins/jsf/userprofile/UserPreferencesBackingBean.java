@@ -63,6 +63,9 @@ public class UserPreferencesBackingBean implements Serializable {
         // Load theme from cookie if available (for seamless login experience)
         String cookieTheme = loadThemeFromCookie();
 
+        // Load color theme from cookie if available
+        String cookieColor = loadCookieValue("plaintext-color");
+
         if (prefs != null) {
             log.debug("🟢 Loaded preferences from DB for user {}: menuMode={}, darkMode={}, componentTheme={}, topbarTheme={}, menuTheme={}, inputStyle={}, menuStatic={}",
                     user.getUsername(), prefs.getMenuMode(), prefs.getDarkMode(), prefs.getComponentTheme(),
@@ -75,6 +78,12 @@ public class UserPreferencesBackingBean implements Serializable {
                 prefs.setTopbarTheme(cookieTheme);
                 prefs.setMenuTheme(cookieTheme);
                 prefs.setLightLogo(!cookieTheme.equals("light"));
+            }
+
+            // If color cookie differs from DB, update DB to match cookie
+            if (cookieColor != null && !cookieColor.equals(prefs.getComponentTheme())) {
+                log.debug("Cookie color '{}' differs from DB '{}', updating DB to match cookie", cookieColor, prefs.getComponentTheme());
+                prefs.setComponentTheme(cookieColor);
             }
 
             // CRITICAL FIX: Ensure themes are consistent with darkMode
@@ -253,10 +262,22 @@ public class UserPreferencesBackingBean implements Serializable {
     }
 
     /**
-     * Loads the theme from cookie if available.
+     * Loads the dark mode theme from cookie if available.
      * @return theme value from cookie or null if not found
      */
     private String loadThemeFromCookie() {
+        String value = loadCookieValue("plaintext-theme");
+        if (value != null && ("light".equals(value) || "dark".equals(value))) {
+            return value;
+        }
+        return null;
+    }
+
+    /**
+     * Loads a named cookie value.
+     * @return cookie value or null if not found
+     */
+    private String loadCookieValue(String cookieName) {
         try {
             FacesContext context = FacesContext.getCurrentInstance();
             if (context == null) {
@@ -269,17 +290,17 @@ public class UserPreferencesBackingBean implements Serializable {
             Cookie[] cookies = request.getCookies();
             if (cookies != null) {
                 for (Cookie cookie : cookies) {
-                    if ("plaintext-theme".equals(cookie.getName())) {
-                        String theme = cookie.getValue();
-                        if ("light".equals(theme) || "dark".equals(theme)) {
-                            log.debug("Loaded theme from cookie: {}", theme);
-                            return theme;
+                    if (cookieName.equals(cookie.getName())) {
+                        String value = cookie.getValue();
+                        if (value != null && !value.isEmpty()) {
+                            log.debug("Loaded cookie '{}': {}", cookieName, value);
+                            return value;
                         }
                     }
                 }
             }
         } catch (Exception e) {
-            log.error("Error loading theme from cookie: " + e.getMessage(), e);
+            log.error("Error loading cookie '{}': {}", cookieName, e.getMessage(), e);
         }
         return null;
     }

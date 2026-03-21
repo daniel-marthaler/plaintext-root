@@ -16,6 +16,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.rememberme.*;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 
 import java.util.ArrayList;
@@ -31,7 +32,8 @@ public class PlaintextSecurityConfig {
 
     // Framework-Defaults: CSRF ignorieren
     private static final List<String> DEFAULT_CSRF_IGNORE = List.of(
-            "/autologin", "/discovery/login", "/nosec/**"
+            "/autologin", "/discovery/login", "/nosec/**",
+            "/api/preferences/**"
     );
 
     // Framework-Defaults: Ohne Authentication erreichbar
@@ -71,6 +73,7 @@ public class PlaintextSecurityConfig {
                         .securityContextRepository(securityContextRepository())
                 )
                 .csrf(csrf -> csrf
+                        .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
                         .ignoringRequestMatchers(csrfIgnoreArray)
                 )
                 .headers(headers -> headers

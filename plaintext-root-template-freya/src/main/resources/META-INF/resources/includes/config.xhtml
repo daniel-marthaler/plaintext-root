@@ -1,0 +1,547 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui">
+<!--
+    <a href="#" id="layout-config-button" class="layout-config-button">
+        <i class="pi pi-cog"/>
+    </a>
+-->
+    <div id="layout-config" class="layout-config">
+        <h:form id="config-form" styleClass="layout-config-form">
+            <input type="hidden" name="_csrf" value="#{_csrf.token}"/>
+            <h5 style="margin-top: 0">Menu Type</h5>
+            <p:selectOneRadio id="menuModeRadio" value="#{userPreferencesBackingBean.menuMode}" layout="pageDirection"
+                              onchange="handleChange('menuMode', this.value, function(val) { changeMenuMode(val); });">
+                <f:selectItem itemLabel="Horizontal" itemValue="layout-horizontal" />
+                <f:selectItem itemLabel="Sidebar" itemValue="layout-sidebar" />
+                <f:selectItem itemLabel="Slim" itemValue="layout-slim" />
+            </p:selectOneRadio>
+
+            <hr/>
+
+            <h5>Color Scheme</h5>
+            <p:selectOneRadio id="darkModeRadio" value="#{userPreferencesBackingBean.darkMode}" layout="pageDirection"
+                              onchange="handleChange('darkMode', this.value, function(val) { changeDarkMode(val); });">
+                <f:selectItem itemLabel="Light" itemValue="light" />
+                <f:selectItem itemLabel="Dark" itemValue="dark" />
+            </p:selectOneRadio>
+
+            <hr/>
+
+            <h5>Input Style</h5>
+            <p:selectOneRadio id="inputStyleRadio" value="#{userPreferencesBackingBean.inputStyle}" layout="pageDirection"
+                              onchange="handleChange('inputStyle', this.value, function(val) { changeInputStyle(val); });">
+                <f:selectItem itemLabel="Outlined" itemValue="outlined" />
+                <f:selectItem itemLabel="Filled" itemValue="filled" />
+            </p:selectOneRadio>
+
+            <hr/>
+
+            <h5>Theme Colors</h5>
+            <div class="layout-themes">
+                <ui:repeat value="#{userPreferencesBackingBean.componentThemes}" var="componentTheme">
+                    <div>
+                        <a href="#"
+                           style="background-color: #{componentTheme.color};"
+                           title="#{componentTheme.name}"
+                           onclick="changeThemeColor('#{componentTheme.file}'); return false;">
+                        </a>
+                    </div>
+                </ui:repeat>
+            </div>
+
+            <script>
+                //<![CDATA[
+                // Current state variables - loaded from server ONCE
+                var currentComponentTheme = '#{userPreferencesBackingBean.componentTheme}';
+                var currentDarkMode = '#{userPreferencesBackingBean.darkMode}';
+                var currentMenuMode = '#{userPreferencesBackingBean.menuMode}';
+                var currentTopbarTheme = '#{userPreferencesBackingBean.topbarTheme}';
+                var currentMenuTheme = '#{userPreferencesBackingBean.menuTheme}';
+                var currentInputStyle = '#{userPreferencesBackingBean.inputStyle}';
+
+                // Collect all changes - NO IMMEDIATE SAVES
+                var pendingPreferences = {};
+                var hasUnsavedChanges = false;
+                var isInitializing = true; // Flag to prevent saving during initialization
+
+                // Auto-save timer - saves after 2 seconds of no changes
+                var autoSaveTimer = null;
+                var AUTO_SAVE_DELAY = 2000; // 2 seconds
+
+                // CSS Change Queue Management - CRITICAL FIX for hanging issue
+                var cssChangeQueue = [];
+                var isCssChangeInProgress = false;
+                var MAX_CONCURRENT_CSS_CHANGES = 1; // Only allow ONE CSS change at a time
+
+                // Helper function to wait for PrimeFaces widget to be available
+                function waitForWidget(widgetVar, callback, maxAttempts) {
+                    maxAttempts = maxAttempts || 50; // Default 50 attempts = 5 seconds
+                    var attempts = 0;
+
+                    function checkWidget() {
+                        attempts++;
+                        try {
+                            if (PF(widgetVar)) {
+                                console.debug('Widget ' + widgetVar + ' is now available');
+                                callback();
+                                return;
+                            }
+                        } catch (e) {
+                            // Widget not available yet
+                        }
+
+                        if (attempts < maxAttempts) {
+                            setTimeout(checkWidget, 100); // Check every 100ms
+                        } else {
+                            console.warn('Widget ' + widgetVar + ' not available after ' + (maxAttempts * 100) + 'ms');
+                        }
+                    }
+
+                    checkWidget();
+                }
+
+                // OPTIMIZED CSS REPLACEMENT - Define early so available during initialization
+                function optimizedChangeLayoutsTheme(darkMode) {
+                    try {
+                        var newLayout = '-' + darkMode;
+                        var linkElement = document.querySelector('link[href*="layout-"]');
+                        if (linkElement) {
+                            var href = linkElement.getAttribute('href');
+                            var startIndexOf = href.indexOf('layout-') + 6;
+                            var endIndexOf = href.indexOf('.css');
+                            var currentColor = href.substring(startIndexOf, endIndexOf);
+                            var newHref = href.replace(currentColor, newLayout);
+
+                            // Direct modification - no new link element created
+                            linkElement.setAttribute('href', newHref);
+                            console.debug('Changed layout theme to: ' + newLayout);
+                        }
+                    } catch (e) {
+                        console.error('Error in optimizedChangeLayoutsTheme:', e);
+                    }
+                }
+
+                function optimizedChangeComponentsTheme(themeColor, darkMode) {
+                    try {
+                        var theme = themeColor + '-' + darkMode;
+                        var library = 'primefaces-freya';
+                        var linkElement = document.querySelector('link[href*="theme.css"]');
+                        if (linkElement) {
+                            var href = linkElement.getAttribute('href');
+                            var index = href.indexOf(library) + 1;
+                            var currentTheme = href.substring(index + library.length);
+                            var newHref = href.replace(currentTheme, theme);
+
+                            // Direct modification - no new link element created
+                            linkElement.setAttribute('href', newHref);
+                            console.debug('Changed component theme to: ' + theme);
+                        }
+                    } catch (e) {
+                        console.error('Error in optimizedChangeComponentsTheme:', e);
+                    }
+                }
+
+                // Initialize UI - JSF value bindings handle radio button initialization
+                (function initializeUI() {
+                    try {
+                        console.debug('Initializing UI with values:', {
+                            menuMode: currentMenuMode,
+                            darkMode: currentDarkMode,
+                            componentTheme: currentComponentTheme,
+                            topbarTheme: currentTopbarTheme,
+                            menuTheme: currentMenuTheme,
+                            inputStyle: currentInputStyle
+                        });
+
+                        // Wait for DOM to be fully ready
+                        setTimeout(function() {
+                            // Apply visual themes based on loaded preferences
+                            console.debug('Applying visual themes from preferences...');
+
+                            try {
+                                if (PrimeFaces && PrimeFaces.FreyaConfigurator) {
+                                    // For initialization, use ORIGINAL PrimeFaces functions (more reliable for first load)
+                                    // These will create new links, but that's OK for initialization
+
+                                    console.debug('Applying layout theme: ' + currentDarkMode);
+                                    PrimeFaces.FreyaConfigurator.changeLayoutsTheme(currentDarkMode);
+
+                                    console.debug('Applying component theme: ' + currentComponentTheme + '-' + currentDarkMode);
+                                    PrimeFaces.FreyaConfigurator.changeComponentsTheme(currentComponentTheme, currentDarkMode);
+
+                                    // IMPORTANT: Topbar and menu themes must match darkMode
+                                    // If darkMode is 'dark', light themes won't work properly
+                                    var effectiveTopbarTheme = currentDarkMode;
+                                    var effectiveMenuTheme = currentDarkMode;
+
+                                    console.debug('Applying topbar theme: ' + effectiveTopbarTheme + ' (based on darkMode)');
+                                    PrimeFaces.FreyaConfigurator.changeSectionTheme(effectiveTopbarTheme, 'layout-topbar');
+
+                                    console.debug('Applying menu theme: ' + effectiveMenuTheme + ' (based on darkMode)');
+                                    PrimeFaces.FreyaConfigurator.changeSectionTheme(effectiveMenuTheme, 'layout-menu');
+
+                                    // Menu mode is already applied via server-side rendering (#{userPreferencesBackingBean.menuMode})
+                                    // Don't call changeMenuMode during initialization - it would clear the menu state!
+                                    console.debug('Menu mode already applied server-side: ' + currentMenuMode);
+
+                                    // Apply input style
+                                    console.debug('Applying input style: ' + currentInputStyle);
+                                    PrimeFaces.FreyaConfigurator.updateInputStyle(currentInputStyle);
+                                }
+
+                                // Logo update removed - logo is now hidden
+                                // var logoImg = document.querySelector('.sidebar-logo img');
+                                // if (logoImg) { ... }
+                            } catch (e) {
+                                console.error('Error applying visual themes:', e);
+                            }
+
+                            // Wait a bit more for themes to load, then clean up and enable tracking
+                            setTimeout(function() {
+                                // Clean up any duplicate links created during initialization
+                                cleanupOrphanedLinks();
+
+                                // Clear any changes that may have been recorded during JSF init
+                                pendingPreferences = {};
+                                hasUnsavedChanges = false;
+
+                                // NOW we're ready to track changes
+                                isInitializing = false;
+                                console.debug('UI initialization complete - ready to track changes');
+                            }, 1000); // Wait 1 second for CSS to load, then cleanup
+                        }, 500); // Initial delay to ensure JSF is done
+                    } catch (e) {
+                        console.error('Error initializing UI:', e);
+                        isInitializing = false;
+                    }
+                })();
+
+                // Handle any preference change
+                function handleChange(key, value, visualChangeFunc) {
+                    // Skip saving during initialization
+                    if (isInitializing) {
+                        console.debug('Skipping change during initialization: ' + key + ' = ' + value);
+                        return;
+                    }
+
+                    // Update pending changes immediately
+                    pendingPreferences[key] = value;
+                    hasUnsavedChanges = true;
+
+                    // Queue visual change instead of executing immediately
+                    if (visualChangeFunc) {
+                        queueCssChange(key, value, visualChangeFunc);
+                    }
+
+                    console.debug('Changed ' + key + ' to ' + value + ' (will auto-save in ' + (AUTO_SAVE_DELAY / 1000) + 's)');
+
+                    // Schedule auto-save after delay
+                    scheduleAutoSave();
+                }
+
+                // Schedule automatic save after user stops making changes
+                function scheduleAutoSave() {
+                    // Cancel any existing timer
+                    if (autoSaveTimer) {
+                        clearTimeout(autoSaveTimer);
+                    }
+
+                    // Schedule new save
+                    autoSaveTimer = setTimeout(function() {
+                        if (hasUnsavedChanges) {
+                            console.debug('🔄 Auto-saving changes...');
+                            saveAllPendingChanges();
+                        }
+                    }, AUTO_SAVE_DELAY);
+                }
+
+                // Queue CSS changes to prevent browser connection saturation
+                function queueCssChange(key, value, changeFunc) {
+                    // Remove any existing queued change for this key
+                    cssChangeQueue = cssChangeQueue.filter(function(item) {
+                        return item.key !== key;
+                    });
+
+                    // Add new change to queue
+                    cssChangeQueue.push({
+                        key: key,
+                        value: value,
+                        changeFunc: changeFunc
+                    });
+
+                    // Process queue if not already in progress
+                    if (!isCssChangeInProgress) {
+                        processCssQueue();
+                    }
+                }
+
+                // Process CSS changes one at a time - CRITICAL FIX
+                function processCssQueue() {
+                    if (cssChangeQueue.length === 0) {
+                        isCssChangeInProgress = false;
+                        return;
+                    }
+
+                    isCssChangeInProgress = true;
+                    var change = cssChangeQueue.shift();
+
+                    try {
+                        console.debug('Processing CSS change for ' + change.key + ': ' + change.value);
+
+                        // Clean up any orphaned link elements before making change
+                        cleanupOrphanedLinks();
+
+                        // Execute the change
+                        change.changeFunc(change.value);
+
+                        // Update current state
+                        switch(change.key) {
+                            case 'componentTheme': currentComponentTheme = change.value; break;
+                            case 'darkMode': currentDarkMode = change.value; break;
+                            case 'menuMode': currentMenuMode = change.value; break;
+                            case 'topbarTheme': currentTopbarTheme = change.value; break;
+                            case 'menuTheme': currentMenuTheme = change.value; break;
+                            case 'inputStyle': currentInputStyle = change.value; break;
+                        }
+
+                        // Wait for CSS to settle, then process next item
+                        setTimeout(function() {
+                            processCssQueue();
+                        }, 300); // Wait 300ms between CSS changes
+
+                    } catch (e) {
+                        console.error('Error processing CSS change for ' + change.key + ':', e);
+                        // Continue with next item even if this one failed
+                        setTimeout(function() {
+                            processCssQueue();
+                        }, 100);
+                    }
+                }
+
+                // Clean up orphaned link elements - CRITICAL FIX
+                function cleanupOrphanedLinks() {
+                    try {
+                        // Find duplicate theme links
+                        var themeLinks = document.querySelectorAll('link[href*="theme.css"]');
+                        if (themeLinks.length > 1) {
+                            // Keep only the last one (most recent)
+                            for (var i = 0; i < themeLinks.length - 1; i++) {
+                                console.debug('Removing orphaned theme link:', themeLinks[i].href);
+                                themeLinks[i].parentNode.removeChild(themeLinks[i]);
+                            }
+                        }
+
+                        // Find duplicate layout links
+                        var layoutLinks = document.querySelectorAll('link[href*="layout-"]');
+                        if (layoutLinks.length > 1) {
+                            for (var i = 0; i < layoutLinks.length - 1; i++) {
+                                console.debug('Removing orphaned layout link:', layoutLinks[i].href);
+                                layoutLinks[i].parentNode.removeChild(layoutLinks[i]);
+                            }
+                        }
+
+                        // Find duplicate demo links
+                        var demoLinks = document.querySelectorAll('link[href*="demo-"]');
+                        if (demoLinks.length > 1) {
+                            for (var i = 0; i < demoLinks.length - 1; i++) {
+                                console.debug('Removing orphaned demo link:', demoLinks[i].href);
+                                demoLinks[i].parentNode.removeChild(demoLinks[i]);
+                            }
+                        }
+                    } catch (e) {
+                        console.error('Error cleaning up orphaned links:', e);
+                    }
+                }
+
+                // Save ALL changes when leaving page
+                window.addEventListener('beforeunload', function(e) {
+                    if (hasUnsavedChanges) {
+                        saveAllPendingChanges();
+                        // No warning - just save silently
+                    }
+                });
+
+                // Also save when closing config panel
+                document.addEventListener('click', function(e) {
+                    var configPanel = document.getElementById('layout-config');
+                    if (configPanel && !configPanel.contains(e.target) && hasUnsavedChanges) {
+                        saveAllPendingChanges();
+                    }
+                });
+
+                // Get CSRF token from the form's hidden input
+                function getCsrfToken() {
+                    var csrfInput = document.querySelector('#config-form input[name="_csrf"]');
+                    return csrfInput ? csrfInput.value : '';
+                }
+
+                // Save all pending changes in ONE request (auto-save or page leave)
+                function saveAllPendingChanges() {
+                    if (!hasUnsavedChanges) {
+                        console.debug('No unsaved changes to save');
+                        return;
+                    }
+
+                    try {
+                        var params = new URLSearchParams();
+                        for (var key in pendingPreferences) {
+                            params.append(key, pendingPreferences[key]);
+                            console.debug('  Saving: ' + key + ' = ' + pendingPreferences[key]);
+                        }
+
+                        // Include CSRF token
+                        var csrfToken = getCsrfToken();
+                        if (csrfToken) {
+                            params.append('_csrf', csrfToken);
+                        }
+
+                        console.debug('📤 Sending save request to /api/preferences/save');
+
+                        // Use fetch with keepalive for reliable save
+                        fetch('/api/preferences/save', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            },
+                            body: params.toString(),
+                            keepalive: true  // Important for beforeunload
+                        })
+                        .then(response => {
+                            if (response.ok) {
+                                console.debug('✅ Successfully saved all preferences');
+                                hasUnsavedChanges = false;
+                                pendingPreferences = {};
+                            } else {
+                                console.error('❌ Server returned error:', response.status);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('❌ Error saving preferences:', error);
+                        });
+                    } catch (e) {
+                        console.error('❌ Exception saving preferences:', e);
+                    }
+                }
+
+                function changeThemeColor(themeFile) {
+                    handleChange('componentTheme', themeFile, function(file) {
+                        try {
+                            // Use optimized CSS replacement
+                            optimizedChangeComponentsTheme(file, currentDarkMode);
+                        } catch (e) {
+                            console.error("Error changing theme:", e);
+                        }
+                    });
+                }
+
+                function changeDarkMode(darkMode) {
+                    handleChange('darkMode', darkMode, function(mode) {
+                        try {
+                            // Update data-theme attribute to prevent flash
+                            document.documentElement.setAttribute('data-theme', mode);
+
+                            // Use optimized CSS replacement
+                            optimizedChangeLayoutsTheme(mode);
+                            optimizedChangeComponentsTheme(currentComponentTheme, mode);
+                            PrimeFaces.FreyaConfigurator.changeSectionTheme(mode, 'layout-menu');
+                            PrimeFaces.FreyaConfigurator.changeSectionTheme(mode, 'layout-topbar');
+
+                            // Logo update removed - logo is now hidden
+                        } catch (e) {
+                            console.error("Error changing dark mode:", e);
+                        }
+                    });
+
+                    // CRITICAL FIX: Also save topbar and menu themes to match darkMode
+                    // This prevents the "flash" when loading a new page
+                    if (!isInitializing) {
+                        pendingPreferences['topbarTheme'] = darkMode;
+                        pendingPreferences['menuTheme'] = darkMode;
+                        currentTopbarTheme = darkMode;
+                        currentMenuTheme = darkMode;
+                        console.debug('  Also saving topbarTheme and menuTheme to match darkMode: ' + darkMode);
+                    }
+                }
+
+                // Visual change functions
+                function changeMenuMode(menuMode) {
+                    try {
+                        console.debug('🔧 changeMenuMode called with:', menuMode);
+
+                        // IMMEDIATE CSS change - don't wait for widget!
+                        var wrapper = document.querySelector('.layout-wrapper');
+                        if (wrapper) {
+                            // Remove all menu mode classes first
+                            wrapper.classList.remove('layout-sidebar', 'layout-slim', 'layout-horizontal', 'layout-static');
+
+                            // Add the new menu mode class
+                            wrapper.classList.add(menuMode);
+
+                            // CRITICAL FIX: Handle menuStatic based on menuMode
+                            if (!isInitializing) {
+                                if (menuMode === 'layout-sidebar') {
+                                    // Sidebar mode: auto-expand (layout-static)
+                                    wrapper.classList.add('layout-static');
+                                    console.debug('🔧 Auto-expanding sidebar (adding layout-static)');
+                                    pendingPreferences['menuStatic'] = 'true';
+                                    console.debug('  Also saving menuStatic = true to DB');
+                                } else {
+                                    // Horizontal/Slim mode: menuStatic not relevant, set to false
+                                    pendingPreferences['menuStatic'] = 'false';
+                                    console.debug('  Setting menuStatic = false (not relevant for ' + menuMode + ')');
+                                }
+                            }
+
+                            console.debug('✅ Menu mode CSS changed immediately to:', menuMode);
+                            console.debug('🔍 Wrapper classes:', wrapper.className);
+                        }
+
+                        // Then clear layout state (can wait for widget)
+                        if (PrimeFaces && PrimeFaces.FreyaConfigurator) {
+                            waitForWidget('FreyaMenuWidget', function() {
+                                console.debug('🔧 Clearing layout state...');
+                                PrimeFaces.FreyaConfigurator.clearLayoutState();
+                            });
+                        }
+                    } catch (e) {
+                        console.error('Error changing menu mode:', e);
+                    }
+                }
+
+                function changeTopbarTheme(topbarTheme) {
+                    try {
+                        if (PrimeFaces && PrimeFaces.FreyaConfigurator) {
+                            PrimeFaces.FreyaConfigurator.changeSectionTheme(topbarTheme, 'layout-topbar');
+                        }
+                    } catch (e) {
+                        console.error('Error changing topbar theme:', e);
+                    }
+                }
+
+                function changeMenuTheme(menuTheme) {
+                    try {
+                        if (PrimeFaces && PrimeFaces.FreyaConfigurator) {
+                            PrimeFaces.FreyaConfigurator.changeSectionTheme(menuTheme, 'layout-menu');
+                        }
+                    } catch (e) {
+                        console.error('Error changing menu theme:', e);
+                    }
+                }
+
+                function changeInputStyle(inputStyle) {
+                    try {
+                        if (PrimeFaces && PrimeFaces.FreyaConfigurator) {
+                            PrimeFaces.FreyaConfigurator.updateInputStyle(inputStyle);
+                        }
+                    } catch (e) {
+                        console.error('Error changing input style:', e);
+                    }
+                }
+                //]]>
+            </script>
+        </h:form>
+    </div>
+</ui:composition>

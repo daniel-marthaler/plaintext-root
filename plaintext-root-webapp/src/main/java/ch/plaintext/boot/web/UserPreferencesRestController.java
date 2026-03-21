@@ -119,8 +119,13 @@ public class UserPreferencesRestController {
 
             // CRITICAL: Save theme to cookie for consistent login experience
             if (darkMode != null && !darkMode.isEmpty()) {
-                saveThemeToCookie(response, darkMode);
-                log.debug("🍪 Saved theme to cookie: {}", darkMode);
+                saveThemeToCookie(response, "plaintext-theme", darkMode);
+                log.debug("🍪 Saved dark mode to cookie: {}", darkMode);
+            }
+            // Also save component theme to cookie for persistence across login
+            if (componentTheme != null && !componentTheme.isEmpty()) {
+                saveThemeToCookie(response, "plaintext-color", componentTheme);
+                log.debug("🍪 Saved color theme to cookie: {}", componentTheme);
             }
 
             // CRITICAL FIX: Also update the session-scoped UserPreferencesBackingBean
@@ -154,17 +159,17 @@ public class UserPreferencesRestController {
     }
 
     /**
-     * Saves the theme to a cookie for consistent login page theming.
+     * Saves a preference value to a named cookie.
      */
-    private void saveThemeToCookie(HttpServletResponse response, String theme) {
+    private void saveThemeToCookie(HttpServletResponse response, String cookieName, String value) {
         try {
-            Cookie cookie = new Cookie("plaintext-theme", theme);
+            Cookie cookie = new Cookie(cookieName, value);
             cookie.setPath("/");
             cookie.setMaxAge(365 * 24 * 60 * 60); // 1 year
             cookie.setHttpOnly(false); // Allow JavaScript access
             response.addCookie(cookie);
         } catch (Exception e) {
-            log.error("Error saving theme to cookie: " + e.getMessage(), e);
+            log.error("Error saving cookie '{}': {}", cookieName, e.getMessage(), e);
         }
     }
 }
