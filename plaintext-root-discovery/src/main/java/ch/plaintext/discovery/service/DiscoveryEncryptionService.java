@@ -6,6 +6,7 @@ package ch.plaintext.discovery.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 
 import jakarta.annotation.PostConstruct;
 import javax.crypto.Cipher;
@@ -24,6 +25,7 @@ import javax.crypto.spec.PSource;
 /**
  * PKI encryption service for secure discovery communications
  */
+@ConditionalOnProperty(value = "discovery.enabled", havingValue = "true", matchIfMissing = false)
 @Service
 @Slf4j
 @RequiredArgsConstructor

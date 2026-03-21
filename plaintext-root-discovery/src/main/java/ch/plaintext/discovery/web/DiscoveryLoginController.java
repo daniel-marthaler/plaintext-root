@@ -23,9 +23,13 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.stereotype.Controller;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.web.servlet.ModelAndView;
 
 import java.time.LocalDateTime;
@@ -37,6 +41,7 @@ import java.util.Optional;
  * 1. DB-based UUID tokens (from MQTT flow)
  * 2. RSA-encrypted tokens (from direct topbar navigation)
  */
+@ConditionalOnProperty(value = "discovery.enabled", havingValue = "true", matchIfMissing = false)
 @Controller
 @RequestMapping("/discovery")
 @Slf4j

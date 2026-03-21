@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 
 import jakarta.annotation.PostConstruct;
 import java.time.LocalDateTime;
@@ -21,6 +22,7 @@ import java.util.stream.Collectors;
 /**
  * Backing bean for Discovery Statistics page (ROOT only)
  */
+@ConditionalOnProperty(value = "discovery.enabled", havingValue = "true", matchIfMissing = false)
 @Component("discoveryStatsBackingBean")
 @Scope("view")
 @Data

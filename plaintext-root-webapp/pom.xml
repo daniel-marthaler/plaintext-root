@@ -185,6 +185,14 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- Playwright (Browser-basierte Integration Tests) -->
+        <dependency>
+            <groupId>com.microsoft.playwright</groupId>
+            <artifactId>playwright</artifactId>
+            <version>1.52.0</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -251,6 +259,19 @@
                     <mainClass>ch.RootBootApplication</mainClass>
                     <classifier>exec</classifier>
                 </configuration>
+            </plugin>
+            <!-- Integration Tests (Playwright) - ausführen mit: mvn verify -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

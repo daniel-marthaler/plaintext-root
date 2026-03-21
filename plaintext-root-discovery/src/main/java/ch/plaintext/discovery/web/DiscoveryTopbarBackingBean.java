@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 
 import java.io.Serializable;
 import java.net.URLEncoder;
@@ -29,6 +30,7 @@ import java.util.List;
  * Note: transient services may be null after session deserialization (blue-green deploy).
  * Use getXxx() accessors which re-resolve from ApplicationContext when needed.
  */
+@ConditionalOnProperty(value = "discovery.enabled", havingValue = "true", matchIfMissing = false)
 @Component("discoveryTopbarBackingBean")
 @Scope("session")
 @Data

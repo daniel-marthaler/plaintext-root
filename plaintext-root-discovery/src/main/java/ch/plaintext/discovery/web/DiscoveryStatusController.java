@@ -15,8 +15,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 
 import java.security.MessageDigest;
 import java.time.LocalDateTime;
@@ -27,6 +30,7 @@ import java.util.Map;
 /**
  * Public status endpoint for discovery debugging (no auth required, under /nosec/).
  */
+@ConditionalOnProperty(value = "discovery.enabled", havingValue = "true", matchIfMissing = false)
 @RestController
 @RequestMapping("/nosec/discovery")
 @Slf4j

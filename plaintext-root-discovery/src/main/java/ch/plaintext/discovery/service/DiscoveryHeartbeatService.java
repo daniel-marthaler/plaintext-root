@@ -23,7 +23,7 @@ import java.util.List;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-@ConditionalOnProperty(value = "discovery.heartbeat.enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(value = "discovery.enabled", havingValue = "true", matchIfMissing = false)
 public class DiscoveryHeartbeatService {
     
     @Value("${discovery.app.id:${spring.application.name:plaintext}}")

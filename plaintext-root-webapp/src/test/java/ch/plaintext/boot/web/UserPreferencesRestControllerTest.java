@@ -161,7 +161,7 @@ class UserPreferencesRestControllerTest {
     }
 
     @Test
-    void savePreferences_shouldNotSaveCookie_whenDarkModeNotProvided() {
+    void savePreferences_shouldSaveColorCookie_whenComponentThemeProvided() {
         UserPreference existingPrefs = new UserPreference();
         existingPrefs.setUniqueId("test@example.com");
         when(storage.findByUniqueId("test@example.com")).thenReturn(existingPrefs);
@@ -169,7 +169,8 @@ class UserPreferencesRestControllerTest {
         controller.savePreferences(
                 "blue", null, null, null, null, null, null, response);
 
-        verify(response, never()).addCookie(any());
+        // Color cookie should be set for componentTheme
+        verify(response).addCookie(any());
     }
 
     @Test
