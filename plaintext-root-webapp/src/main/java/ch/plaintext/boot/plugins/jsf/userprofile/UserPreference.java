@@ -28,6 +28,8 @@ public class UserPreference implements SimpleStorable<UserPreference>, Serializa
 
     private boolean menuStatic = true;  // Sidebar is expanded/pinned by default
 
+    private String customColor;  // Hex color like "#FF5733" for custom theme, null = use predefined
+
     private String user = "";
 
     @Override

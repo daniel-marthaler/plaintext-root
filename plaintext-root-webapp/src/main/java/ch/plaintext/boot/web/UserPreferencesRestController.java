@@ -58,10 +58,11 @@ public class UserPreferencesRestController {
             @Parameter(description = "Menu theme identifier") @RequestParam(required = false) String menuTheme,
             @Parameter(description = "Input style (e.g. 'outlined', 'filled')") @RequestParam(required = false) String inputStyle,
             @Parameter(description = "Whether the menu is pinned in static mode") @RequestParam(required = false) String menuStatic,
+            @Parameter(description = "Custom hex color (e.g. '#FF5733'), used when componentTheme is 'custom'") @RequestParam(required = false) String customColor,
             HttpServletResponse response) {
         try {
-            log.debug("🔵 REST /api/preferences/save called with: componentTheme={}, darkMode={}, menuMode={}, topbarTheme={}, menuTheme={}, inputStyle={}, menuStatic={}",
-                    componentTheme, darkMode, menuMode, topbarTheme, menuTheme, inputStyle, menuStatic);
+            log.debug("🔵 REST /api/preferences/save called with: componentTheme={}, darkMode={}, menuMode={}, topbarTheme={}, menuTheme={}, inputStyle={}, menuStatic={}, customColor={}",
+                    componentTheme, darkMode, menuMode, topbarTheme, menuTheme, inputStyle, menuStatic, customColor);
 
             // Get current user from security context
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -79,6 +80,9 @@ public class UserPreferencesRestController {
             validateLength("componentTheme", componentTheme);
             validateLength("topbarTheme", topbarTheme);
             validateLength("menuTheme", menuTheme);
+            if (customColor != null && !customColor.isEmpty() && !customColor.matches("^#[0-9A-Fa-f]{6}$")) {
+                throw new IllegalArgumentException("Invalid hex color format for 'customColor': '" + customColor + "'. Expected format: #RRGGBB");
+            }
 
             // Load or create user prefs
             UserPreference prefs = storage.findByUniqueId(username);
@@ -109,6 +113,10 @@ public class UserPreferencesRestController {
             if (menuStatic != null && !menuStatic.isEmpty()) {
                 prefs.setMenuStatic(Boolean.parseBoolean(menuStatic));
             }
+            if (customColor != null) {
+                // Allow empty string to clear custom color
+                prefs.setCustomColor(customColor.isEmpty() ? null : customColor);
+            }
 
             // Save to database
             storage.save(prefs);
@@ -127,12 +135,22 @@ public class UserPreferencesRestController {
                 saveThemeToCookie(response, "plaintext-color", componentTheme);
                 log.debug("🍪 Saved color theme to cookie: {}", componentTheme);
             }
+            // Save custom color to cookie for persistence across login
+            if (customColor != null) {
+                if (customColor.isEmpty()) {
+                    // Clear custom color cookie
+                    saveThemeToCookie(response, "plaintext-custom-color", "");
+                } else {
+                    saveThemeToCookie(response, "plaintext-custom-color", customColor);
+                    log.debug("🍪 Saved custom color to cookie: {}", customColor);
+                }
+            }
 
             // CRITICAL FIX: Also update the session-scoped UserPreferencesBackingBean
             // Otherwise, the session bean will have stale values on next page load
             if (userPreferencesBackingBean != null) {
                 userPreferencesBackingBean.updateFromRestApi(componentTheme, darkMode, menuMode,
-                        topbarTheme, menuTheme, inputStyle, menuStatic);
+                        topbarTheme, menuTheme, inputStyle, menuStatic, customColor);
             } else {
                 log.debug("⚠️ UserPreferencesBackingBean session bean not available - values will update on next login");
             }

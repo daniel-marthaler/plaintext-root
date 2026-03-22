@@ -6,6 +6,7 @@ package ch.plaintext.boot.integration;
 import com.microsoft.playwright.*;
 import com.microsoft.playwright.options.LoadState;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -49,6 +50,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @EnableConfigurationProperties(ch.plaintext.discovery.config.DiscoveryProperties.class)
+@DisabledIfEnvironmentVariable(named = "CI", matches = "true", disabledReason = "Requires local PostgreSQL at localhost:5434")
 class PlaywrightPageIT {
 
     @LocalServerPort
