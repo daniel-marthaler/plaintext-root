@@ -306,9 +306,11 @@
                             method: 'POST',
                             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                             body: params.toString(),
+                            credentials: 'same-origin',
                             keepalive: true
                         }).then(function(r) {
                             if (r.ok) { hasUnsavedChanges = false; pendingPreferences = {}; }
+                            else { console.error('Save failed with status:', r.status); }
                         }).catch(function(e) { console.error('Save error:', e); });
                     } catch (e) { console.error('Save exception:', e); }
                 }

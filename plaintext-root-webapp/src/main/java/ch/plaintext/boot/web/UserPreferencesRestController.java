@@ -146,13 +146,15 @@ public class UserPreferencesRestController {
                 }
             }
 
-            // CRITICAL FIX: Also update the session-scoped UserPreferencesBackingBean
+            // Also update the session-scoped UserPreferencesBackingBean
             // Otherwise, the session bean will have stale values on next page load
-            if (userPreferencesBackingBean != null) {
-                userPreferencesBackingBean.updateFromRestApi(componentTheme, darkMode, menuMode,
-                        topbarTheme, menuTheme, inputStyle, menuStatic, customColor);
-            } else {
-                log.debug("⚠️ UserPreferencesBackingBean session bean not available - values will update on next login");
+            try {
+                if (userPreferencesBackingBean != null) {
+                    userPreferencesBackingBean.updateFromRestApi(componentTheme, darkMode, menuMode,
+                            topbarTheme, menuTheme, inputStyle, menuStatic, customColor);
+                }
+            } catch (Exception sessionEx) {
+                log.debug("Session bean update skipped (DB save succeeded): {}", sessionEx.getMessage());
             }
 
             return ResponseEntity.ok("OK");

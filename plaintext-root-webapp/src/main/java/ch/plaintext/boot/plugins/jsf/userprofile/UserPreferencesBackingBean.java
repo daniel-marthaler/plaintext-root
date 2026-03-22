@@ -83,21 +83,24 @@ public class UserPreferencesBackingBean implements Serializable {
                 prefs.setLightLogo(!cookieTheme.equals("light"));
             }
 
+            boolean needsSync = false;
+
             // If color cookie differs from DB, update DB to match cookie
             if (cookieColor != null && !cookieColor.equals(prefs.getComponentTheme())) {
                 log.debug("Cookie color '{}' differs from DB '{}', updating DB to match cookie", cookieColor, prefs.getComponentTheme());
                 prefs.setComponentTheme(cookieColor);
+                needsSync = true;
             }
 
             // If custom color cookie differs from DB, update DB to match cookie
             if (cookieCustomColor != null && !cookieCustomColor.equals(prefs.getCustomColor())) {
                 log.debug("Cookie custom color '{}' differs from DB '{}', updating DB to match cookie", cookieCustomColor, prefs.getCustomColor());
                 prefs.setCustomColor(cookieCustomColor);
+                needsSync = true;
             }
 
-            // CRITICAL FIX: Ensure themes are consistent with darkMode
+            // Ensure themes are consistent with darkMode
             // Topbar and menu themes must match darkMode to render correctly
-            boolean needsSync = false;
             if (!prefs.getTopbarTheme().equals(prefs.getDarkMode())) {
                 log.debug("Syncing topbarTheme from '{}' to '{}' to match darkMode", prefs.getTopbarTheme(), prefs.getDarkMode());
                 prefs.setTopbarTheme(prefs.getDarkMode());
