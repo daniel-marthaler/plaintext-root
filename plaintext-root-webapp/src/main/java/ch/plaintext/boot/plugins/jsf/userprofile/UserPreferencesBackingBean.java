@@ -70,9 +70,8 @@ public class UserPreferencesBackingBean implements Serializable {
         String cookieCustomColor = loadCookieValue("plaintext-custom-color");
 
         if (prefs != null) {
-            log.debug("🟢 Loaded preferences from DB for user {}: menuMode={}, darkMode={}, componentTheme={}, topbarTheme={}, menuTheme={}, inputStyle={}, menuStatic={}",
-                    user.getUsername(), prefs.getMenuMode(), prefs.getDarkMode(), prefs.getComponentTheme(),
-                    prefs.getTopbarTheme(), prefs.getMenuTheme(), prefs.getInputStyle(), prefs.isMenuStatic());
+            log.info("PREFS-INIT user={} componentTheme={} darkMode={} customColor={} cookieColor={} cookieCustomColor={}",
+                    user.getUsername(), prefs.getComponentTheme(), prefs.getDarkMode(), prefs.getCustomColor(), cookieColor, cookieCustomColor);
 
             // If cookie theme differs from DB, update DB to match cookie
             if (cookieTheme != null && !cookieTheme.equals(prefs.getDarkMode())) {

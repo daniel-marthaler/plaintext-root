@@ -25,7 +25,7 @@
                 visibility: visible;
             }
 
-            /* === Dynamic theme colors (server-rendered per user preference) === */
+            /* theme=#{userPreferencesBackingBean.componentTheme} dark=#{userPreferencesBackingBean.darkMode} */
             :root {
                 --pt-primary-color: #{themeColorProvider.getPrimaryColor(userPreferencesBackingBean.componentTheme, userPreferencesBackingBean.darkMode, userPreferencesBackingBean.customColor)};
                 --pt-primary-color-text: #{themeColorProvider.getPrimaryColorText(userPreferencesBackingBean.componentTheme, userPreferencesBackingBean.customColor)};
