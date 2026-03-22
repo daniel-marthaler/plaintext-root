@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * Integration test verifying that all Flyway migrations run successfully
  * against a real PostgreSQL database via Testcontainers.
  */
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @Testcontainers
 @ActiveProfiles("test")
 class FlywayMigrationIT {

@@ -8,11 +8,13 @@ import ch.plaintext.settings.service.BrandingService;
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 @Component("brandingBean")
 @Scope("application")
+@ConditionalOnWebApplication
 @Getter
 @Slf4j
 public class BrandingBean {
