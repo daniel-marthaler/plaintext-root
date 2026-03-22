@@ -24,6 +24,7 @@ class UserPreferenceTest {
         assertEquals("outlined", pref.getInputStyle());
         assertFalse(pref.isLightLogo());
         assertTrue(pref.isMenuStatic());
+        assertNull(pref.getCustomColor());
         assertEquals("", pref.getUser());
     }
 

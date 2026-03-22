@@ -110,6 +110,79 @@ public class ThemeColorProvider implements Serializable {
     }
 
     /**
+     * Generates a full ColorPalette from an arbitrary hex color string.
+     * Used for custom user-chosen colors.
+     *
+     * @param hex color in "#RRGGBB" format
+     * @return a ColorPalette with light and dark mode variants
+     */
+    public ColorPalette generatePaletteFromHex(String hex) {
+        if (hex == null || !hex.matches("^#[0-9A-Fa-f]{6}$")) {
+            return PALETTES.get("blue");
+        }
+
+        int r = Integer.parseInt(hex.substring(1, 3), 16);
+        int g = Integer.parseInt(hex.substring(3, 5), 16);
+        int b = Integer.parseInt(hex.substring(5, 7), 16);
+
+        // Determine text color based on relative luminance (WCAG formula)
+        double luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255.0;
+        String primaryText = luminance > 0.5 ? "#212529" : "#ffffff";
+
+        // Light mode: lighten by 15% for primaryLighter (mix with white)
+        String primaryLighter = mixWithWhite(r, g, b, 0.85);
+
+        // Dark mode: lighten by 10% (mix with white)
+        int rDark = Math.min(255, r + (int) ((255 - r) * 0.25));
+        int gDark = Math.min(255, g + (int) ((255 - g) * 0.25));
+        int bDark = Math.min(255, b + (int) ((255 - b) * 0.25));
+        String primaryDark = String.format("#%02X%02X%02X", rDark, gDark, bDark);
+
+        // Dark mode lighter: darken (mix with dark background)
+        String primaryLighterDark = String.format("#%02x%02x%02x",
+                (int) (r * 0.2), (int) (g * 0.2), (int) (b * 0.2));
+
+        return new ColorPalette(
+                hex,
+                primaryText,
+                primaryLighter,
+                String.format("rgba(%d,%d,%d,.16)", r, g, b),
+                String.format("rgba(%d,%d,%d,.04)", r, g, b),
+                String.format("rgba(%d,%d,%d,.5)", r, g, b),
+                primaryDark,
+                primaryLighterDark,
+                String.format("rgba(%d,%d,%d,.16)", rDark, gDark, bDark),
+                String.format("rgba(%d,%d,%d,.04)", rDark, gDark, bDark),
+                String.format("rgba(%d,%d,%d,.5)", rDark, gDark, bDark)
+        );
+    }
+
+    private String mixWithWhite(int r, int g, int b, double factor) {
+        int rr = (int) (r * factor + 255 * (1 - factor));
+        int gg = (int) (g * factor + 255 * (1 - factor));
+        int bb = (int) (b * factor + 255 * (1 - factor));
+        return String.format("#%02x%02x%02x", Math.min(255, rr), Math.min(255, gg), Math.min(255, bb));
+    }
+
+    /**
+     * Get color palette for a custom hex color for the given mode.
+     * Returns the appropriate variant (light or dark) of the generated palette.
+     */
+    public ColorPalette getCustomColorPalette(String hex) {
+        return generatePaletteFromHex(hex);
+    }
+
+    /**
+     * Resolves the palette for a color name, supporting "custom" with a hex fallback.
+     */
+    private ColorPalette resolvePalette(String colorName, String customHex) {
+        if ("custom".equals(colorName) && customHex != null && !customHex.isEmpty()) {
+            return generatePaletteFromHex(customHex);
+        }
+        return getPalette(colorName);
+    }
+
+    /**
      * Get the primary color for a given theme and mode.
      */
     public String getPrimaryColor(String colorName, String darkMode) {
@@ -117,12 +190,26 @@ public class ThemeColorProvider implements Serializable {
         return "dark".equals(darkMode) ? p.getPrimaryDark() : p.getPrimary();
     }
 
+    public String getPrimaryColor(String colorName, String darkMode, String customHex) {
+        ColorPalette p = resolvePalette(colorName, customHex);
+        return "dark".equals(darkMode) ? p.getPrimaryDark() : p.getPrimary();
+    }
+
     public String getPrimaryColorText(String colorName) {
         return getPalette(colorName).getPrimaryText();
     }
 
+    public String getPrimaryColorText(String colorName, String customHex) {
+        return resolvePalette(colorName, customHex).getPrimaryText();
+    }
+
     public String getPrimaryLighter(String colorName, String darkMode) {
         ColorPalette p = getPalette(colorName);
+        return "dark".equals(darkMode) ? p.getPrimaryLighterDark() : p.getPrimaryLighter();
+    }
+
+    public String getPrimaryLighter(String colorName, String darkMode, String customHex) {
+        ColorPalette p = resolvePalette(colorName, customHex);
         return "dark".equals(darkMode) ? p.getPrimaryLighterDark() : p.getPrimaryLighter();
     }
 
@@ -131,13 +218,28 @@ public class ThemeColorProvider implements Serializable {
         return "dark".equals(darkMode) ? p.getPrimaryBg16Dark() : p.getPrimaryBg16();
     }
 
+    public String getPrimaryBg16(String colorName, String darkMode, String customHex) {
+        ColorPalette p = resolvePalette(colorName, customHex);
+        return "dark".equals(darkMode) ? p.getPrimaryBg16Dark() : p.getPrimaryBg16();
+    }
+
     public String getPrimaryBg04(String colorName, String darkMode) {
         ColorPalette p = getPalette(colorName);
         return "dark".equals(darkMode) ? p.getPrimaryBg04Dark() : p.getPrimaryBg04();
     }
 
+    public String getPrimaryBg04(String colorName, String darkMode, String customHex) {
+        ColorPalette p = resolvePalette(colorName, customHex);
+        return "dark".equals(darkMode) ? p.getPrimaryBg04Dark() : p.getPrimaryBg04();
+    }
+
     public String getFocusRing(String colorName, String darkMode) {
         ColorPalette p = getPalette(colorName);
+        return "dark".equals(darkMode) ? p.getFocusRingDark() : p.getFocusRing();
+    }
+
+    public String getFocusRing(String colorName, String darkMode, String customHex) {
+        ColorPalette p = resolvePalette(colorName, customHex);
         return "dark".equals(darkMode) ? p.getFocusRingDark() : p.getFocusRing();
     }
 
