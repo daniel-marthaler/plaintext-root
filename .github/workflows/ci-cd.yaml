@@ -1,0 +1,24 @@
+name: CI/CD
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+    branches: [master]
+
+concurrency:
+  group: ${{ github.repository }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
+
+jobs:
+  pipeline:
+    if: ${{ !contains(github.event.head_commit.message, '[skip-ci]') }}
+    uses: daniel-marthaler/plaintext-scripts/.github/workflows/ci-cd-pipeline.yaml@master
+    with:
+      deploy-target: >-
+        ${{ github.event_name == 'pull_request' && 'ci-only'
+         || (github.ref == 'refs/heads/master' && 'release-all' || 'snapshot-dev') }}
+      project-name: plaintext-root
+      database-name: plaintext_root
+      dev-url: 'http://192.168.1.224:1123'
+    secrets: inherit
