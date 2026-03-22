@@ -173,14 +173,14 @@
                     </li>
 
                     <li class="topbar-item">
-                        <a href="#" title="Abmelden"
-                           onclick="document.getElementById('logoutForm').submit(); return false;"
-                           style="display:flex; align-items:center; justify-content:center;">
-                            <i class="topbar-icon pi pi-sign-out" style="font-size:1.5rem"/>
-                        </a>
-                        <form id="logoutForm" method="post" action="#{request.contextPath}/logout"
-                              style="display:none;">
+                        <form method="post" action="#{request.contextPath}/logout"
+                              style="margin:0; padding:0; display:inline;">
                             <input type="hidden" name="_csrf" value="#{_csrf.token}"/>
+                            <button type="submit" title="Abmelden"
+                                    style="background:none; border:none; cursor:pointer; color:inherit;
+                                           display:flex; align-items:center; justify-content:center; padding:8px;">
+                                <i class="topbar-icon pi pi-sign-out" style="font-size:1.5rem"/>
+                            </button>
                         </form>
                     </li>
 
