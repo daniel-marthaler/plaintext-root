@@ -5,13 +5,8 @@
  */
 
 :root {
-    /* These are DEFAULT values - overridden by template.xhtml inline style */
-    --pt-primary-color: #2196F3;
-    --pt-primary-color-text: #ffffff;
-    --pt-primary-lighter: #e3f2fd;
-    --pt-primary-bg-16: rgba(33, 150, 243, 0.16);
-    --pt-primary-bg-04: rgba(33, 150, 243, 0.04);
-    --pt-focus-ring-color: rgba(33, 150, 243, 0.5);
+    /* Primary color variables are set by template.xhtml with !important */
+    /* DO NOT set --pt-primary-* here - they will override user preferences */
 
     /* Surface colors - light mode defaults */
     --pt-surface-0: #ffffff;
