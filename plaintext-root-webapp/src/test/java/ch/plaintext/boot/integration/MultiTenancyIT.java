@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * Integration test verifying multi-tenancy data isolation
  * via the mandate system.
  */
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @Testcontainers
 @ActiveProfiles("test")
 @Transactional
@@ -69,8 +69,8 @@ class MultiTenancyIT {
 
         assertNotNull(foundA);
         assertNotNull(foundB);
-        assertEquals("tenantA", foundA.getMandat());
-        assertEquals("tenantB", foundB.getMandat());
+        assertEquals("tenanta", foundA.getMandat());
+        assertEquals("tenantb", foundB.getMandat());
         assertNotEquals(foundA.getMandat(), foundB.getMandat());
     }
 

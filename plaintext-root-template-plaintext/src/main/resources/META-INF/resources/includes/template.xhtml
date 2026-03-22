@@ -27,12 +27,12 @@
 
             /* === Dynamic theme colors (server-rendered per user preference) === */
             :root {
-                --pt-primary-color: #{themeColorProvider.getPrimaryColor(userPreferencesBackingBean.componentTheme, userPreferencesBackingBean.darkMode)};
-                --pt-primary-color-text: #{themeColorProvider.getPrimaryColorText(userPreferencesBackingBean.componentTheme)};
-                --pt-primary-lighter: #{themeColorProvider.getPrimaryLighter(userPreferencesBackingBean.componentTheme, userPreferencesBackingBean.darkMode)};
-                --pt-primary-bg-16: #{themeColorProvider.getPrimaryBg16(userPreferencesBackingBean.componentTheme, userPreferencesBackingBean.darkMode)};
-                --pt-primary-bg-04: #{themeColorProvider.getPrimaryBg04(userPreferencesBackingBean.componentTheme, userPreferencesBackingBean.darkMode)};
-                --pt-focus-ring-color: #{themeColorProvider.getFocusRing(userPreferencesBackingBean.componentTheme, userPreferencesBackingBean.darkMode)};
+                --pt-primary-color: #{themeColorProvider.getPrimaryColor(userPreferencesBackingBean.componentTheme, userPreferencesBackingBean.darkMode, userPreferencesBackingBean.customColor)};
+                --pt-primary-color-text: #{themeColorProvider.getPrimaryColorText(userPreferencesBackingBean.componentTheme, userPreferencesBackingBean.customColor)};
+                --pt-primary-lighter: #{themeColorProvider.getPrimaryLighter(userPreferencesBackingBean.componentTheme, userPreferencesBackingBean.darkMode, userPreferencesBackingBean.customColor)};
+                --pt-primary-bg-16: #{themeColorProvider.getPrimaryBg16(userPreferencesBackingBean.componentTheme, userPreferencesBackingBean.darkMode, userPreferencesBackingBean.customColor)};
+                --pt-primary-bg-04: #{themeColorProvider.getPrimaryBg04(userPreferencesBackingBean.componentTheme, userPreferencesBackingBean.darkMode, userPreferencesBackingBean.customColor)};
+                --pt-focus-ring-color: #{themeColorProvider.getFocusRing(userPreferencesBackingBean.componentTheme, userPreferencesBackingBean.darkMode, userPreferencesBackingBean.customColor)};
             }
 
             /* Light mode surface colors */

@@ -7,6 +7,7 @@ import jakarta.annotation.PostConstruct;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -20,6 +21,7 @@ import java.time.format.DateTimeFormatter;
 @Component("versionBean")
 @Data
 @Scope("application")
+@ConditionalOnWebApplication
 @Slf4j
 public class VersionBean {
 
