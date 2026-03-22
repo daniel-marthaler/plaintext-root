@@ -116,23 +116,20 @@
                     </li>
 
                     <!-- Chat Direct Messages Notification with Auto-Polling -->
-                    <h:form id="notificationPollingForm" style="display: inline;">
-                        <p:poll interval="2" update="chatNotificationPanel" />
-
-                        <h:panelGroup id="chatNotificationPanel">
-                            <ui:fragment rendered="#{directMessageNotificationBackingBean.hasUnreadMessages()}">
-                                <li class="topbar-item">
+                    <li class="topbar-item" style="display:inline;">
+                        <h:form id="notificationPollingForm" style="display:inline; margin:0; padding:0;">
+                            <p:poll interval="2" update="chatNotificationPanel"/>
+                            <h:panelGroup id="chatNotificationPanel">
+                                <ui:fragment rendered="#{directMessageNotificationBackingBean.hasUnreadMessages()}">
                                     <a href="chats.html" title="Sie haben #{directMessageNotificationBackingBean.unreadMessageCount} ungelesene Direktnachricht(en)">
                                         <i class="topbar-icon pi pi-comments" style="font-size: 1.5rem; color: #dc3545;"></i>
-                                        <span style="position: absolute; top: 8px; right: 8px; background-color: #dc3545; color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 0.7rem; display: flex; align-items: center; justify-content: center; font-weight: bold;">
-                                            #{directMessageNotificationBackingBean.unreadMessageCount}
-                                        </span>
+                                        <span style="position:absolute; top:8px; right:8px; background-color:#dc3545; color:white; border-radius:50%; width:18px; height:18px; font-size:0.7rem; display:flex; align-items:center; justify-content:center; font-weight:bold;">#{directMessageNotificationBackingBean.unreadMessageCount}</span>
                                     </a>
-                                </li>
-                            </ui:fragment>
-                        </h:panelGroup>
-                        <input type="hidden" name="_csrf" value="#{_csrf.token}"/>
-                    </h:form>
+                                </ui:fragment>
+                            </h:panelGroup>
+                            <input type="hidden" name="_csrf" value="#{_csrf.token}"/>
+                        </h:form>
+                    </li>
 
                     <li class="topbar-item" style="position: relative;">
                         <a href="#" id="user-menu-button" tabindex="0" style="display: flex; align-items: center; justify-content: center;">

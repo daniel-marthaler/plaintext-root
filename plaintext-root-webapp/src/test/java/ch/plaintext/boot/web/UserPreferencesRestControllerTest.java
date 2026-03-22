@@ -72,7 +72,7 @@ class UserPreferencesRestControllerTest {
 
         ResponseEntity<String> result = controller.savePreferences(
                 "blue", "dark", "layout-horizontal",
-                "dark", "dark", "filled", "false", response);
+                "dark", "dark", "filled", "false", null, response);
 
         assertEquals(200, result.getStatusCode().value());
         assertEquals("OK", result.getBody());
@@ -84,7 +84,7 @@ class UserPreferencesRestControllerTest {
         when(storage.findByUniqueId("test@example.com")).thenReturn(null);
 
         ResponseEntity<String> result = controller.savePreferences(
-                "green", null, null, null, null, null, null, response);
+                "green", null, null, null, null, null, null, null, response);
 
         assertEquals(200, result.getStatusCode().value());
         verify(storage).save(any(UserPreference.class));
@@ -99,7 +99,7 @@ class UserPreferencesRestControllerTest {
         when(storage.findByUniqueId("test@example.com")).thenReturn(existingPrefs);
 
         ResponseEntity<String> result = controller.savePreferences(
-                "blue", null, null, null, null, null, null, response);
+                "blue", null, null, null, null, null, null, null, response);
 
         assertEquals(200, result.getStatusCode().value());
         // Only componentTheme should be updated
@@ -115,7 +115,7 @@ class UserPreferencesRestControllerTest {
         when(storage.findByUniqueId("test@example.com")).thenReturn(existingPrefs);
 
         ResponseEntity<String> result = controller.savePreferences(
-                "", "", "", "", "", "", "", response);
+                "", "", "", "", "", "", "", null, response);
 
         assertEquals(200, result.getStatusCode().value());
         assertEquals("green", existingPrefs.getComponentTheme()); // unchanged
@@ -128,7 +128,7 @@ class UserPreferencesRestControllerTest {
         SecurityContextHolder.setContext(context);
 
         ResponseEntity<String> result = controller.savePreferences(
-                "blue", null, null, null, null, null, null, response);
+                "blue", null, null, null, null, null, null, null, response);
 
         assertEquals(401, result.getStatusCode().value());
     }
@@ -141,11 +141,11 @@ class UserPreferencesRestControllerTest {
 
         controller.savePreferences(
                 "blue", "dark", "layout-horizontal",
-                "dark", "dark", "filled", "true", response);
+                "dark", "dark", "filled", "true", null, response);
 
         verify(userPreferencesBackingBean).updateFromRestApi(
                 "blue", "dark", "layout-horizontal",
-                "dark", "dark", "filled", "true");
+                "dark", "dark", "filled", "true", null);
     }
 
     @Test
@@ -155,7 +155,7 @@ class UserPreferencesRestControllerTest {
         when(storage.findByUniqueId("test@example.com")).thenReturn(existingPrefs);
 
         controller.savePreferences(
-                null, "dark", null, null, null, null, null, response);
+                null, "dark", null, null, null, null, null, null, response);
 
         verify(response).addCookie(any());
     }
@@ -167,7 +167,7 @@ class UserPreferencesRestControllerTest {
         when(storage.findByUniqueId("test@example.com")).thenReturn(existingPrefs);
 
         controller.savePreferences(
-                "blue", null, null, null, null, null, null, response);
+                "blue", null, null, null, null, null, null, null, response);
 
         // Color cookie should be set for componentTheme
         verify(response).addCookie(any());
@@ -178,7 +178,7 @@ class UserPreferencesRestControllerTest {
         when(storage.findByUniqueId("test@example.com")).thenThrow(new RuntimeException("DB error"));
 
         ResponseEntity<String> result = controller.savePreferences(
-                "blue", null, null, null, null, null, null, response);
+                "blue", null, null, null, null, null, null, null, response);
 
         assertEquals(500, result.getStatusCode().value());
         assertTrue(result.getBody().contains("ERROR"));
@@ -191,7 +191,7 @@ class UserPreferencesRestControllerTest {
         when(storage.findByUniqueId("test@example.com")).thenReturn(existingPrefs);
 
         controller.savePreferences(
-                null, null, null, null, null, null, "true", response);
+                null, null, null, null, null, null, "true", null, response);
 
         assertTrue(existingPrefs.isMenuStatic());
     }
@@ -204,8 +204,49 @@ class UserPreferencesRestControllerTest {
         when(storage.findByUniqueId("test@example.com")).thenReturn(existingPrefs);
 
         controller.savePreferences(
-                null, null, null, null, null, null, "false", response);
+                null, null, null, null, null, null, "false", null, response);
 
         assertFalse(existingPrefs.isMenuStatic());
+    }
+
+    @Test
+    void savePreferences_shouldSaveCustomColor() {
+        UserPreference existingPrefs = new UserPreference();
+        existingPrefs.setUniqueId("test@example.com");
+        when(storage.findByUniqueId("test@example.com")).thenReturn(existingPrefs);
+
+        ResponseEntity<String> result = controller.savePreferences(
+                "custom", null, null, null, null, null, null, "#FF5733", response);
+
+        assertEquals(200, result.getStatusCode().value());
+        assertEquals("custom", existingPrefs.getComponentTheme());
+        assertEquals("#FF5733", existingPrefs.getCustomColor());
+    }
+
+    @Test
+    void savePreferences_shouldClearCustomColor_whenEmpty() {
+        UserPreference existingPrefs = new UserPreference();
+        existingPrefs.setUniqueId("test@example.com");
+        existingPrefs.setCustomColor("#FF5733");
+        when(storage.findByUniqueId("test@example.com")).thenReturn(existingPrefs);
+
+        ResponseEntity<String> result = controller.savePreferences(
+                "green", null, null, null, null, null, null, "", response);
+
+        assertEquals(200, result.getStatusCode().value());
+        assertNull(existingPrefs.getCustomColor());
+    }
+
+    @Test
+    void savePreferences_shouldRejectInvalidHexColor() {
+        UserPreference existingPrefs = new UserPreference();
+        existingPrefs.setUniqueId("test@example.com");
+        when(storage.findByUniqueId("test@example.com")).thenReturn(existingPrefs);
+
+        ResponseEntity<String> result = controller.savePreferences(
+                "custom", null, null, null, null, null, null, "not-a-color", response);
+
+        assertEquals(500, result.getStatusCode().value());
+        assertTrue(result.getBody().contains("Invalid hex color"));
     }
 }

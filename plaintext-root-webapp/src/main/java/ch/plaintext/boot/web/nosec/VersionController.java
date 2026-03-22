@@ -7,11 +7,13 @@ import ch.plaintext.boot.web.VersionBean;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@ConditionalOnWebApplication
 @RequestMapping("/nosec")
 @Tag(name = "Version", description = "Public endpoint exposing the application version (no authentication required)")
 public class VersionController {

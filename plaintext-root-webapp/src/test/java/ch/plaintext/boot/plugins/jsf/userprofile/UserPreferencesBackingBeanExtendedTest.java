@@ -167,7 +167,7 @@ class UserPreferencesBackingBeanExtendedTest {
     @Test
     void updateFromRestApi_shouldUpdateAllFields() {
         bean.updateFromRestApi("blue", "dark", "layout-horizontal",
-                "dark", "dark", "filled", "false");
+                "dark", "dark", "filled", "false", null);
 
         assertEquals("blue", prefs.getComponentTheme());
         assertEquals("dark", prefs.getDarkMode());
@@ -183,7 +183,7 @@ class UserPreferencesBackingBeanExtendedTest {
         prefs.setComponentTheme("green");
         prefs.setDarkMode("light");
 
-        bean.updateFromRestApi(null, null, null, null, null, null, null);
+        bean.updateFromRestApi(null, null, null, null, null, null, null, null);
 
         assertEquals("green", prefs.getComponentTheme());
         assertEquals("light", prefs.getDarkMode());
@@ -193,7 +193,7 @@ class UserPreferencesBackingBeanExtendedTest {
     void updateFromRestApi_shouldSkipEmptyValues() {
         prefs.setComponentTheme("green");
 
-        bean.updateFromRestApi("", "", "", "", "", "", "");
+        bean.updateFromRestApi("", "", "", "", "", "", "", null);
 
         assertEquals("green", prefs.getComponentTheme());
     }

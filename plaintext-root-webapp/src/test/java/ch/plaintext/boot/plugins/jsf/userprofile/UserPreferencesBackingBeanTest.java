@@ -165,7 +165,7 @@ class UserPreferencesBackingBeanTest {
         bean.init();
 
         bean.updateFromRestApi("blue", "dark", "layout-horizontal",
-                "dark", "dark", "filled", "false");
+                "dark", "dark", "filled", "false", null);
 
         assertEquals("blue", bean.getComponentTheme());
         assertEquals("dark", bean.getDarkMode());
@@ -181,7 +181,7 @@ class UserPreferencesBackingBeanTest {
         when(storage.findByUniqueId("test@example.com")).thenReturn(existingPrefs);
         bean.init();
 
-        bean.updateFromRestApi(null, null, null, null, null, null, null);
+        bean.updateFromRestApi(null, null, null, null, null, null, null, null);
 
         // Values should remain unchanged
         assertEquals("green", bean.getComponentTheme());
@@ -193,7 +193,7 @@ class UserPreferencesBackingBeanTest {
         when(storage.findByUniqueId("test@example.com")).thenReturn(existingPrefs);
         bean.init();
 
-        bean.updateFromRestApi("", "", "", "", "", "", "");
+        bean.updateFromRestApi("", "", "", "", "", "", "", null);
 
         // Values should remain unchanged
         assertEquals("green", bean.getComponentTheme());
@@ -286,7 +286,7 @@ class UserPreferencesBackingBeanTest {
 
         // After migration, menuStatic is true, so it returns layout-static
         // Let's set via updateFromRestApi
-        bean.updateFromRestApi(null, null, null, null, null, null, "false");
+        bean.updateFromRestApi(null, null, null, null, null, null, "false", null);
         assertEquals("", bean.getMenuStaticClass());
     }
 

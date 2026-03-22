@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * Integration test verifying JPA repositories work correctly
  * against a real PostgreSQL database.
  */
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @Testcontainers
 @ActiveProfiles("test")
 @Transactional

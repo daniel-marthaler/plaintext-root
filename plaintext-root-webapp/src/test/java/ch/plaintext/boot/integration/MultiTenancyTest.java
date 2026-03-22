@@ -69,8 +69,8 @@ class MultiTenancyTest {
 
         assertNotNull(foundA);
         assertNotNull(foundB);
-        assertEquals("tenantA", foundA.getMandat());
-        assertEquals("tenantB", foundB.getMandat());
+        assertEquals("tenanta", foundA.getMandat());
+        assertEquals("tenantb", foundB.getMandat());
         assertNotEquals(foundA.getMandat(), foundB.getMandat());
     }
 

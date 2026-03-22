@@ -66,6 +66,9 @@ public class UserPreferencesBackingBean implements Serializable {
         // Load color theme from cookie if available
         String cookieColor = loadCookieValue("plaintext-color");
 
+        // Load custom color from cookie if available
+        String cookieCustomColor = loadCookieValue("plaintext-custom-color");
+
         if (prefs != null) {
             log.debug("🟢 Loaded preferences from DB for user {}: menuMode={}, darkMode={}, componentTheme={}, topbarTheme={}, menuTheme={}, inputStyle={}, menuStatic={}",
                     user.getUsername(), prefs.getMenuMode(), prefs.getDarkMode(), prefs.getComponentTheme(),
@@ -84,6 +87,12 @@ public class UserPreferencesBackingBean implements Serializable {
             if (cookieColor != null && !cookieColor.equals(prefs.getComponentTheme())) {
                 log.debug("Cookie color '{}' differs from DB '{}', updating DB to match cookie", cookieColor, prefs.getComponentTheme());
                 prefs.setComponentTheme(cookieColor);
+            }
+
+            // If custom color cookie differs from DB, update DB to match cookie
+            if (cookieCustomColor != null && !cookieCustomColor.equals(prefs.getCustomColor())) {
+                log.debug("Cookie custom color '{}' differs from DB '{}', updating DB to match cookie", cookieCustomColor, prefs.getCustomColor());
+                prefs.setCustomColor(cookieCustomColor);
             }
 
             // CRITICAL FIX: Ensure themes are consistent with darkMode
@@ -156,7 +165,8 @@ public class UserPreferencesBackingBean implements Serializable {
      * session-scoped bean but can't call the normal setters (which use PrimeFaces).
      */
     public void updateFromRestApi(String componentTheme, String darkMode, String menuMode,
-                                   String topbarTheme, String menuTheme, String inputStyle, String menuStatic) {
+                                   String topbarTheme, String menuTheme, String inputStyle,
+                                   String menuStatic, String customColor) {
         if (componentTheme != null && !componentTheme.isEmpty()) {
             prefs.setComponentTheme(componentTheme);
         }
@@ -178,7 +188,22 @@ public class UserPreferencesBackingBean implements Serializable {
         if (menuStatic != null && !menuStatic.isEmpty()) {
             prefs.setMenuStatic(Boolean.parseBoolean(menuStatic));
         }
+        if (customColor != null) {
+            // Allow empty string to clear custom color
+            prefs.setCustomColor(customColor.isEmpty() ? null : customColor);
+        }
         log.debug("✅ Session bean updated via REST API");
+    }
+
+    // ==================== Custom Color ====================
+
+    public String getCustomColor() {
+        return prefs.getCustomColor();
+    }
+
+    public void setCustomColor(String customColor) {
+        prefs.setCustomColor(customColor);
+        save();
     }
 
     // ==================== Delegating Getters ====================
