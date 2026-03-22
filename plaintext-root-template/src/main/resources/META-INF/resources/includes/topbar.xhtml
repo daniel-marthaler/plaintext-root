@@ -154,6 +154,22 @@
                         </a>
                     </li>
 
+                    <!-- Chat Direct Messages Notification with Auto-Polling -->
+                    <li class="topbar-item" style="display:inline;">
+                        <h:form id="notificationPollingForm" style="display:inline; margin:0; padding:0;">
+                            <p:poll interval="2" update="chatNotificationPanel"/>
+                            <h:panelGroup id="chatNotificationPanel">
+                                <ui:fragment rendered="#{directMessageNotificationBackingBean.hasUnreadMessages()}">
+                                    <a href="chats.html"
+                                       title="#{directMessageNotificationBackingBean.unreadMessageCount} ungelesene Nachricht(en)">
+                                        <i class="topbar-icon pi pi-comments" style="font-size:1.5rem; color:#dc3545;"/>
+                                        <span class="topbar-badge">#{directMessageNotificationBackingBean.unreadMessageCount}</span>
+                                    </a>
+                                </ui:fragment>
+                            </h:panelGroup>
+                            <input type="hidden" name="_csrf" value="#{_csrf.token}"/>
+                        </h:form>
+                    </li>
 
                     <li class="topbar-item" style="position:relative;">
                         <a href="#" id="user-menu-button" aria-haspopup="true" aria-expanded="false"
@@ -201,7 +217,7 @@
                     </li>
 
                     <li class="topbar-item">
-                        <a href="#" title="Logout" id="logoutLink"
+                        <a href="#" title="Abmelden" id="logoutLink"
                            style="display:flex; align-items:center; justify-content:center; padding:8px; cursor:pointer;">
                             <i class="topbar-icon pi pi-sign-out" style="font-size:1.5rem"/>
                         </a>
