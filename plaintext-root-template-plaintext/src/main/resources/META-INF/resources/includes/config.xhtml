@@ -35,15 +35,15 @@
             <hr/>
 
             <h5>Theme Colors</h5>
-            <div class="layout-themes">
+            <div id="themeColorGrid" style="display:grid; grid-template-columns: repeat(2, 1fr); gap:6px;">
                 <ui:repeat value="#{userPreferencesBackingBean.componentThemes}" var="componentTheme">
-                    <div>
-                        <a href="#"
-                           style="background-color: #{componentTheme.color};"
-                           title="#{componentTheme.name}"
-                           onclick="changeThemeColor('#{componentTheme.file}'); return false;">
-                        </a>
-                    </div>
+                    <a href="#" class="theme-color-item#{userPreferencesBackingBean.componentTheme == componentTheme.file ? ' theme-color-selected' : ''}"
+                       data-theme-file="#{componentTheme.file}"
+                       style="display:flex; align-items:center; gap:8px; padding:6px 10px; border-radius:8px; border:2px solid #{userPreferencesBackingBean.componentTheme == componentTheme.file ? 'var(--pt-primary-color)' : 'var(--pt-surface-border)'}; background:var(--pt-surface-50); text-decoration:none; color:var(--pt-text-color); cursor:pointer; transition:border-color 0.2s;"
+                       onclick="changeThemeColor('#{componentTheme.file}'); return false;">
+                        <span style="width:22px; height:22px; min-width:22px; border-radius:50%; background:#{componentTheme.color}; border:1px solid rgba(0,0,0,0.1);"></span>
+                        <span style="font-size:0.85rem;">#{componentTheme.name}</span>
+                    </a>
                 </ui:repeat>
             </div>
 
@@ -106,12 +106,12 @@
                     if (!colors) return;
                     var c = colors[mode] || colors['light'];
                     var root = document.documentElement.style;
-                    root.setProperty('--pt-primary-color', c.primary);
-                    root.setProperty('--pt-primary-color-text', c.primaryText);
-                    root.setProperty('--pt-primary-lighter', c.primaryLighter);
-                    root.setProperty('--pt-primary-bg-16', c.primaryBg16);
-                    root.setProperty('--pt-primary-bg-04', c.primaryBg04);
-                    root.setProperty('--pt-focus-ring-color', c.focusRing);
+                    root.setProperty('--pt-primary-color', c.primary, 'important');
+                    root.setProperty('--pt-primary-color-text', c.primaryText, 'important');
+                    root.setProperty('--pt-primary-lighter', c.primaryLighter, 'important');
+                    root.setProperty('--pt-primary-bg-16', c.primaryBg16, 'important');
+                    root.setProperty('--pt-primary-bg-04', c.primaryBg04, 'important');
+                    root.setProperty('--pt-focus-ring-color', c.focusRing, 'important');
                 }
 
                 // ===== Generate palette from hex color in JavaScript =====
@@ -157,12 +157,12 @@
                 function applyCustomColorVariables(hex, mode) {
                     var c = generatePaletteFromHex(hex, mode);
                     var root = document.documentElement.style;
-                    root.setProperty('--pt-primary-color', c.primary);
-                    root.setProperty('--pt-primary-color-text', c.primaryText);
-                    root.setProperty('--pt-primary-lighter', c.primaryLighter);
-                    root.setProperty('--pt-primary-bg-16', c.primaryBg16);
-                    root.setProperty('--pt-primary-bg-04', c.primaryBg04);
-                    root.setProperty('--pt-focus-ring-color', c.focusRing);
+                    root.setProperty('--pt-primary-color', c.primary, 'important');
+                    root.setProperty('--pt-primary-color-text', c.primaryText, 'important');
+                    root.setProperty('--pt-primary-lighter', c.primaryLighter, 'important');
+                    root.setProperty('--pt-primary-bg-16', c.primaryBg16, 'important');
+                    root.setProperty('--pt-primary-bg-04', c.primaryBg04, 'important');
+                    root.setProperty('--pt-focus-ring-color', c.focusRing, 'important');
                 }
 
                 // ===== Change handlers =====
@@ -172,7 +172,19 @@
                     currentCustomColor = '';
                     pendingPreferences['componentTheme'] = themeFile;
                     pendingPreferences['customColor'] = '';
-                    // Update UI
+                    // Update theme color grid selection
+                    var items = document.querySelectorAll('#themeColorGrid .theme-color-item');
+                    for (var i = 0; i < items.length; i++) {
+                        var item = items[i];
+                        if (item.getAttribute('data-theme-file') === themeFile) {
+                            item.classList.add('theme-color-selected');
+                            item.style.borderColor = 'var(--pt-primary-color)';
+                        } else {
+                            item.classList.remove('theme-color-selected');
+                            item.style.borderColor = 'var(--pt-surface-border)';
+                        }
+                    }
+                    // Update custom color UI
                     var label = document.getElementById('customColorLabel');
                     if (label) label.textContent = 'Choose...';
                     var resetBtn = document.getElementById('customColorReset');
@@ -187,7 +199,13 @@
                     currentCustomColor = hex;
                     pendingPreferences['componentTheme'] = 'custom';
                     pendingPreferences['customColor'] = hex;
-                    // Update UI
+                    // Deselect all theme grid items
+                    var items = document.querySelectorAll('#themeColorGrid .theme-color-item');
+                    for (var i = 0; i < items.length; i++) {
+                        items[i].classList.remove('theme-color-selected');
+                        items[i].style.borderColor = 'var(--pt-surface-border)';
+                    }
+                    // Update custom color UI
                     var label = document.getElementById('customColorLabel');
                     if (label) label.textContent = hex;
                     var resetBtn = document.getElementById('customColorReset');

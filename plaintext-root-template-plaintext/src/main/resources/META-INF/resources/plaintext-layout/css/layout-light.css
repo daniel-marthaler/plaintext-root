@@ -439,24 +439,12 @@ a:hover { text-decoration: none; }
     margin: 1rem 0;
 }
 
-.layout-themes {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
+.theme-color-item:hover {
+    filter: brightness(0.95);
 }
 
-.layout-themes > div > a {
-    display: block;
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    border: 2px solid transparent;
-    transition: transform var(--pt-transition-duration);
-    cursor: pointer;
-}
-
-.layout-themes > div > a:hover {
-    transform: scale(1.15);
+.theme-color-selected {
+    font-weight: 600;
 }
 
 /* ===== Layout Mask ===== */
