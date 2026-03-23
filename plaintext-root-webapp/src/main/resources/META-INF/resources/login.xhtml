@@ -309,11 +309,34 @@
             }
         }
 
-        // Initialize theme on page load
+        // Apply saved color from cookie to login page
+        function initColor() {
+            var savedColor = getCookie('plaintext-color');
+            if (savedColor) {
+                // Color palette (matching ThemeColorProvider)
+                var palettes = {
+                    'blue': '#2196F3', 'green': '#4CAF50', 'orange': '#FF9800', 'turquoise': '#00BCD4',
+                    'avocado': '#AEC523', 'purple': '#7B1FA2', 'red': '#F44336', 'yellow': '#FFC107',
+                    'lime': '#8BC34A', 'crimson': '#B71C1C'
+                };
+                var hex = palettes[savedColor];
+                if (savedColor === 'custom') {
+                    hex = getCookie('plaintext-custom-color');
+                }
+                if (hex) {
+                    document.documentElement.style.setProperty('--primary-color', hex);
+                    // Derive darker shade for dark mode
+                    document.documentElement.style.setProperty('--primary-dark', hex);
+                }
+            }
+        }
+
+        // Initialize theme and color on page load
         if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', function() { initTheme(); cleanUrl(); });
+            document.addEventListener('DOMContentLoaded', function() { initTheme(); initColor(); cleanUrl(); });
         } else {
             initTheme();
+            initColor();
             cleanUrl();
         }
         //]]>

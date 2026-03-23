@@ -41,7 +41,7 @@
                     <a href="#" class="theme-color-item#{userPreferencesBackingBean.componentTheme == componentTheme.file ? ' theme-color-selected' : ''}"
                        data-theme-file="#{componentTheme.file}"
                        data-color-type="predefined"
-                       style="display:flex; align-items:center; gap:8px; padding:6px 10px; border-radius:8px; border:2px solid #{userPreferencesBackingBean.componentTheme == componentTheme.file ? 'var(--pt-primary-color)' : 'var(--pt-surface-border)'}; background:var(--pt-surface-50); text-decoration:none; color:var(--pt-text-color); cursor:pointer; transition:border-color 0.2s; position:relative;"
+                       style="display:flex; align-items:center; gap:8px; padding:6px 10px; border-radius:16px; border:2px solid #{userPreferencesBackingBean.componentTheme == componentTheme.file ? 'var(--pt-primary-color)' : 'var(--pt-surface-border)'}; background:var(--pt-surface-50); text-decoration:none; color:var(--pt-text-color); cursor:pointer; transition:border-color 0.2s; position:relative;"
                        onclick="changeThemeColor('#{componentTheme.file}'); return false;">
                         <span style="width:22px; height:22px; min-width:22px; border-radius:50%; background:#{componentTheme.color}; border:1px solid rgba(0,0,0,0.1);"></span>
                         <span style="font-size:0.85rem; flex:1;">#{componentTheme.name}</span>
@@ -59,7 +59,7 @@
                        data-custom-hex="#{namedColor.hex}"
                        data-color-type="custom"
                        data-color-name="#{namedColor.name}"
-                       style="display:flex; align-items:center; gap:8px; padding:6px 10px; border-radius:8px; border:2px solid #{userPreferencesBackingBean.componentTheme == 'custom' and userPreferencesBackingBean.customColor == namedColor.hex ? 'var(--pt-primary-color)' : 'var(--pt-surface-border)'}; background:var(--pt-surface-50); text-decoration:none; color:var(--pt-text-color); cursor:pointer; transition:border-color 0.2s; position:relative;"
+                       style="display:flex; align-items:center; gap:8px; padding:6px 10px; border-radius:16px; border:2px solid #{userPreferencesBackingBean.componentTheme == 'custom' and userPreferencesBackingBean.customColor == namedColor.hex ? 'var(--pt-primary-color)' : 'var(--pt-surface-border)'}; background:var(--pt-surface-50); text-decoration:none; color:var(--pt-text-color); cursor:pointer; transition:border-color 0.2s; position:relative;"
                        onclick="selectCustomNamedColor('#{namedColor.hex}'); return false;">
                         <span style="width:22px; height:22px; min-width:22px; border-radius:50%; background:#{namedColor.hex}; border:1px solid rgba(0,0,0,0.1);"></span>
                         <span style="font-size:0.85rem; flex:1;">#{namedColor.name}</span>
@@ -72,7 +72,7 @@
 
                 <!-- Add new color button -->
                 <a href="#" id="addColorBtn"
-                   style="display:flex; align-items:center; justify-content:center; gap:8px; padding:6px 10px; border-radius:8px; border:2px dashed var(--pt-surface-border); background:var(--pt-surface-50); text-decoration:none; color:var(--pt-text-color-secondary); cursor:pointer; transition:border-color 0.2s;"
+                   style="display:flex; align-items:center; justify-content:center; gap:8px; padding:6px 10px; border-radius:16px; border:2px dashed var(--pt-surface-border); background:var(--pt-surface-50); text-decoration:none; color:var(--pt-text-color-secondary); cursor:pointer; transition:border-color 0.2s;"
                    onclick="showAddColorForm(); return false;">
                     <span style="font-size:1.1rem; font-weight:bold;">+</span>
                     <span style="font-size:0.85rem;">New Color</span>
@@ -80,7 +80,7 @@
             </div>
 
             <!-- Add color inline form (hidden by default) -->
-            <div id="addColorForm" style="display:none; margin-top:8px; padding:10px; border-radius:8px; border:1px solid var(--pt-surface-border); background:var(--pt-surface-50);">
+            <div id="addColorForm" style="display:none; margin-top:8px; padding:10px; border-radius:16px; border:1px solid var(--pt-surface-border); background:var(--pt-surface-50);">
                 <div style="display:flex; align-items:center; gap:8px;">
                     <input type="color" id="newColorPicker" value="#4CAF50"
                            style="width:44px; height:44px; min-width:44px; border:none; padding:0; cursor:pointer; border-radius:50%; overflow:hidden; background:transparent; -webkit-appearance:none;" />

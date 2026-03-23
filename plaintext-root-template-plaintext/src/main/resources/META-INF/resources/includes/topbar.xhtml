@@ -173,18 +173,24 @@
                     </li>
 
                     <li class="topbar-item">
-                        <form method="post" action="#{request.contextPath}/logout"
-                              style="margin:0; padding:0; display:inline;">
-                            <input type="hidden" name="_csrf" value="#{_csrf.token}"/>
-                            <button type="submit" title="Abmelden"
-                                    style="background:none; border:none; cursor:pointer; color:inherit;
-                                           display:flex; align-items:center; justify-content:center; padding:8px;">
-                                <i class="topbar-icon pi pi-sign-out" style="font-size:1.5rem"/>
-                            </button>
-                        </form>
+                        <a href="#" title="Logout" id="logoutLink"
+                           style="display:flex; align-items:center; justify-content:center; padding:8px; cursor:pointer;">
+                            <i class="topbar-icon pi pi-sign-out" style="font-size:1.5rem"/>
+                        </a>
                     </li>
 
                 </ul>
+
+            <!-- Logout form outside topbar to avoid PrimeFaces interference -->
+            <form id="logoutForm" method="post" action="#{request.contextPath}/logout" style="display:none;">
+                <input type="hidden" name="_csrf" value="#{_csrf.token}"/>
+            </form>
+            <script>
+                document.getElementById('logoutLink').addEventListener('click', function(e) {
+                    e.preventDefault();
+                    document.getElementById('logoutForm').submit();
+                });
+            </script>
 
                 <p:dialog header="Mandat einstellen" widgetVar="mandantBeml" id="mandantBeml"
                           resizable="true" modal="false">
