@@ -208,6 +208,47 @@ public class UserPreferencesBackingBean implements Serializable {
         save();
     }
 
+    // ==================== Color Palette ====================
+
+    /**
+     * Returns predefined themes filtered by the user's hidden colors set.
+     */
+    public List<ComponentTheme> getVisibleComponentThemes() {
+        java.util.Set<String> hidden = prefs.getHiddenColors();
+        if (hidden == null || hidden.isEmpty()) {
+            return componentThemes;
+        }
+        List<ComponentTheme> visible = new ArrayList<>();
+        for (ComponentTheme theme : componentThemes) {
+            if (!hidden.contains(theme.getFile())) {
+                visible.add(theme);
+            }
+        }
+        return visible;
+    }
+
+    /**
+     * Returns the user's custom named colors.
+     */
+    public List<UserPreference.NamedColor> getCustomColors() {
+        return prefs.getCustomColors();
+    }
+
+    /**
+     * Returns the set of hidden predefined color names.
+     */
+    public java.util.Set<String> getHiddenColors() {
+        return prefs.getHiddenColors();
+    }
+
+    /**
+     * Returns true if any predefined colors are hidden.
+     */
+    public boolean isHasHiddenColors() {
+        java.util.Set<String> hidden = prefs.getHiddenColors();
+        return hidden != null && !hidden.isEmpty();
+    }
+
     // ==================== Delegating Getters ====================
 
     public String getDarkMode() {

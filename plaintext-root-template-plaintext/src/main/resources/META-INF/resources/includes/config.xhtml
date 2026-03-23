@@ -36,30 +36,68 @@
 
             <h5>Theme Colors</h5>
             <div id="themeColorGrid" style="display:grid; grid-template-columns: repeat(2, 1fr); gap:6px;">
-                <ui:repeat value="#{userPreferencesBackingBean.componentThemes}" var="componentTheme">
+                <!-- Predefined colors (filtered by hidden) -->
+                <ui:repeat value="#{userPreferencesBackingBean.visibleComponentThemes}" var="componentTheme">
                     <a href="#" class="theme-color-item#{userPreferencesBackingBean.componentTheme == componentTheme.file ? ' theme-color-selected' : ''}"
                        data-theme-file="#{componentTheme.file}"
-                       style="display:flex; align-items:center; gap:8px; padding:6px 10px; border-radius:8px; border:2px solid #{userPreferencesBackingBean.componentTheme == componentTheme.file ? 'var(--pt-primary-color)' : 'var(--pt-surface-border)'}; background:var(--pt-surface-50); text-decoration:none; color:var(--pt-text-color); cursor:pointer; transition:border-color 0.2s;"
+                       data-color-type="predefined"
+                       style="display:flex; align-items:center; gap:8px; padding:6px 10px; border-radius:8px; border:2px solid #{userPreferencesBackingBean.componentTheme == componentTheme.file ? 'var(--pt-primary-color)' : 'var(--pt-surface-border)'}; background:var(--pt-surface-50); text-decoration:none; color:var(--pt-text-color); cursor:pointer; transition:border-color 0.2s; position:relative;"
                        onclick="changeThemeColor('#{componentTheme.file}'); return false;">
                         <span style="width:22px; height:22px; min-width:22px; border-radius:50%; background:#{componentTheme.color}; border:1px solid rgba(0,0,0,0.1);"></span>
-                        <span style="font-size:0.85rem;">#{componentTheme.name}</span>
+                        <span style="font-size:0.85rem; flex:1;">#{componentTheme.name}</span>
+                        <span class="color-delete-btn" onclick="event.preventDefault(); event.stopPropagation(); deleteColor('#{componentTheme.file}');"
+                              style="font-size:0.7rem; color:var(--pt-text-color-secondary); cursor:pointer; padding:2px 4px; opacity:0.5; transition:opacity 0.2s;"
+                              onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.5'"
+                              title="Farbe ausblenden">&#x2715;</span>
                     </a>
                 </ui:repeat>
+
+                <!-- Custom colors -->
+                <ui:repeat value="#{userPreferencesBackingBean.customColors}" var="namedColor">
+                    <a href="#" class="theme-color-item#{userPreferencesBackingBean.componentTheme == 'custom' and userPreferencesBackingBean.customColor == namedColor.hex ? ' theme-color-selected' : ''}"
+                       data-theme-file="custom"
+                       data-custom-hex="#{namedColor.hex}"
+                       data-color-type="custom"
+                       data-color-name="#{namedColor.name}"
+                       style="display:flex; align-items:center; gap:8px; padding:6px 10px; border-radius:8px; border:2px solid #{userPreferencesBackingBean.componentTheme == 'custom' and userPreferencesBackingBean.customColor == namedColor.hex ? 'var(--pt-primary-color)' : 'var(--pt-surface-border)'}; background:var(--pt-surface-50); text-decoration:none; color:var(--pt-text-color); cursor:pointer; transition:border-color 0.2s; position:relative;"
+                       onclick="selectCustomNamedColor('#{namedColor.hex}'); return false;">
+                        <span style="width:22px; height:22px; min-width:22px; border-radius:50%; background:#{namedColor.hex}; border:1px solid rgba(0,0,0,0.1);"></span>
+                        <span style="font-size:0.85rem; flex:1;">#{namedColor.name}</span>
+                        <span class="color-delete-btn" onclick="event.preventDefault(); event.stopPropagation(); deleteColor('#{namedColor.name}');"
+                              style="font-size:0.7rem; color:var(--pt-text-color-secondary); cursor:pointer; padding:2px 4px; opacity:0.5; transition:opacity 0.2s;"
+                              onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.5'"
+                              title="Farbe loeschen">&#x2715;</span>
+                    </a>
+                </ui:repeat>
+
+                <!-- Add new color button -->
+                <a href="#" id="addColorBtn"
+                   style="display:flex; align-items:center; justify-content:center; gap:8px; padding:6px 10px; border-radius:8px; border:2px dashed var(--pt-surface-border); background:var(--pt-surface-50); text-decoration:none; color:var(--pt-text-color-secondary); cursor:pointer; transition:border-color 0.2s;"
+                   onclick="showAddColorForm(); return false;">
+                    <span style="font-size:1.1rem; font-weight:bold;">+</span>
+                    <span style="font-size:0.85rem;">Neue Farbe</span>
+                </a>
             </div>
 
-            <h5>Custom Color</h5>
-            <div style="display:flex;align-items:center;gap:0.5rem;">
-                <input type="color" id="customColorPicker"
-                       value="#{userPreferencesBackingBean.customColor != null ? userPreferencesBackingBean.customColor : '#4CAF50'}"
-                       title="Pick a custom theme color"
-                       style="width:40px;height:40px;border:none;padding:0;cursor:pointer;border-radius:50%;overflow:hidden;background:transparent;" />
-                <span id="customColorLabel" style="font-size:0.85rem;color:var(--pt-text-color-secondary);">
-                    #{userPreferencesBackingBean.componentTheme == 'custom' ? userPreferencesBackingBean.customColor : 'Choose...'}
-                </span>
-                <a href="#" id="customColorReset"
-                   style="font-size:0.8rem;color:var(--pt-text-color-secondary);display:#{userPreferencesBackingBean.componentTheme == 'custom' ? 'inline' : 'none'}"
-                   onclick="resetCustomColor(); return false;" title="Reset to predefined color">
-                    &#x2715;
+            <!-- Add color inline form (hidden by default) -->
+            <div id="addColorForm" style="display:none; margin-top:8px; padding:10px; border-radius:8px; border:1px solid var(--pt-surface-border); background:var(--pt-surface-50);">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <input type="color" id="newColorPicker" value="#4CAF50"
+                           style="width:36px; height:36px; border:none; padding:0; cursor:pointer; border-radius:50%; overflow:hidden; background:transparent;" />
+                    <input type="text" id="newColorName" placeholder="Name..."
+                           style="flex:1; padding:6px 10px; border-radius:6px; border:1px solid var(--pt-surface-border); background:var(--pt-surface-0); color:var(--pt-text-color); font-size:0.85rem; outline:none;" />
+                    <a href="#" onclick="confirmAddColor(); return false;"
+                       style="padding:4px 12px; border-radius:6px; background:var(--pt-primary-color); color:var(--pt-primary-color-text); text-decoration:none; font-size:0.85rem; font-weight:500;">OK</a>
+                    <a href="#" onclick="hideAddColorForm(); return false;"
+                       style="font-size:0.8rem; color:var(--pt-text-color-secondary); text-decoration:none; padding:4px;">&#x2715;</a>
+                </div>
+            </div>
+
+            <!-- Restore hidden colors link -->
+            <div id="restoreColorsLink" style="margin-top:6px; display:#{userPreferencesBackingBean.hasHiddenColors ? 'block' : 'none'};">
+                <a href="#" onclick="restoreAllColors(); return false;"
+                   style="font-size:0.8rem; color:var(--pt-text-color-secondary); text-decoration:underline;">
+                    Alle Farben anzeigen
                 </a>
             </div>
 
@@ -165,18 +203,20 @@
                     root.setProperty('--pt-focus-ring-color', c.focusRing, 'important');
                 }
 
-                // ===== Change handlers =====
-                function changeThemeColor(themeFile) {
-                    applyColorVariables(themeFile, currentDarkMode);
-                    currentComponentTheme = themeFile;
-                    currentCustomColor = '';
-                    pendingPreferences['componentTheme'] = themeFile;
-                    pendingPreferences['customColor'] = '';
-                    // Update theme color grid selection
+                // ===== Update grid selection highlight =====
+                function updateGridSelection(activeFile, activeHex) {
                     var items = document.querySelectorAll('#themeColorGrid .theme-color-item');
                     for (var i = 0; i < items.length; i++) {
                         var item = items[i];
-                        if (item.getAttribute('data-theme-file') === themeFile) {
+                        var file = item.getAttribute('data-theme-file');
+                        var hex = item.getAttribute('data-custom-hex');
+                        var isSelected = false;
+                        if (activeFile === 'custom' && activeHex && hex === activeHex) {
+                            isSelected = true;
+                        } else if (activeFile !== 'custom' && file === activeFile && !hex) {
+                            isSelected = true;
+                        }
+                        if (isSelected) {
                             item.classList.add('theme-color-selected');
                             item.style.borderColor = 'var(--pt-primary-color)';
                         } else {
@@ -184,51 +224,158 @@
                             item.style.borderColor = 'var(--pt-surface-border)';
                         }
                     }
-                    // Update custom color UI
-                    var label = document.getElementById('customColorLabel');
-                    if (label) label.textContent = 'Choose...';
-                    var resetBtn = document.getElementById('customColorReset');
-                    if (resetBtn) resetBtn.style.display = 'none';
+                }
+
+                // ===== Change handlers =====
+                function changeThemeColor(themeFile) {
+                    applyColorVariables(themeFile, currentDarkMode);
+                    currentComponentTheme = themeFile;
+                    currentCustomColor = '';
+                    pendingPreferences['componentTheme'] = themeFile;
+                    pendingPreferences['customColor'] = '';
+                    updateGridSelection(themeFile, null);
                     hasUnsavedChanges = true;
                     scheduleAutoSave();
                 }
 
-                function changeCustomColor(hex) {
+                function selectCustomNamedColor(hex) {
                     applyCustomColorVariables(hex, currentDarkMode);
                     currentComponentTheme = 'custom';
                     currentCustomColor = hex;
                     pendingPreferences['componentTheme'] = 'custom';
                     pendingPreferences['customColor'] = hex;
-                    // Deselect all theme grid items
-                    var items = document.querySelectorAll('#themeColorGrid .theme-color-item');
-                    for (var i = 0; i < items.length; i++) {
-                        items[i].classList.remove('theme-color-selected');
-                        items[i].style.borderColor = 'var(--pt-surface-border)';
-                    }
-                    // Update custom color UI
-                    var label = document.getElementById('customColorLabel');
-                    if (label) label.textContent = hex;
-                    var resetBtn = document.getElementById('customColorReset');
-                    if (resetBtn) resetBtn.style.display = 'inline';
+                    updateGridSelection('custom', hex);
                     hasUnsavedChanges = true;
                     scheduleAutoSave();
                 }
 
-                function resetCustomColor() {
-                    changeThemeColor('green');
+                // ===== Add/delete color palette functions =====
+                function showAddColorForm() {
+                    document.getElementById('addColorForm').style.display = 'block';
+                    var nameInput = document.getElementById('newColorName');
+                    if (nameInput) { nameInput.value = ''; nameInput.focus(); }
                 }
 
-                // ===== Color picker event =====
-                (function() {
-                    setTimeout(function() {
-                        var picker = document.getElementById('customColorPicker');
-                        if (picker) {
-                            picker.addEventListener('input', function() {
-                                changeCustomColor(this.value);
-                            });
+                function hideAddColorForm() {
+                    document.getElementById('addColorForm').style.display = 'none';
+                }
+
+                function confirmAddColor() {
+                    var picker = document.getElementById('newColorPicker');
+                    var nameInput = document.getElementById('newColorName');
+                    var hex = picker ? picker.value : '#4CAF50';
+                    var name = nameInput ? nameInput.value.trim() : '';
+                    if (!name) { nameInput.focus(); return; }
+
+                    var params = new URLSearchParams();
+                    params.append('name', name);
+                    params.append('hex', hex);
+                    var csrfInput = document.querySelector('#config-form input[name="_csrf"]');
+                    if (csrfInput) params.append('_csrf', csrfInput.value);
+
+                    fetch('/api/preferences/add-color', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: params.toString(),
+                        credentials: 'same-origin'
+                    }).then(function(r) {
+                        if (r.ok) {
+                            // Add the new color to the grid dynamically
+                            addColorToGrid(name, hex);
+                            hideAddColorForm();
+                        } else { console.error('Add color failed:', r.status); }
+                    }).catch(function(e) { console.error('Add color error:', e); });
+                }
+
+                function addColorToGrid(name, hex) {
+                    var grid = document.getElementById('themeColorGrid');
+                    var addBtn = document.getElementById('addColorBtn');
+                    var a = document.createElement('a');
+                    a.href = '#';
+                    a.className = 'theme-color-item';
+                    a.setAttribute('data-theme-file', 'custom');
+                    a.setAttribute('data-custom-hex', hex);
+                    a.setAttribute('data-color-type', 'custom');
+                    a.setAttribute('data-color-name', name);
+                    a.style.cssText = 'display:flex; align-items:center; gap:8px; padding:6px 10px; border-radius:8px; border:2px solid var(--pt-surface-border); background:var(--pt-surface-50); text-decoration:none; color:var(--pt-text-color); cursor:pointer; transition:border-color 0.2s; position:relative;';
+                    a.onclick = function() { selectCustomNamedColor(hex); return false; };
+
+                    var circle = document.createElement('span');
+                    circle.style.cssText = 'width:22px; height:22px; min-width:22px; border-radius:50%; background:' + hex + '; border:1px solid rgba(0,0,0,0.1);';
+
+                    var label = document.createElement('span');
+                    label.style.cssText = 'font-size:0.85rem; flex:1;';
+                    label.textContent = name;
+
+                    var del = document.createElement('span');
+                    del.className = 'color-delete-btn';
+                    del.style.cssText = 'font-size:0.7rem; color:var(--pt-text-color-secondary); cursor:pointer; padding:2px 4px; opacity:0.5; transition:opacity 0.2s;';
+                    del.innerHTML = '&#x2715;';
+                    del.title = 'Farbe loeschen';
+                    del.onmouseover = function() { this.style.opacity = '1'; };
+                    del.onmouseout = function() { this.style.opacity = '0.5'; };
+                    del.onclick = function(e) { e.preventDefault(); e.stopPropagation(); deleteColor(name); };
+
+                    a.appendChild(circle);
+                    a.appendChild(label);
+                    a.appendChild(del);
+                    grid.insertBefore(a, addBtn);
+                }
+
+                function deleteColor(colorKey) {
+                    var params = new URLSearchParams();
+                    params.append('colorKey', colorKey);
+                    var csrfInput = document.querySelector('#config-form input[name="_csrf"]');
+                    if (csrfInput) params.append('_csrf', csrfInput.value);
+
+                    fetch('/api/preferences/delete-color', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: params.toString(),
+                        credentials: 'same-origin'
+                    }).then(function(r) {
+                        if (r.ok) {
+                            removeColorFromGrid(colorKey);
+                            // Show restore link
+                            var restoreLink = document.getElementById('restoreColorsLink');
+                            if (restoreLink) restoreLink.style.display = 'block';
+                        } else { console.error('Delete color failed:', r.status); }
+                    }).catch(function(e) { console.error('Delete color error:', e); });
+                }
+
+                function removeColorFromGrid(colorKey) {
+                    var items = document.querySelectorAll('#themeColorGrid .theme-color-item');
+                    for (var i = 0; i < items.length; i++) {
+                        var item = items[i];
+                        var type = item.getAttribute('data-color-type');
+                        if (type === 'custom' && item.getAttribute('data-color-name') === colorKey) {
+                            item.remove();
+                            return;
                         }
-                    }, 500);
-                })();
+                        if (type === 'predefined' && item.getAttribute('data-theme-file') === colorKey) {
+                            item.remove();
+                            return;
+                        }
+                    }
+                }
+
+                function restoreAllColors() {
+                    var csrfInput = document.querySelector('#config-form input[name="_csrf"]');
+                    var params = new URLSearchParams();
+                    if (csrfInput) params.append('_csrf', csrfInput.value);
+
+                    fetch('/api/preferences/restore-colors', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: params.toString(),
+                        credentials: 'same-origin'
+                    }).then(function(r) {
+                        if (r.ok) {
+                            // Reload page to show all predefined colors again
+                            window.location.reload();
+                        } else { console.error('Restore colors failed:', r.status); }
+                    }).catch(function(e) { console.error('Restore colors error:', e); });
+                }
 
                 function changeDarkMode(darkMode) {
                     // Update data-theme attribute (triggers CSS variable switch for surfaces)

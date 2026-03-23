@@ -164,6 +164,160 @@ public class UserPreferencesRestController {
         }
     }
 
+    @Operation(summary = "Add a custom named color",
+               description = "Adds a new custom color with a display name to the user's palette.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Color added successfully"),
+            @ApiResponse(responseCode = "401", description = "User is not authenticated"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @PostMapping("/add-color")
+    public ResponseEntity<String> addColor(
+            @Parameter(description = "Display name for the color") @RequestParam String name,
+            @Parameter(description = "Hex color value (e.g. '#FF5733')") @RequestParam String hex) {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth == null || !auth.isAuthenticated()) {
+                return ResponseEntity.status(401).body("NOT_AUTHENTICATED");
+            }
+
+            User user = (User) auth.getPrincipal();
+            String username = user.getUsername();
+
+            // Validate inputs
+            if (name == null || name.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("Name is required");
+            }
+            if (name.length() > MAX_PARAM_LENGTH) {
+                return ResponseEntity.badRequest().body("Name too long");
+            }
+            if (hex == null || !hex.matches("^#[0-9A-Fa-f]{6}$")) {
+                return ResponseEntity.badRequest().body("Invalid hex color format. Expected: #RRGGBB");
+            }
+
+            UserPreference prefs = storage.findByUniqueId(username);
+            if (prefs == null) {
+                prefs = new UserPreference();
+                prefs.setUniqueId(username);
+            }
+
+            prefs.getCustomColors().add(new UserPreference.NamedColor(name.trim(), hex));
+            storage.save(prefs);
+
+            // Update session bean
+            try {
+                if (userPreferencesBackingBean != null) {
+                    // Trigger reload by re-reading from storage
+                    userPreferencesBackingBean.save();
+                }
+            } catch (Exception e) {
+                log.debug("Session bean update skipped: {}", e.getMessage());
+            }
+
+            log.debug("Added custom color '{}' ({}) for user {}", name, hex, username);
+            return ResponseEntity.ok("OK");
+        } catch (Exception e) {
+            log.error("Error adding custom color", e);
+            return ResponseEntity.status(500).body("ERROR: " + e.getMessage());
+        }
+    }
+
+    @Operation(summary = "Delete a color from the palette",
+               description = "Deletes a custom color by name or hides a predefined color.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Color deleted/hidden successfully"),
+            @ApiResponse(responseCode = "401", description = "User is not authenticated"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @PostMapping("/delete-color")
+    public ResponseEntity<String> deleteColor(
+            @Parameter(description = "Color key: custom color name or predefined theme file name") @RequestParam String colorKey) {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth == null || !auth.isAuthenticated()) {
+                return ResponseEntity.status(401).body("NOT_AUTHENTICATED");
+            }
+
+            User user = (User) auth.getPrincipal();
+            String username = user.getUsername();
+
+            if (colorKey == null || colorKey.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("colorKey is required");
+            }
+
+            UserPreference prefs = storage.findByUniqueId(username);
+            if (prefs == null) {
+                return ResponseEntity.ok("OK"); // Nothing to delete
+            }
+
+            // Check if it's a custom color (try to remove by name)
+            boolean removedCustom = prefs.getCustomColors().removeIf(c -> colorKey.equals(c.getName()));
+
+            if (!removedCustom) {
+                // It's a predefined color - hide it
+                prefs.getHiddenColors().add(colorKey);
+            }
+
+            storage.save(prefs);
+
+            try {
+                if (userPreferencesBackingBean != null) {
+                    userPreferencesBackingBean.save();
+                }
+            } catch (Exception e) {
+                log.debug("Session bean update skipped: {}", e.getMessage());
+            }
+
+            log.debug("Deleted/hidden color '{}' for user {}", colorKey, username);
+            return ResponseEntity.ok("OK");
+        } catch (Exception e) {
+            log.error("Error deleting color", e);
+            return ResponseEntity.status(500).body("ERROR: " + e.getMessage());
+        }
+    }
+
+    @Operation(summary = "Restore all hidden predefined colors",
+               description = "Makes all hidden predefined colors visible again.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Colors restored successfully"),
+            @ApiResponse(responseCode = "401", description = "User is not authenticated"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @PostMapping("/restore-colors")
+    public ResponseEntity<String> restoreColors() {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth == null || !auth.isAuthenticated()) {
+                return ResponseEntity.status(401).body("NOT_AUTHENTICATED");
+            }
+
+            User user = (User) auth.getPrincipal();
+            String username = user.getUsername();
+
+            UserPreference prefs = storage.findByUniqueId(username);
+            if (prefs == null) {
+                return ResponseEntity.ok("OK");
+            }
+
+            prefs.getHiddenColors().clear();
+            storage.save(prefs);
+
+            try {
+                if (userPreferencesBackingBean != null) {
+                    userPreferencesBackingBean.save();
+                }
+            } catch (Exception e) {
+                log.debug("Session bean update skipped: {}", e.getMessage());
+            }
+
+            log.debug("Restored all hidden colors for user {}", username);
+            return ResponseEntity.ok("OK");
+        } catch (Exception e) {
+            log.error("Error restoring colors", e);
+            return ResponseEntity.status(500).body("ERROR: " + e.getMessage());
+        }
+    }
+
     private void validateParam(String name, String value, Set<String> allowed) {
         if (value != null && !value.isEmpty() && !allowed.contains(value)) {
             throw new IllegalArgumentException(
