@@ -19,9 +19,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.lang.reflect.Method;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -44,6 +47,149 @@ class DiscoveryMqttServiceTest {
         mqttService = new DiscoveryMqttService(objectMapper, messageHandler);
         ReflectionTestUtils.setField(mqttService, "appId", "test-app");
         ReflectionTestUtils.setField(mqttService, "mqttClient", mqttClient);
+    }
+
+    @Nested
+    class Init {
+
+        @Test
+        void standaloneWhenBrokerUrlIsNull() {
+            ReflectionTestUtils.setField(mqttService, "brokerUrl", null);
+            ReflectionTestUtils.setField(mqttService, "mqttClient", null);
+
+            // Should return early without attempting MQTT connection
+            mqttService.init();
+
+            // mqttClient should remain null (no connection attempted)
+            assertNull(ReflectionTestUtils.getField(mqttService, "mqttClient"));
+        }
+
+        @Test
+        void standaloneWhenBrokerUrlIsBlank() {
+            ReflectionTestUtils.setField(mqttService, "brokerUrl", "");
+            ReflectionTestUtils.setField(mqttService, "mqttClient", null);
+
+            mqttService.init();
+
+            assertNull(ReflectionTestUtils.getField(mqttService, "mqttClient"));
+        }
+
+        @Test
+        void standaloneWhenBrokerUrlIsWhitespace() {
+            ReflectionTestUtils.setField(mqttService, "brokerUrl", "   ");
+            ReflectionTestUtils.setField(mqttService, "mqttClient", null);
+
+            mqttService.init();
+
+            assertNull(ReflectionTestUtils.getField(mqttService, "mqttClient"));
+        }
+    }
+
+    @Nested
+    class HandleIncomingMessage {
+
+        @Test
+        void processesMessageSuccessfully() throws Exception {
+            UserLoginMessage loginMessage = new UserLoginMessage();
+            loginMessage.setFromAppId("other-app");
+            loginMessage.setUserEmail("user@test.com");
+            loginMessage.setAppUrl("http://other:8080");
+
+            String payload = objectMapper.writeValueAsString(loginMessage);
+            MqttMessage mqttMessage = new MqttMessage(payload.getBytes());
+
+            invokeHandleIncomingMessage("plaintext/discovery", mqttMessage);
+
+            verify(messageHandler).handleMessage(eq("plaintext/discovery"), any(UserLoginMessage.class));
+        }
+
+        @Test
+        void ignoresOwnMessages() throws Exception {
+            UserLoginMessage loginMessage = new UserLoginMessage();
+            loginMessage.setFromAppId("test-app"); // same as our appId
+            loginMessage.setUserEmail("user@test.com");
+
+            String payload = objectMapper.writeValueAsString(loginMessage);
+            MqttMessage mqttMessage = new MqttMessage(payload.getBytes());
+
+            invokeHandleIncomingMessage("plaintext/discovery", mqttMessage);
+
+            verifyNoInteractions(messageHandler);
+        }
+
+        @Test
+        void handlesParseExceptionGracefully() throws Exception {
+            MqttMessage mqttMessage = new MqttMessage("invalid json {{{".getBytes());
+
+            // Should not throw
+            invokeHandleIncomingMessage("plaintext/discovery", mqttMessage);
+
+            verifyNoInteractions(messageHandler);
+        }
+
+        @Test
+        void handlesHeartbeatMessage() throws Exception {
+            HeartbeatMessage heartbeat = new HeartbeatMessage();
+            heartbeat.setFromAppId("remote-app");
+            heartbeat.setAppUrl("http://remote:8080");
+            heartbeat.setAppVersion("2.0.0");
+            heartbeat.setAppEnvironment("prod");
+
+            String payload = objectMapper.writeValueAsString(heartbeat);
+            MqttMessage mqttMessage = new MqttMessage(payload.getBytes());
+
+            invokeHandleIncomingMessage("plaintext/heartbeat", mqttMessage);
+
+            verify(messageHandler).handleMessage(eq("plaintext/heartbeat"), any(HeartbeatMessage.class));
+        }
+
+        @Test
+        void handlesEmptyPayloadGracefully() throws Exception {
+            MqttMessage mqttMessage = new MqttMessage("".getBytes());
+
+            // Should not throw
+            invokeHandleIncomingMessage("plaintext/discovery", mqttMessage);
+
+            verifyNoInteractions(messageHandler);
+        }
+
+        private void invokeHandleIncomingMessage(String topic, MqttMessage message) throws Exception {
+            Method method = DiscoveryMqttService.class
+                .getDeclaredMethod("handleIncomingMessage", String.class, MqttMessage.class);
+            method.setAccessible(true);
+            method.invoke(mqttService, topic, message);
+        }
+    }
+
+    @Nested
+    class SubscribeToTopics {
+
+        @Test
+        void subscribesToAllExpectedTopics() throws Exception {
+            Method method = DiscoveryMqttService.class
+                .getDeclaredMethod("subscribeToTopics");
+            method.setAccessible(true);
+            method.invoke(mqttService);
+
+            verify(mqttClient).subscribe("plaintext/discovery", 1);
+            verify(mqttClient).subscribe("plaintext/response/test-app", 1);
+            verify(mqttClient).subscribe("plaintext/login/test-app", 1);
+            verify(mqttClient).subscribe("plaintext/heartbeat", 1);
+            verify(mqttClient, times(4)).subscribe(anyString(), eq(1));
+        }
+
+        @Test
+        void usesAppIdInResponseTopic() throws Exception {
+            ReflectionTestUtils.setField(mqttService, "appId", "custom-app-id");
+
+            Method method = DiscoveryMqttService.class
+                .getDeclaredMethod("subscribeToTopics");
+            method.setAccessible(true);
+            method.invoke(mqttService);
+
+            verify(mqttClient).subscribe("plaintext/response/custom-app-id", 1);
+            verify(mqttClient).subscribe("plaintext/login/custom-app-id", 1);
+        }
     }
 
     @Nested
