@@ -35,7 +35,7 @@
                             </a>
                             <ul id="discovery-apps-dropdown" class="topbar-dropdown" role="menu"
                                 style="display:none; position:absolute; right:0; top:100%; min-width:200px;
-                                       background:var(--surface-overlay); border-radius:6px;
+                                       background:var(--surface-card, #ffffff); border-radius:6px;
                                        box-shadow:0 2px 12px rgba(0,0,0,0.1); z-index:1000;
                                        list-style:none; padding:0.5rem 0; margin:0;">
                                 <ui:repeat value="#{discoveryTopbarBackingBean.remoteApps}" var="app">
@@ -134,7 +134,7 @@
                         </a>
                         <ul id="user-menu-dropdown" class="topbar-dropdown" role="menu"
                             style="display:none; position:absolute; left:0; top:100%; min-width:180px;
-                                   background:var(--surface-overlay); border-radius:6px;
+                                   background:var(--surface-card, #ffffff); border-radius:6px;
                                    box-shadow:0 2px 12px rgba(0,0,0,0.1); z-index:1000;
                                    list-style:none; padding:0.5rem 0; margin:0;">
                             <li role="menuitem">
@@ -188,7 +188,17 @@
             <script>
                 document.getElementById('logoutLink').addEventListener('click', function(e) {
                     e.preventDefault();
-                    document.getElementById('logoutForm').submit();
+                    var form = document.getElementById('logoutForm');
+                    var xhr = new XMLHttpRequest();
+                    xhr.open('POST', form.action, true);
+                    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                    xhr.onreadystatechange = function() {
+                        if (xhr.readyState === 4) {
+                            window.location.href = xhr.responseURL || (form.action.replace('/logout', '/login.html'));
+                        }
+                    };
+                    var csrf = form.querySelector('input[name="_csrf"]');
+                    xhr.send('_csrf=' + encodeURIComponent(csrf.value));
                 });
             </script>
 
@@ -215,6 +225,10 @@
     </header>
 
     <style>
+        .topbar-dropdown {
+            background-color: var(--surface-card, #ffffff) !important;
+            border: 1px solid var(--surface-border);
+        }
         .topbar-dropdown-item {
             display: flex; align-items: center; padding: 0.75rem 1rem;
             color: var(--text-color); text-decoration: none; gap: 0.75rem;
