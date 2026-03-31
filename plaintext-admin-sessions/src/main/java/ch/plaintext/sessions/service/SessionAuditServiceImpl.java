@@ -7,8 +7,6 @@ import ch.plaintext.sessions.ISessionAuditService;
 import ch.plaintext.sessions.entity.UserSession;
 import ch.plaintext.sessions.repository.UserSessionRepository;
 import jakarta.inject.Named;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -16,7 +14,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @Named("sessionAuditService")
@@ -24,9 +21,6 @@ import java.util.Optional;
 public class SessionAuditServiceImpl implements ISessionAuditService {
 
     private final UserSessionRepository repository;
-
-    @PersistenceContext
-    private EntityManager entityManager;
 
     public SessionAuditServiceImpl(UserSessionRepository repository) {
         this.repository = repository;
@@ -41,78 +35,19 @@ public class SessionAuditServiceImpl implements ISessionAuditService {
         }
 
         try {
-            List<UserSession> existingSessions = repository.findBySessionId(sessionId);
-            UserSession session;
-
-            if (!existingSessions.isEmpty()) {
-                // Handle duplicates defensively: use the most recent one and delete the rest
-                if (existingSessions.size() > 1) {
-                    log.warn("⚠️ Found {} duplicate sessions for sessionId={}. Cleaning up duplicates.",
-                        existingSessions.size(), sessionId);
-
-                    // Sort by ID descending to get the most recent
-                    existingSessions.sort((a, b) -> Long.compare(b.getId(), a.getId()));
-
-                    // Keep the first one (most recent), delete the rest
-                    session = existingSessions.get(0);
-                    for (int i = 1; i < existingSessions.size(); i++) {
-                        repository.delete(existingSessions.get(i));
-                        log.debug("Deleted duplicate session with ID={}", existingSessions.get(i).getId());
-                    }
-                } else {
-                    session = existingSessions.get(0);
-                }
-
-                // Update existing session
-                session.setLastActivityTime(LocalDateTime.now());
-                session.setLastModifiedDate(LocalDateTime.now());
-                repository.save(session);
-            } else {
-                // Create new session
-                session = new UserSession();
-                session.setUserId(userId);
-                session.setSessionId(sessionId);
-                session.setLoginTime(LocalDateTime.now());
-                session.setLastActivityTime(LocalDateTime.now());
-                session.setActive(true);
-
-                // Extract user info from authentication
-                session.setUsername(authentication != null ? authentication.getName() : "unknown");
-                // Extract mandat from authorities (format: PROPERTY_MANDAT_xxx)
-                String mandat = "unknown";
-                if (authentication != null && authentication.getAuthorities() != null) {
-                    mandat = authentication.getAuthorities().stream()
-                        .map(auth -> auth.getAuthority())
-                        .filter(auth -> auth.startsWith("PROPERTY_MANDAT_"))
-                        .map(auth -> auth.substring("PROPERTY_MANDAT_".length()))
-                        .findFirst()
-                        .orElse("unknown");
-                }
-                session.setMandat(mandat);
-
-                session.setUserAgent(userAgent != null ? userAgent : "");
-
-                try {
-                    repository.save(session);
-                } catch (org.springframework.dao.DataIntegrityViolationException e) {
-                    // Race condition: another thread created the session between our check and save
-                    log.debug("Race condition detected for sessionId={}, reloading existing session", sessionId);
-
-                    // Clear the entity manager to prevent "null identifier" error
-                    // The failed save left a detached entity with no ID in the session
-                    entityManager.clear();
-
-                    existingSessions = repository.findBySessionId(sessionId);
-                    if (!existingSessions.isEmpty()) {
-                        session = existingSessions.get(0);
-                        session.setLastActivityTime(LocalDateTime.now());
-                        session.setLastModifiedDate(LocalDateTime.now());
-                        repository.save(session);
-                    } else {
-                        throw e; // Should not happen, but re-throw if it does
-                    }
-                }
+            String username = authentication != null ? authentication.getName() : "unknown";
+            String mandat = "unknown";
+            if (authentication != null && authentication.getAuthorities() != null) {
+                mandat = authentication.getAuthorities().stream()
+                    .map(auth -> auth.getAuthority())
+                    .filter(auth -> auth.startsWith("PROPERTY_MANDAT_"))
+                    .map(auth -> auth.substring("PROPERTY_MANDAT_".length()))
+                    .findFirst()
+                    .orElse("unknown");
             }
+
+            repository.upsertSession(userId, username, sessionId, mandat,
+                userAgent != null ? userAgent : "", LocalDateTime.now());
 
             log.debug("Session updated/created: userId={}, sessionId={}", userId, sessionId);
         } catch (Exception e) {
