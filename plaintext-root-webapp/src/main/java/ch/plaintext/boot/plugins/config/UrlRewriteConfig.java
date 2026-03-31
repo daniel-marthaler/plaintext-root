@@ -26,7 +26,7 @@ public class UrlRewriteConfig {
     public FilterRegistrationBean<HtmlToXhtmlRewriteFilter> htmlRewriteFilter() {
         FilterRegistrationBean<HtmlToXhtmlRewriteFilter> registration = new FilterRegistrationBean<>();
         registration.setFilter(new HtmlToXhtmlRewriteFilter());
-        registration.addUrlPatterns("*.html");
+        registration.addUrlPatterns("*.html", "*.htm");
         registration.setOrder(Ordered.HIGHEST_PRECEDENCE + 1); // After Swagger filter
         registration.setName("htmlRewriteFilter");
         return registration;
@@ -54,9 +54,9 @@ public class UrlRewriteConfig {
                 return;
             }
 
-            // Rewrite .html to .xhtml for JSF pages
-            if (path.endsWith(".html")) {
-                String xhtmlPath = path.replace(".html", ".xhtml");
+            // Rewrite .html/.htm to .xhtml for JSF pages
+            if (path.endsWith(".html") || path.endsWith(".htm")) {
+                String xhtmlPath = path.replaceAll("\\.(html|htm)$", ".xhtml");
                 log.info("HtmlRewriteFilter: Rewriting " + path + " to " + xhtmlPath);
                 httpRequest.getRequestDispatcher(xhtmlPath).forward(request, response);
                 return;
