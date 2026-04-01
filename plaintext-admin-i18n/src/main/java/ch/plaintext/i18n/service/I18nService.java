@@ -13,6 +13,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -41,8 +47,11 @@ public class I18nService implements I18nProvider {
         this.repository = repository;
     }
 
+    private static final String CSV_SEPARATOR = ";";
+
     @PostConstruct
     public void init() {
+        importSeedTranslations();
         loadCache();
     }
 
@@ -53,6 +62,112 @@ public class I18nService implements I18nProvider {
             cache.put(cacheKey(t.getDefaultLabel(), t.getLanguageCode()), t.getTranslatedText());
         }
         log.info("I18n cache loaded with {} translations", all.size());
+    }
+
+    /**
+     * Imports seed translations from CSV files found on the classpath under "i18n/*.csv".
+     * Only inserts if no translation exists yet or if the existing translation is a placeholder (X_ prefix).
+     * This allows projects to check in pre-translated CSV files under src/main/resources/i18n/.
+     */
+    @Transactional
+    public void importSeedTranslations() {
+        try {
+            PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+            Resource[] resources = resolver.getResources("classpath*:i18n/*.csv");
+
+            if (resources.length == 0) {
+                log.debug("No i18n seed CSV files found on classpath");
+                return;
+            }
+
+            int totalImported = 0;
+            int totalSkipped = 0;
+
+            for (Resource resource : resources) {
+                if (!resource.isReadable()) {
+                    continue;
+                }
+
+                String filename = resource.getFilename();
+                log.info("Importing i18n seed file: {}", filename);
+
+                int imported = 0;
+                int skipped = 0;
+
+                try (BufferedReader reader = new BufferedReader(
+                        new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8))) {
+
+                    String line;
+                    int lineNumber = 0;
+
+                    while ((line = reader.readLine()) != null) {
+                        lineNumber++;
+
+                        if (line.isBlank() || line.startsWith("#")) {
+                            continue;
+                        }
+                        if (lineNumber == 1 && line.startsWith("defaultLabel")) {
+                            continue;
+                        }
+
+                        String[] parts = line.split(CSV_SEPARATOR, 3);
+                        if (parts.length < 3) {
+                            log.warn("Seed CSV {}: line {} has {} columns, expected 3", filename, lineNumber, parts.length);
+                            skipped++;
+                            continue;
+                        }
+
+                        String defaultLabel = unescapeCsv(parts[0].trim());
+                        String languageCode = unescapeCsv(parts[1].trim());
+                        String translatedText = unescapeCsv(parts[2].trim());
+
+                        if (defaultLabel.isEmpty() || languageCode.isEmpty() || translatedText.isEmpty()) {
+                            skipped++;
+                            continue;
+                        }
+
+                        Optional<I18nTranslation> existing = repository.findByDefaultLabelAndLanguageCode(defaultLabel, languageCode);
+                        if (existing.isPresent() && !isPlaceholder(existing.get().getTranslatedText())) {
+                            // Already has a real translation - don't overwrite
+                            skipped++;
+                            continue;
+                        }
+
+                        I18nTranslation translation = existing.orElse(new I18nTranslation());
+                        translation.setDefaultLabel(defaultLabel);
+                        translation.setLanguageCode(languageCode);
+                        translation.setTranslatedText(translatedText);
+                        repository.save(translation);
+                        imported++;
+                    }
+                }
+
+                log.info("Seed CSV {}: {} imported, {} skipped", filename, imported, skipped);
+                totalImported += imported;
+                totalSkipped += skipped;
+            }
+
+            if (totalImported > 0) {
+                log.info("I18n seed import completed: {} imported, {} skipped from {} files",
+                        totalImported, totalSkipped, resources.length);
+            }
+
+        } catch (Exception e) {
+            log.warn("Error importing i18n seed translations: {}", e.getMessage());
+        }
+    }
+
+    /**
+     * Unescape a CSV value (remove surrounding quotes, unescape doubled quotes).
+     */
+    private String unescapeCsv(String value) {
+        if (value == null) {
+            return "";
+        }
+        if (value.startsWith("\"") && value.endsWith("\"") && value.length() >= 2) {
+            return value.substring(1, value.length() - 1).replace("\"\"", "\"");
+        }
+        return value;
     }
 
     /** Prefix used for auto-generated placeholder translations. */
