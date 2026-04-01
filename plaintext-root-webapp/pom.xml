@@ -31,7 +31,11 @@
             <groupId>ch.plaintext</groupId>
             <artifactId>plaintext-root-menu-visibility</artifactId>
         </dependency>
-        <!-- root-flyway enthält api_token Migrationen - nur in plaintext-app mit z-apitoken verwenden -->
+        <dependency>
+            <groupId>ch.plaintext</groupId>
+            <artifactId>plaintext-root-flyway</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <dependency>
             <groupId>ch.plaintext</groupId>
             <artifactId>plaintext-root-email</artifactId>
@@ -69,6 +73,11 @@
         <dependency>
             <groupId>ch.plaintext</groupId>
             <artifactId>plaintext-admin-settings</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.plaintext</groupId>
+            <artifactId>plaintext-admin-i18n</artifactId>
             <version>${project.version}</version>
         </dependency>
 
