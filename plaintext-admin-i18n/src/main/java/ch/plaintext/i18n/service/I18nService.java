@@ -55,9 +55,17 @@ public class I18nService implements I18nProvider {
         log.info("I18n cache loaded with {} translations", all.size());
     }
 
+    /** Prefix used for auto-generated placeholder translations. */
+    public static final String UNTRANSLATED_PREFIX = "X_";
+
     @Override
     public String translate(String defaultLabel, String targetLanguage) {
         if (defaultLabel == null || targetLanguage == null) {
+            return defaultLabel;
+        }
+
+        // "de" is the source language - no translation needed
+        if ("de".equalsIgnoreCase(targetLanguage)) {
             return defaultLabel;
         }
 
@@ -76,8 +84,36 @@ public class I18nService implements I18nProvider {
             return translated;
         }
 
-        // Final fallback: return default label
-        return defaultLabel;
+        // No translation found: auto-create a placeholder with "X_" prefix
+        String placeholder = UNTRANSLATED_PREFIX + defaultLabel;
+        try {
+            autoCreatePlaceholder(defaultLabel, targetLanguage, placeholder);
+        } catch (Exception e) {
+            log.warn("Could not auto-create i18n placeholder for label='{}', lang='{}': {}",
+                    defaultLabel, targetLanguage, e.getMessage());
+        }
+
+        cache.put(key, placeholder);
+        return placeholder;
+    }
+
+    /**
+     * Auto-inserts a placeholder translation record so untranslated items
+     * become visible in the admin UI (prefixed with "X_").
+     */
+    @Transactional
+    public void autoCreatePlaceholder(String defaultLabel, String languageCode, String placeholder) {
+        // Double-check to avoid unique constraint violations in concurrent scenarios
+        Optional<I18nTranslation> existing = repository.findByDefaultLabelAndLanguageCode(defaultLabel, languageCode);
+        if (existing.isPresent()) {
+            return;
+        }
+        I18nTranslation translation = new I18nTranslation();
+        translation.setDefaultLabel(defaultLabel);
+        translation.setLanguageCode(languageCode);
+        translation.setTranslatedText(placeholder);
+        repository.save(translation);
+        log.info("Auto-created i18n placeholder: label='{}', lang='{}', text='{}'", defaultLabel, languageCode, placeholder);
     }
 
     @Override
@@ -147,6 +183,31 @@ public class I18nService implements I18nProvider {
         cache.clear();
         loadCache();
         log.info("I18n cache cleared and reloaded");
+    }
+
+    /**
+     * Returns true if the given translated text is still an auto-generated placeholder.
+     */
+    public boolean isPlaceholder(String translatedText) {
+        return translatedText != null && translatedText.startsWith(UNTRANSLATED_PREFIX);
+    }
+
+    /**
+     * Returns all translations that are still placeholders (starting with "X_").
+     */
+    public List<I18nTranslation> getUntranslatedEntries() {
+        return getAllTranslations().stream()
+                .filter(t -> isPlaceholder(t.getTranslatedText()))
+                .toList();
+    }
+
+    /**
+     * Returns all translations for a given language that are still placeholders.
+     */
+    public List<I18nTranslation> getUntranslatedEntries(String languageCode) {
+        return getTranslationsByLanguage(languageCode).stream()
+                .filter(t -> isPlaceholder(t.getTranslatedText()))
+                .toList();
     }
 
     private String cacheKey(String defaultLabel, String languageCode) {

@@ -20,7 +20,7 @@
 
             <p:fieldset legend="Übersetzungen (i18n)">
 
-                <div style="margin-bottom: 10px; display: flex; align-items: center; gap: 10px;">
+                <div style="margin-bottom: 10px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                     <p:selectOneMenu value="#{i18nBackingBean.filterLanguage}" style="width: 200px;">
                         <f:selectItem itemLabel="-- Alle Sprachen --" itemValue="" noSelectionOption="true"/>
                         <f:selectItems value="#{i18nBackingBean.availableLanguages}"
@@ -48,6 +48,20 @@
                                    icon="pi pi-exclamation-triangle"/>
                     </p:commandButton>
 
+                    <p:separator style="width: 1px; height: 20px; margin: 0 5px;"/>
+
+                    <p:linkButton value="CSV Export" icon="pi pi-download"
+                                  href="/api/i18n/export" target="_blank"
+                                  styleClass="ui-button-info"/>
+
+                    <p:linkButton value="Nur X_ Export" icon="pi pi-download"
+                                  href="/api/i18n/export?untranslated=true" target="_blank"
+                                  styleClass="ui-button-warning"/>
+
+                    <p:commandButton value="CSV Import" icon="pi pi-upload"
+                                     oncomplete="PF('importDlg').show()"
+                                     process="@this" type="button"/>
+
                     <p:commandButton value="Cache leeren" icon="pi pi-refresh"
                                      actionListener="#{i18nBackingBean.clearCache()}"
                                      update="messages" process="@this"
@@ -71,7 +85,8 @@
                     </p:column>
 
                     <p:column headerText="Übersetzung" sortBy="#{obj.translatedText}">
-                        <h:outputText value="#{obj.translatedText}"/>
+                        <h:outputText value="#{obj.translatedText}"
+                                      style="#{obj.translatedText.startsWith('X_') ? 'color: #e74c3c; font-weight: bold;' : ''}"/>
                     </p:column>
 
                     <p:column headerText="Aktionen" style="width: 80px; text-align: center;">
@@ -149,6 +164,31 @@
                                      update="messages,fm:tbl"
                                      process="editDialog"
                                      oncomplete="if (args &amp;&amp; !args.validationFailed) PF('editDlg').hide()"/>
+                </h:panelGroup>
+            </p:dialog>
+
+            <!-- Dialog: CSV Import -->
+            <p:dialog header="CSV Import" widgetVar="importDlg" modal="true"
+                      showEffect="fade" hideEffect="fade" width="600" id="importDialog">
+
+                <h:panelGroup id="importDialogContent">
+                    <p style="margin-bottom: 10px;">
+                        CSV-Datei hochladen (Format: defaultLabel;languageCode;translatedText).
+                        Bestehende Übersetzungen werden überschrieben.
+                    </p>
+
+                    <p:fileUpload id="csvUpload"
+                                  mode="advanced"
+                                  auto="true"
+                                  allowTypes="/(\.|\/)(csv|txt)$/"
+                                  sizeLimit="5242880"
+                                  fileLimit="1"
+                                  label="CSV wählen"
+                                  uploadLabel="Importieren"
+                                  cancelLabel="Abbrechen"
+                                  listener="#{i18nBackingBean.handleCsvImport}"
+                                  update="messages,fm:tbl"
+                                  oncomplete="PF('importDlg').hide()"/>
                 </h:panelGroup>
             </p:dialog>
 

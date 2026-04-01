@@ -17,7 +17,13 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.primefaces.event.FileUploadEvent;
+import org.primefaces.model.file.UploadedFile;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -174,6 +180,84 @@ public class I18nBackingBean implements Serializable {
             return menuRegistry.getAllMenuTitles();
         }
         return new ArrayList<>();
+    }
+
+    /**
+     * Handles CSV file upload from the PrimeFaces fileUpload component.
+     * CSV format: defaultLabel;languageCode;translatedText (semicolon-separated)
+     */
+    public void handleCsvImport(FileUploadEvent event) {
+        UploadedFile file = event.getFile();
+        if (file == null || file.getSize() == 0) {
+            addMessage(FacesMessage.SEVERITY_WARN, "Warnung", "Datei ist leer");
+            return;
+        }
+
+        int imported = 0;
+        int skipped = 0;
+
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
+
+            String line;
+            int lineNumber = 0;
+
+            while ((line = reader.readLine()) != null) {
+                lineNumber++;
+
+                // Skip empty lines, comments, and header
+                if (line.isBlank() || line.startsWith("#")) {
+                    continue;
+                }
+                if (lineNumber == 1 && line.startsWith("defaultLabel")) {
+                    continue;
+                }
+
+                String[] parts = line.split(";", 3);
+                if (parts.length < 3) {
+                    log.warn("CSV import: line {} has {} columns, expected 3", lineNumber, parts.length);
+                    skipped++;
+                    continue;
+                }
+
+                String defaultLabel = parts[0].trim();
+                String languageCode = parts[1].trim();
+                String translatedText = parts[2].trim();
+
+                // Remove surrounding quotes if present
+                defaultLabel = unquoteCsv(defaultLabel);
+                languageCode = unquoteCsv(languageCode);
+                translatedText = unquoteCsv(translatedText);
+
+                if (defaultLabel.isEmpty() || languageCode.isEmpty()) {
+                    skipped++;
+                    continue;
+                }
+
+                try {
+                    i18nService.saveTranslation(defaultLabel, languageCode, translatedText);
+                    imported++;
+                } catch (Exception e) {
+                    log.error("CSV import error at line {}: {}", lineNumber, e.getMessage());
+                    skipped++;
+                }
+            }
+
+            addMessage(FacesMessage.SEVERITY_INFO, "Import abgeschlossen",
+                    imported + " importiert, " + skipped + " übersprungen");
+            loadData();
+
+        } catch (Exception e) {
+            log.error("Error importing CSV file", e);
+            addMessage(FacesMessage.SEVERITY_ERROR, "Fehler", "CSV Import fehlgeschlagen: " + e.getMessage());
+        }
+    }
+
+    private String unquoteCsv(String value) {
+        if (value != null && value.startsWith("\"") && value.endsWith("\"") && value.length() >= 2) {
+            return value.substring(1, value.length() - 1).replace("\"\"", "\"");
+        }
+        return value;
     }
 
     private void addMessage(FacesMessage.Severity severity, String summary, String detail) {
