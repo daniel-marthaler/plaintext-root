@@ -287,6 +287,17 @@ public class UserPreferencesBackingBean implements Serializable {
         return prefs.isMenuStatic();
     }
 
+    // ==================== Language ====================
+
+    public String getLanguage() {
+        return prefs.getLanguage();
+    }
+
+    public void setLanguage(String language) {
+        prefs.setLanguage(language);
+        save();
+    }
+
     // ==================== Computed Properties ====================
 
     public String getLayout() {

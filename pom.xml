@@ -111,6 +111,7 @@
         <module>plaintext-admin-sessions</module>
         <module>plaintext-admin-settings</module>
         <module>plaintext-admin-value-lists</module>
+        <module>plaintext-admin-i18n</module>
     </modules>
 
     <dependencyManagement>
@@ -194,6 +195,11 @@
             <dependency>
                 <groupId>ch.plaintext</groupId>
                 <artifactId>plaintext-admin-filelist</artifactId>
+                <version>${plaintext.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.plaintext</groupId>
+                <artifactId>plaintext-admin-i18n</artifactId>
                 <version>${plaintext.version}</version>
             </dependency>
 

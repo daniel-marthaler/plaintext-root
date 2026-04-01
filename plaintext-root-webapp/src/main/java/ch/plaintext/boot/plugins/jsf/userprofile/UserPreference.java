@@ -38,6 +38,8 @@ public class UserPreference implements SimpleStorable<UserPreference>, Serializa
 
     private Set<String> hiddenColors = new HashSet<>();
 
+    private String language = "de";
+
     private String user = "";
 
     /**

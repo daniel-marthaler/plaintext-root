@@ -105,6 +105,49 @@
                         </li>
                     </ui:fragment>
 
+                    <ui:fragment rendered="#{i18nService != null and i18nService.i18nEnabled}">
+                        <li class="topbar-item" style="position: relative;">
+                            <a href="#" id="i18n-lang-button" title="Sprache wechseln"
+                               aria-haspopup="true" aria-expanded="false">
+                                <i class="topbar-icon pi pi-globe" style="font-size: 1.5rem; color: var(--primary-color);"/>
+                            </a>
+                            <ul id="i18n-lang-dropdown" class="topbar-dropdown" role="menu"
+                                style="display:none; position:absolute; right:0; top:100%; min-width:150px;
+                                       background:var(--surface-card, #ffffff); border-radius:6px;
+                                       box-shadow:0 2px 12px rgba(0,0,0,0.1); z-index:1000;
+                                       list-style:none; padding:0.5rem 0; margin:0;">
+                                <h:form id="i18nLangFm" style="margin:0; padding:0;">
+                                    <ui:repeat value="#{i18nService.availableLanguages}" var="lang">
+                                        <li role="menuitem">
+                                            <p:commandLink styleClass="topbar-dropdown-item"
+                                                           actionListener="#{userPreferencesBackingBean.setLanguage(lang)}"
+                                                           update="@none" process="@this"
+                                                           oncomplete="window.location.reload();">
+                                                <i class="pi pi-flag"/>
+                                                <span style="text-transform: uppercase;">#{lang}</span>
+                                            </p:commandLink>
+                                        </li>
+                                    </ui:repeat>
+                                    <input type="hidden" name="_csrf" value="#{_csrf.token}"/>
+                                </h:form>
+                            </ul>
+                            <script>
+                                (function() {
+                                    var btn = document.getElementById('i18n-lang-button');
+                                    var dd = document.getElementById('i18n-lang-dropdown');
+                                    if (!btn || !dd) return;
+                                    btn.addEventListener('click', function(e) {
+                                        e.preventDefault(); e.stopPropagation();
+                                        dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
+                                    });
+                                    document.addEventListener('click', function(e) {
+                                        if (!btn.contains(e.target) &amp;&amp; !dd.contains(e.target)) dd.style.display = 'none';
+                                    });
+                                })();
+                            </script>
+                        </li>
+                    </ui:fragment>
+
                     <li class="topbar-item">
                         <a href="#" id="layout-config-button" title="Einstellungen">
                             <i class="topbar-icon pi pi-cog" style="font-size:1.5rem"/>

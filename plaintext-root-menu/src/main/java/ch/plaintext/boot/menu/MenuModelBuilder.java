@@ -3,6 +3,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 package ch.plaintext.boot.menu;
 
+import ch.plaintext.I18nProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.primefaces.model.menu.DefaultMenuModel;
 import org.primefaces.model.menu.MenuModel;
@@ -10,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
 import java.util.*;
+import java.util.function.Supplier;
 
 /**
  * Builder for creating PrimeFaces MenuModel from annotated menu items
@@ -20,12 +22,59 @@ public class MenuModelBuilder {
     @Autowired
     private ApplicationContext applicationContext;
 
+    @Autowired(required = false)
+    private I18nProvider i18nProvider;
+
+    /**
+     * Creates a language supplier that reads the current user's language preference.
+     * Uses ApplicationContext to lazily resolve the session-scoped UserPreferencesBackingBean.
+     */
+    private Supplier<String> createLanguageSupplier() {
+        return () -> {
+            try {
+                Object bean = applicationContext.getBean("userPreferencesBackingBean");
+                if (bean != null) {
+                    java.lang.reflect.Method method = bean.getClass().getMethod("getLanguage");
+                    return (String) method.invoke(bean);
+                }
+            } catch (Exception e) {
+                log.debug("Could not resolve user language, using default 'de': {}", e.getMessage());
+            }
+            return "de";
+        };
+    }
+
+    /**
+     * Creates a PrimefacesMenuItem with i18n support injected.
+     */
+    private PrimefacesMenuItem createMenuItem(AbstractMenuItem item, Supplier<String> langSupplier) {
+        PrimefacesMenuItem menuItem = new PrimefacesMenuItem(item);
+        if (i18nProvider != null) {
+            menuItem.setI18nProvider(i18nProvider);
+            menuItem.setLanguageSupplier(langSupplier);
+        }
+        return menuItem;
+    }
+
+    /**
+     * Creates a PrimefacesSubmenu with i18n support injected.
+     */
+    private PrimefacesSubmenu createSubmenu(AbstractMenuItem item, Supplier<String> langSupplier) {
+        PrimefacesSubmenu submenu = new PrimefacesSubmenu(item);
+        if (i18nProvider != null) {
+            submenu.setI18nProvider(i18nProvider);
+            submenu.setLanguageSupplier(langSupplier);
+        }
+        return submenu;
+    }
+
     /**
      * Build a MenuModel from all registered MenuItemImpl beans
      * @return the constructed MenuModel
      */
     public MenuModel buildMenuModel() {
         DefaultMenuModel menuModel = new DefaultMenuModel();
+        Supplier<String> langSupplier = createLanguageSupplier();
 
         // Get all MenuItemImpl beans from Spring context
         Map<String, MenuItemImpl> menuBeans = applicationContext.getBeansOfType(MenuItemImpl.class);
@@ -63,7 +112,7 @@ public class MenuModelBuilder {
 
             // If item has children, create a submenu for it
             if (hasChildren(item.getTitle(), visibleItems)) {
-                PrimefacesSubmenu submenu = new PrimefacesSubmenu(item);
+                PrimefacesSubmenu submenu = createSubmenu(item, langSupplier);
                 submenuMap.put(item.getTitle(), submenu);
                 log.debug("Created submenu: {}", item.getTitle());
             }
@@ -80,7 +129,7 @@ public class MenuModelBuilder {
                     menuModel.getElements().add(submenu);
                     log.debug("Added root submenu: {}", item.getTitle());
                 } else {
-                    PrimefacesMenuItem menuItem = new PrimefacesMenuItem(item);
+                    PrimefacesMenuItem menuItem = createMenuItem(item, langSupplier);
                     menuModel.getElements().add(menuItem);
                     log.debug("Added root menu item: {}", item.getTitle());
                 }
@@ -99,7 +148,7 @@ public class MenuModelBuilder {
                     parentSubmenu.getElements().add(submenu);
                     log.debug("Added submenu '{}' to parent '{}'", item.getTitle(), parent);
                 } else {
-                    PrimefacesMenuItem menuItem = new PrimefacesMenuItem(item);
+                    PrimefacesMenuItem menuItem = createMenuItem(item, langSupplier);
                     parentSubmenu.getElements().add(menuItem);
                     log.debug("Added menu item '{}' to parent '{}'", item.getTitle(), parent);
                 }
