@@ -6,7 +6,7 @@
                 xmlns="http://www.w3.org/1999/xhtml"
                 template="/includes/template.xhtml">
 
-    <ui:define name="title">Datenverwaltung (Admin)</ui:define>
+    <ui:define name="title">#{i18n.t('Datenverwaltung')} (Admin)</ui:define>
 
     <ui:define name="page">
         <f:metadata>
@@ -79,7 +79,7 @@
         <div class="entity-selector">
             <h:form id="selectorForm">
                 <input type="hidden" name="_csrf" value="#{_csrf.token}"/>
-                <p:panel header="Entitätstyp auswählen">
+                <p:panel header="#{i18n.t('Entitätstyp auswählen')}">
                     <div class="p-fluid">
                         <p:selectOneMenu value="#{adminEntityBackingBean.selectedEntityType}"
                                          converter="entityDescriptorConverter"
@@ -144,7 +144,7 @@
                              paginator="true"
                              rows="20"
                              paginatorPosition="bottom"
-                             emptyMessage="Keine Daten gefunden"
+                             emptyMessage="#{i18n.t('Keine Daten gefunden')}"
                              reflow="true">
 
                     <p:ajax event="rowSelect" update="@form"/>

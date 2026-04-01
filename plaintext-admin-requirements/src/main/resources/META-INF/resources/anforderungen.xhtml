@@ -18,7 +18,7 @@
                 <p:commandButton value="Nein" type="button" styleClass="ui-confirmdialog-no"/>
             </p:confirmDialog>
 
-            <p:fieldset legend="Anforderungen">
+            <p:fieldset legend="#{i18n.t('Anforderungen')}">
 
                 <div style="margin-bottom: 10px;">
                     <p:outputLabel value="Status: " style="margin-right: 5px;"/>
@@ -28,18 +28,18 @@
                         <p:ajax update="tbl" process="@this"/>
                     </p:selectOneMenu>
 
-                    <p:button value="Neue Anforderung" icon="pi pi-plus"
+                    <p:button value="#{i18n.t('Neue Anforderung')}" icon="pi pi-plus"
                               outcome="anforderungdetail"
                               styleClass="ui-button-success"/>
 
-                    <p:commandButton value="Bearbeiten" icon="pi pi-pencil"
+                    <p:commandButton value="#{i18n.t('Bearbeiten')}" icon="pi pi-pencil"
                                      actionListener="#{anforderungenBackingBean.select()}"
                                      oncomplete="PF('dlg').show()"
                                      update="detailDialog" process="@this"
                                      disabled="#{anforderungenBackingBean.selected == null}"
                                      style="margin-left: 5px;"/>
 
-                    <p:commandButton value="Löschen" icon="pi pi-trash" styleClass="ui-button-danger"
+                    <p:commandButton value="#{i18n.t('Löschen')}" icon="pi pi-trash" styleClass="ui-button-danger"
                                      actionListener="#{anforderungenBackingBean.delete()}"
                                      update="messages,tbl" process="@this"
                                      disabled="#{anforderungenBackingBean.selected == null}"
@@ -51,9 +51,9 @@
                 </div>
 
                 <div style="margin-bottom: 10px;">
-                    <h:outputText value="Offen: #{anforderungenBackingBean.offeneCount}" style="margin-right: 15px; font-weight: bold;"/>
-                    <h:outputText value="In Bearbeitung: #{anforderungenBackingBean.inBearbeitungCount}" style="margin-right: 15px; font-weight: bold;"/>
-                    <h:outputText value="Erledigt: #{anforderungenBackingBean.erledigtCount}" style="font-weight: bold;"/>
+                    <h:outputText value="#{i18n.t('Offen')}: #{anforderungenBackingBean.offeneCount}" style="margin-right: 15px; font-weight: bold;"/>
+                    <h:outputText value="#{i18n.t('In Bearbeitung')}: #{anforderungenBackingBean.inBearbeitungCount}" style="margin-right: 15px; font-weight: bold;"/>
+                    <h:outputText value="#{i18n.t('Erledigt')}: #{anforderungenBackingBean.erledigtCount}" style="font-weight: bold;"/>
                 </div>
 
                 <p:dataTable id="tbl" var="obj" value="#{anforderungenBackingBean.filteredAnforderungen}"
@@ -79,7 +79,7 @@
                         <h:outputText value="#{obj.titel}"/>
                     </p:column>
 
-                    <p:column headerText="Letzte Änderung" sortBy="#{obj.lastModifiedDate}"
+                    <p:column headerText="#{i18n.t('Letzte Änderung')}" sortBy="#{obj.lastModifiedDate}"
                               filterBy="#{obj.lastModifiedDate}" filterMatchMode="contains" style="width: 160px;">
                         <h:outputText value="#{obj.lastModifiedDate}">
                             <f:convertDateTime type="localDateTime" pattern="dd.MM.yyyy HH:mm"/>
@@ -95,7 +95,7 @@
 
             </p:fieldset>
 
-            <p:dialog header="Anforderung Details" widgetVar="dlg" modal="true"
+            <p:dialog header="#{i18n.t('Anforderung Details')}" widgetVar="dlg" modal="true"
                       showEffect="fade" hideEffect="fade" width="800" id="detailDialog">
 
                 <h:panelGroup rendered="#{anforderungenBackingBean.selected != null}">
@@ -164,7 +164,7 @@
 
                     <p:separator style="margin: 10px 0;"/>
 
-                    <p:commandButton value="Speichern" icon="pi pi-check"
+                    <p:commandButton value="#{i18n.t('Speichern')}" icon="pi pi-check"
                                      action="#{anforderungenBackingBean.save()}"
                                      update="messages,fm:tbl"
                                      process="detailDialog"

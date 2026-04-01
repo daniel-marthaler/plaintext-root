@@ -5,7 +5,7 @@
                 xmlns="http://www.w3.org/1999/xhtml"
                 template="/includes/template.xhtml">
 
-    <ui:define name="title">Email-Konfigurationen</ui:define>
+    <ui:define name="title">#{i18n.t('Email-Konfigurationen')}</ui:define>
 
     <ui:define name="page">
         <f:metadata>
@@ -79,7 +79,7 @@
         </p:confirmDialog>
 
         <div class="action-buttons">
-            <p:commandButton value="Neue Konfiguration"
+            <p:commandButton value="#{i18n.t('Neue Konfiguration')}"
                              icon="pi pi-plus"
                              actionListener="#{emailConfigBackingBean.newConfig()}"
                              oncomplete="PF('dlgConfig').show(); PF('tblConfigs').unselectAllRows();"
@@ -87,7 +87,7 @@
                              process="@this"
                              styleClass="ui-button-success"/>
 
-            <p:commandButton value="Bearbeiten"
+            <p:commandButton value="#{i18n.t('Bearbeiten')}"
                              icon="pi pi-pencil"
                              actionListener="#{emailConfigBackingBean.selectConfig()}"
                              oncomplete="PF('dlgConfig').show()"
@@ -95,14 +95,14 @@
                              process="@this"
                              disabled="#{emailConfigBackingBean.selectedConfig == null}"/>
 
-            <p:commandButton value="Duplizieren"
+            <p:commandButton value="#{i18n.t('Duplizieren')}"
                              icon="pi pi-copy"
                              actionListener="#{emailConfigBackingBean.duplicateConfig()}"
                              update="messages,tblConfigs"
                              process="@this"
                              disabled="#{emailConfigBackingBean.selectedConfig == null}"/>
 
-            <p:commandButton value="Löschen"
+            <p:commandButton value="#{i18n.t('Löschen')}"
                              icon="pi pi-trash"
                              styleClass="ui-button-danger"
                              actionListener="#{emailConfigBackingBean.deleteConfig()}"
@@ -112,7 +112,7 @@
                 <p:confirm header="Bestätigung" message="Konfiguration wirklich löschen?" icon="pi pi-exclamation-triangle"/>
             </p:commandButton>
 
-            <p:commandButton value="Aktualisieren"
+            <p:commandButton value="#{i18n.t('Aktualisieren')}"
                              icon="pi pi-refresh"
                              actionListener="#{emailConfigBackingBean.loadConfigs()}"
                              update="tblConfigs,messages"
@@ -120,7 +120,7 @@
                              styleClass="ui-button-outlined"/>
         </div>
 
-        <p:dataTable emptyMessage="Keine Email-Konfigurationen vorhanden"
+        <p:dataTable emptyMessage="#{i18n.t('Keine Email-Konfigurationen vorhanden')}"
                      widgetVar="tblConfigs"
                      id="tblConfigs"
                      selectionMode="single"
@@ -319,7 +319,7 @@
             </h:panelGroup>
 
             <f:facet name="footer">
-                <p:commandButton value="Speichern"
+                <p:commandButton value="#{i18n.t('Speichern')}"
                                  icon="pi pi-save"
                                  actionListener="#{emailConfigBackingBean.saveConfig()}"
                                  update=":fm:messages,:fm:tblConfigs,:fm:dlgConfig"
@@ -327,7 +327,7 @@
                                  oncomplete="if (args &amp;&amp; !args.validationFailed) PF('dlgConfig').hide()"
                                  styleClass="ui-button-success"/>
 
-                <p:commandButton value="Abbrechen"
+                <p:commandButton value="#{i18n.t('Abbrechen')}"
                                  icon="pi pi-times"
                                  onclick="PF('dlgConfig').hide()"
                                  styleClass="ui-button-secondary"/>

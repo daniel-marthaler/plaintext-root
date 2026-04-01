@@ -9,17 +9,17 @@
         <f:event type="preRenderView" listener="#{mandateMenuBackingBean.initDetail()}"/>
     </f:metadata>
 
-    <ui:define name="title">Menüsteuerung - Mandat anpassen</ui:define>
+    <ui:define name="title">#{i18n.t('Menüsteuerung')} - #{i18n.t('Mandat anpassen')}</ui:define>
 
     <ui:define name="content">
         <h:form id="fm">
             <input type="hidden" name="_csrf" value="#{_csrf.token}"/>
             <p:messages id="messages" showDetail="true" closable="true"/>
 
-        <p:fieldset legend="Mandat-spezifische Menükonfiguration">
+        <p:fieldset legend="#{i18n.t('Mandat-spezifische Menükonfiguration')}">
 
                 <p:panelGrid columns="2" layout="grid" styleClass="ui-fluid" style="margin-bottom: 20px;">
-                    <p:outputLabel for="mandateName" value="Mandatsname:" style="font-weight: bold;"/>
+                    <p:outputLabel for="mandateName" value="#{i18n.t('Mandatsname')}:" style="font-weight: bold;"/>
                     <p:selectOneMenu id="mandateName"
                                      value="#{mandateMenuBackingBean.selected.mandateName}"
                                      editable="true"
@@ -35,25 +35,25 @@
 
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; margin-bottom: 10px;">
                     <h3 style="margin: 0;">
-                        <h:outputText value="Menüpunkte einblenden (Whitelist)" rendered="#{mandateMenuBackingBean.selected.whitelistMode}"/>
-                        <h:outputText value="Menüpunkte ausblenden (Blacklist)" rendered="#{!mandateMenuBackingBean.selected.whitelistMode}"/>
+                        <h:outputText value="#{i18n.t('Menüpunkte einblenden')} (Whitelist)" rendered="#{mandateMenuBackingBean.selected.whitelistMode}"/>
+                        <h:outputText value="#{i18n.t('Menüpunkte ausblenden')} (Blacklist)" rendered="#{!mandateMenuBackingBean.selected.whitelistMode}"/>
                     </h3>
                     <div style="display: flex; gap: 5px;">
-                        <p:commandButton value="Alle an"
+                        <p:commandButton value="#{i18n.t('Alle an')}"
                                          icon="pi pi-check-square"
                                          styleClass="ui-button-outlined"
                                          action="#{mandateMenuBackingBean.selectAll}"
                                          update="fm"
                                          process="@this"
                                          style="white-space: nowrap;"/>
-                        <p:commandButton value="Alle aus"
+                        <p:commandButton value="#{i18n.t('Alle aus')}"
                                          icon="pi pi-stop"
                                          styleClass="ui-button-outlined"
                                          action="#{mandateMenuBackingBean.deselectAll}"
                                          update="fm"
                                          process="@this"
                                          style="white-space: nowrap;"/>
-                        <p:commandButton value="Invertieren"
+                        <p:commandButton value="#{i18n.t('Invertieren')}"
                                          icon="pi pi-sort-alt"
                                          styleClass="ui-button-outlined"
                                          action="#{mandateMenuBackingBean.invertSelection}"
@@ -85,14 +85,14 @@
                 </p>
 
                 <div style="margin-top: 20px;">
-                    <p:commandButton value="Speichern"
+                    <p:commandButton value="#{i18n.t('Speichern')}"
                                      icon="pi pi-check"
                                      styleClass="ui-button-success"
                                      action="#{mandateMenuBackingBean.save}"
                                      ajax="false"
                                      style="margin-right: 10px;"/>
 
-                    <p:commandButton value="Löschen"
+                    <p:commandButton value="#{i18n.t('Löschen')}"
                                      icon="pi pi-trash"
                                      styleClass="ui-button-danger"
                                      action="#{mandateMenuBackingBean.delete}"

@@ -14,15 +14,15 @@
             <p:growl id="messages" showDetail="true" life="3000"/>
 
             <!-- Logo Light -->
-            <p:fieldset legend="Logo (Light Mode)" toggleable="true" style="margin-bottom: 1rem;">
+            <p:fieldset legend="#{i18n.t('Logo (Light Mode)')}" toggleable="true" style="margin-bottom: 1rem;">
                 <div class="grid">
                     <div class="col-12 md:col-6">
                         <h:panelGrid columns="2" cellpadding="5" style="width:100%;">
-                            <h:outputText value="Breite (px):" style="font-weight:bold;"/>
+                            <h:outputText value="#{i18n.t('Breite')} (px):" style="font-weight:bold;"/>
                             <p:inputNumber id="lightWidth" value="#{brandingBackingBean.lightLogoWidth}"
                                            minValue="20" maxValue="500" decimalPlaces="0" style="width:120px;"/>
 
-                            <h:outputText value="Höhe (px):" style="font-weight:bold;"/>
+                            <h:outputText value="#{i18n.t('Höhe')} (px):" style="font-weight:bold;"/>
                             <p:inputNumber id="lightHeight" value="#{brandingBackingBean.lightLogoHeight}"
                                            minValue="10" maxValue="200" decimalPlaces="0" style="width:120px;"/>
                         </h:panelGrid>
@@ -38,16 +38,16 @@
                         </div>
 
                         <h:panelGroup rendered="#{brandingBackingBean.hasLightLogo}">
-                            <p:commandButton value="Dimensionen speichern" icon="pi pi-save"
+                            <p:commandButton value="#{i18n.t('Dimensionen speichern')}" icon="pi pi-save"
                                              actionListener="#{brandingBackingBean.saveLightLogoDimensions()}"
                                              update="messages" process="lightWidth lightHeight @this"
                                              style="margin-right:5px;"/>
-                            <p:commandButton value="Logo entfernen" icon="pi pi-trash"
+                            <p:commandButton value="#{i18n.t('Logo entfernen')}" icon="pi pi-trash"
                                              styleClass="ui-button-danger"
                                              actionListener="#{brandingBackingBean.deleteLightLogo()}"
                                              update="messages fm"
                                              process="@this">
-                                <p:confirm header="Bestätigung" message="Light-Logo wirklich löschen?"
+                                <p:confirm header="#{i18n.t('Bestätigung')}" message="Light-Logo wirklich löschen?"
                                            icon="pi pi-exclamation-triangle"/>
                             </p:commandButton>
                         </h:panelGroup>
@@ -56,7 +56,7 @@
                     <div class="col-12 md:col-6">
                         <h:panelGroup id="lightPreviewPanel">
                             <h:panelGroup rendered="#{brandingBackingBean.hasLightLogo}">
-                                <p style="font-weight:bold; margin-bottom:5px;">Vorschau:</p>
+                                <p style="font-weight:bold; margin-bottom:5px;">#{i18n.t('Vorschau')}:</p>
                                 <div style="background:#f8f9fa; padding:15px; border-radius:8px; display:inline-block;">
                                     <img src="#{brandingBackingBean.lightLogoPreview}"
                                          width="#{brandingBackingBean.lightLogoWidth}"
@@ -67,7 +67,7 @@
                             </h:panelGroup>
                             <h:panelGroup rendered="#{!brandingBackingBean.hasLightLogo}">
                                 <p style="color:var(--text-color-secondary); font-style:italic;">
-                                    Kein Light-Logo hochgeladen
+                                    #{i18n.t('Kein Light-Logo hochgeladen')}
                                 </p>
                             </h:panelGroup>
                         </h:panelGroup>
@@ -76,15 +76,15 @@
             </p:fieldset>
 
             <!-- Logo Dark -->
-            <p:fieldset legend="Logo (Dark Mode)" toggleable="true" style="margin-bottom: 1rem;">
+            <p:fieldset legend="#{i18n.t('Logo (Dark Mode)')}" toggleable="true" style="margin-bottom: 1rem;">
                 <div class="grid">
                     <div class="col-12 md:col-6">
                         <h:panelGrid columns="2" cellpadding="5" style="width:100%;">
-                            <h:outputText value="Breite (px):" style="font-weight:bold;"/>
+                            <h:outputText value="#{i18n.t('Breite')} (px):" style="font-weight:bold;"/>
                             <p:inputNumber id="darkWidth" value="#{brandingBackingBean.darkLogoWidth}"
                                            minValue="20" maxValue="500" decimalPlaces="0" style="width:120px;"/>
 
-                            <h:outputText value="Höhe (px):" style="font-weight:bold;"/>
+                            <h:outputText value="#{i18n.t('Höhe')} (px):" style="font-weight:bold;"/>
                             <p:inputNumber id="darkHeight" value="#{brandingBackingBean.darkLogoHeight}"
                                            minValue="10" maxValue="200" decimalPlaces="0" style="width:120px;"/>
                         </h:panelGrid>
@@ -100,16 +100,16 @@
                         </div>
 
                         <h:panelGroup rendered="#{brandingBackingBean.hasDarkLogo}">
-                            <p:commandButton value="Dimensionen speichern" icon="pi pi-save"
+                            <p:commandButton value="#{i18n.t('Dimensionen speichern')}" icon="pi pi-save"
                                              actionListener="#{brandingBackingBean.saveDarkLogoDimensions()}"
                                              update="messages" process="darkWidth darkHeight @this"
                                              style="margin-right:5px;"/>
-                            <p:commandButton value="Logo entfernen" icon="pi pi-trash"
+                            <p:commandButton value="#{i18n.t('Logo entfernen')}" icon="pi pi-trash"
                                              styleClass="ui-button-danger"
                                              actionListener="#{brandingBackingBean.deleteDarkLogo()}"
                                              update="messages fm"
                                              process="@this">
-                                <p:confirm header="Bestätigung" message="Dark-Logo wirklich löschen?"
+                                <p:confirm header="#{i18n.t('Bestätigung')}" message="Dark-Logo wirklich löschen?"
                                            icon="pi pi-exclamation-triangle"/>
                             </p:commandButton>
                         </h:panelGroup>
@@ -118,7 +118,7 @@
                     <div class="col-12 md:col-6">
                         <h:panelGroup id="darkPreviewPanel">
                             <h:panelGroup rendered="#{brandingBackingBean.hasDarkLogo}">
-                                <p style="font-weight:bold; margin-bottom:5px;">Vorschau:</p>
+                                <p style="font-weight:bold; margin-bottom:5px;">#{i18n.t('Vorschau')}:</p>
                                 <div style="background:#1e1e2f; padding:15px; border-radius:8px; display:inline-block;">
                                     <img src="#{brandingBackingBean.darkLogoPreview}"
                                          width="#{brandingBackingBean.darkLogoWidth}"
@@ -129,7 +129,7 @@
                             </h:panelGroup>
                             <h:panelGroup rendered="#{!brandingBackingBean.hasDarkLogo}">
                                 <p style="color:var(--text-color-secondary); font-style:italic;">
-                                    Kein Dark-Logo hochgeladen
+                                    #{i18n.t('Kein Dark-Logo hochgeladen')}
                                 </p>
                             </h:panelGroup>
                         </h:panelGroup>
@@ -138,26 +138,26 @@
             </p:fieldset>
 
             <!-- Footer Settings -->
-            <p:fieldset legend="Footer" toggleable="true" style="margin-bottom: 1rem;">
+            <p:fieldset legend="#{i18n.t('Footer')}" toggleable="true" style="margin-bottom: 1rem;">
                 <div class="grid">
                     <div class="col-12 md:col-8">
                         <h:panelGrid columns="2" cellpadding="5" style="width:100%;">
-                            <h:outputText value="Footer-Text:" style="font-weight:bold;"/>
+                            <h:outputText value="#{i18n.t('Footer-Text')}:" style="font-weight:bold;"/>
                             <p:inputText id="footerText" value="#{brandingBackingBean.footerText}"
                                          placeholder="z.B. Copyright © Meine Firma"
                                          style="width:100%;"/>
 
-                            <h:outputText value="Version anzeigen:" style="font-weight:bold;"/>
+                            <h:outputText value="#{i18n.t('Version anzeigen')}:" style="font-weight:bold;"/>
                             <p:toggleSwitch id="showVersion" value="#{brandingBackingBean.showVersion}"/>
 
-                            <h:outputText value="Root-Version anzeigen:" style="font-weight:bold;"/>
+                            <h:outputText value="#{i18n.t('Root-Version anzeigen')}:" style="font-weight:bold;"/>
                             <p:toggleSwitch id="showRootVersion" value="#{brandingBackingBean.showRootVersion}"/>
 
-                            <h:outputText value="Build-Zeitpunkt anzeigen:" style="font-weight:bold;"/>
+                            <h:outputText value="#{i18n.t('Build-Zeitpunkt anzeigen')}:" style="font-weight:bold;"/>
                             <p:toggleSwitch id="showBuildTimestamp" value="#{brandingBackingBean.showBuildTimestamp}"/>
                         </h:panelGrid>
 
-                        <p:commandButton value="Footer speichern" icon="pi pi-save"
+                        <p:commandButton value="#{i18n.t('Footer speichern')}" icon="pi pi-save"
                                          actionListener="#{brandingBackingBean.saveFooterSettings()}"
                                          update="messages"
                                          process="footerText showVersion showRootVersion showBuildTimestamp @this"
@@ -165,7 +165,7 @@
                     </div>
 
                     <div class="col-12 md:col-4">
-                        <p style="font-weight:bold; margin-bottom:5px;">Vorschau:</p>
+                        <p style="font-weight:bold; margin-bottom:5px;">#{i18n.t('Vorschau')}:</p>
                         <div style="background:var(--surface-50); padding:10px; border-radius:8px; font-size:0.8rem; color:var(--text-color-secondary);">
                             <h:outputText value="#{brandingBackingBean.footerText}"
                                           rendered="#{not empty brandingBackingBean.footerText}"/>
@@ -183,8 +183,8 @@
             </p:fieldset>
 
             <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
-                <p:commandButton value="Ja" type="button" styleClass="ui-confirmdialog-yes"/>
-                <p:commandButton value="Nein" type="button" styleClass="ui-confirmdialog-no"/>
+                <p:commandButton value="#{i18n.t('Ja')}" type="button" styleClass="ui-confirmdialog-yes"/>
+                <p:commandButton value="#{i18n.t('Nein')}" type="button" styleClass="ui-confirmdialog-no"/>
             </p:confirmDialog>
         </h:form>
     </ui:define>

@@ -14,32 +14,32 @@
             <p:growl id="messages" showDetail="true" life="3000"/>
 
             <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
-                <p:commandButton value="Ja" type="button" styleClass="ui-confirmdialog-yes"/>
-                <p:commandButton value="Nein" type="button" styleClass="ui-confirmdialog-no"/>
+                <p:commandButton value="#{i18n.t('Ja')}" type="button" styleClass="ui-confirmdialog-yes"/>
+                <p:commandButton value="#{i18n.t('Nein')}" type="button" styleClass="ui-confirmdialog-no"/>
             </p:confirmDialog>
 
-            <p:fieldset legend="Wertelisten">
+            <p:fieldset legend="#{i18n.t('Wertelisten')}">
 
                 <div style="margin-bottom: 10px;">
-                    <p:commandButton value="Neue Werteliste" icon="pi pi-plus"
+                    <p:commandButton value="#{i18n.t('Neue Werteliste')}" icon="pi pi-plus"
                                      actionListener="#{wertelistenBackingBean.newWerteliste()}"
                                      oncomplete="PF('dlg').show()"
                                      update="detailDialog" process="@this"/>
 
-                    <p:commandButton value="Bearbeiten" icon="pi pi-pencil"
+                    <p:commandButton value="#{i18n.t('Bearbeiten')}" icon="pi pi-pencil"
                                      actionListener="#{wertelistenBackingBean.select()}"
                                      oncomplete="PF('dlg').show()"
                                      update="detailDialog" process="@this"
                                      disabled="#{wertelistenBackingBean.selected == null}"
                                      style="margin-left: 5px;"/>
 
-                    <p:commandButton value="Löschen" icon="pi pi-trash" styleClass="ui-button-danger"
+                    <p:commandButton value="#{i18n.t('Löschen')}" icon="pi pi-trash" styleClass="ui-button-danger"
                                      actionListener="#{wertelistenBackingBean.delete()}"
                                      update="messages,tbl" process="@this"
                                      disabled="#{wertelistenBackingBean.selected == null}"
                                      style="margin-left: 5px;">
-                        <p:confirm header="Bestätigung"
-                                   message="Werteliste '#{wertelistenBackingBean.selected.key}' wirklich löschen?"
+                        <p:confirm header="#{i18n.t('Bestätigung')}"
+                                   message="#{i18n.t('Werteliste wirklich löschen?')}"
                                    icon="pi pi-exclamation-triangle"/>
                     </p:commandButton>
                 </div>
@@ -51,7 +51,7 @@
                     <p:ajax event="rowSelect" listener="#{wertelistenBackingBean.select()}" update="fm"/>
                     <p:ajax event="rowUnselect" listener="#{wertelistenBackingBean.clearSelection()}" update="fm"/>
 
-                    <p:column headerText="Schlüssel" sortBy="#{obj.key}">
+                    <p:column headerText="#{i18n.t('Schlüssel')}" sortBy="#{obj.key}">
                         <h:outputText value="#{obj.key}"/>
                     </p:column>
 
@@ -59,11 +59,11 @@
                         <h:outputText value="#{obj.mandat}"/>
                     </p:column>
 
-                    <p:column headerText="Anzahl Einträge">
+                    <p:column headerText="#{i18n.t('Anzahl Einträge')}">
                         <h:outputText value="#{obj.entries.size()}"/>
                     </p:column>
 
-                    <p:column headerText="Letzte Änderung">
+                    <p:column headerText="#{i18n.t('Letzte Änderung')}">
                         <h:outputText value="#{obj.lastModifiedDate}">
                             <f:convertDateTime type="localDateTime" pattern="dd.MM.yyyy HH:mm"/>
                         </h:outputText>
@@ -72,12 +72,12 @@
 
             </p:fieldset>
 
-            <p:dialog header="Werteliste Details" widgetVar="dlg" modal="true"
+            <p:dialog header="#{i18n.t('Werteliste Details')}" widgetVar="dlg" modal="true"
                       showEffect="fade" hideEffect="fade" width="700" id="detailDialog">
 
                 <h:panelGroup id="dialogContent" rendered="#{wertelistenBackingBean.selected != null}">
                     <h:panelGrid columns="2" style="width: 100%;" id="detailPanel">
-                        <h:outputText value="Schlüssel:"/>
+                        <h:outputText value="#{i18n.t('Schlüssel')}:"/>
                         <p:inputText id="keyInput" value="#{wertelistenBackingBean.selected.key}" required="true"
                                      style="width: 300px;"/>
 
@@ -96,25 +96,25 @@
 
                     <h:panelGrid columns="2" style="width: 100%; margin-bottom: 10px;" id="addPanel">
                         <p:inputText id="newValueInput" value="#{wertelistenBackingBean.newValue}"
-                                     placeholder="Neuer Wert" style="width: 300px;"/>
-                        <p:commandButton value="Hinzufügen" icon="pi pi-plus"
+                                     placeholder="#{i18n.t('Neuer Wert')}" style="width: 300px;"/>
+                        <p:commandButton value="#{i18n.t('Hinzufügen')}" icon="pi pi-plus"
                                          actionListener="#{wertelistenBackingBean.addEntry()}"
                                          update="entriesList,addPanel" process="addPanel"/>
                     </h:panelGrid>
 
                     <p:dataTable id="entriesList" var="entry"
                                  value="#{wertelistenBackingBean.selected.entries}"
-                                 emptyMessage="Keine Einträge">
+                                 emptyMessage="#{i18n.t('Keine Einträge')}">
 
-                        <p:column headerText="Wert">
+                        <p:column headerText="#{i18n.t('Wert')}">
                             <h:outputText value="#{entry.value}"/>
                         </p:column>
 
-                        <p:column headerText="Reihenfolge" style="width: 80px;">
+                        <p:column headerText="#{i18n.t('Reihenfolge')}" style="width: 80px;">
                             <h:outputText value="#{entry.sortOrder}"/>
                         </p:column>
 
-                        <p:column headerText="Aktionen" style="width: 150px;">
+                        <p:column headerText="#{i18n.t('Aktionen')}" style="width: 150px;">
                             <p:commandButton icon="pi pi-arrow-up"
                                              actionListener="#{wertelistenBackingBean.moveUp(entry)}"
                                              update="entriesList" process="@this"
@@ -131,7 +131,7 @@
 
                     <p:separator style="margin: 10px 0;"/>
 
-                    <p:commandButton value="Speichern" icon="pi pi-check"
+                    <p:commandButton value="#{i18n.t('Speichern')}" icon="pi pi-check"
                                      action="#{wertelistenBackingBean.save()}"
                                      update="messages,fm:tbl"
                                      process="detailDialog"

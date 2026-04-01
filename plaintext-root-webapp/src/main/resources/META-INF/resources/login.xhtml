@@ -346,32 +346,32 @@
 <h:body styleClass="login-body">
     <!-- Theme Toggle Button -->
     <div class="theme-toggle">
-        <button class="theme-toggle-btn" onclick="toggleTheme()" type="button" title="Theme wechseln">
+        <button class="theme-toggle-btn" onclick="toggleTheme()" type="button" title="#{i18n.t('Theme wechseln')}">
             <i id="theme-icon" class="pi pi-moon"></i>
         </button>
     </div>
 
     <div class="login-panel">
         <div class="login-header">
-            <h1>Willkommen</h1>
-            <p>Melden Sie sich an, um fortzufahren</p>
+            <h1>#{i18n.t('Willkommen')}</h1>
+            <p>#{i18n.t('Melden Sie sich an, um fortzufahren')}</p>
         </div>
 
         <!-- Error Message -->
         <div class="error-message" style="display: #{param.error != null ? 'flex' : 'none'}">
             <i class="pi pi-exclamation-circle"></i>
-            <span>#{param.error == 'invalid_discovery_token' ? 'Discovery Auto-Login fehlgeschlagen (ungültiger Token)'
-                : param.error == 'expired_discovery_token' ? 'Discovery Auto-Login fehlgeschlagen (Token abgelaufen)'
-                : param.error == 'unknown_source_app' ? 'Discovery Auto-Login fehlgeschlagen (unbekannte Quell-App)'
-                : param.error == 'user_not_found' ? 'Discovery Auto-Login fehlgeschlagen (Benutzer nicht gefunden)'
-                : param.error == 'discovery_login_failed' ? 'Discovery Auto-Login fehlgeschlagen'
-                : 'Ungültiger Benutzername oder Passwort'}</span>
+            <span>#{param.error == 'invalid_discovery_token' ? i18n.t('Discovery Auto-Login fehlgeschlagen (ungültiger Token)')
+                : param.error == 'expired_discovery_token' ? i18n.t('Discovery Auto-Login fehlgeschlagen (Token abgelaufen)')
+                : param.error == 'unknown_source_app' ? i18n.t('Discovery Auto-Login fehlgeschlagen (unbekannte Quell-App)')
+                : param.error == 'user_not_found' ? i18n.t('Discovery Auto-Login fehlgeschlagen (Benutzer nicht gefunden)')
+                : param.error == 'discovery_login_failed' ? i18n.t('Discovery Auto-Login fehlgeschlagen')
+                : i18n.t('Ungültiger Benutzername oder Passwort')}</span>
         </div>
 
         <!-- Logout Success Message -->
         <div class="success-message" style="display: #{param.logout != null ? 'flex' : 'none'}">
             <i class="pi pi-check-circle"></i>
-            <span>Sie wurden erfolgreich abgemeldet</span>
+            <span>#{i18n.t('Sie wurden erfolgreich abgemeldet')}</span>
         </div>
 
         <form action="#{request.contextPath}/login" method="post" class="login-form">
@@ -379,23 +379,23 @@
             <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
 
             <div class="field">
-                <label for="username">Benutzername</label>
+                <label for="username">#{i18n.t('Benutzername')}</label>
                 <input type="text"
                        id="username"
                        name="username"
                        class="ui-inputfield"
-                       placeholder="Benutzername eingeben"
+                       placeholder="#{i18n.t('Benutzername eingeben')}"
                        required="required"
                        autofocus="autofocus"/>
             </div>
 
             <div class="field">
-                <label for="password">Passwort</label>
+                <label for="password">#{i18n.t('Passwort')}</label>
                 <input type="password"
                        id="password"
                        name="password"
                        class="ui-inputfield"
-                       placeholder="Passwort eingeben"
+                       placeholder="#{i18n.t('Passwort eingeben')}"
                        required="required"/>
             </div>
 
@@ -406,7 +406,7 @@
                            name="remember-me"
                            style="margin-right: 0.5rem;"/>
                     <label for="remember-me" style="margin: 0; font-weight: normal; cursor: pointer;">
-                        Angemeldet bleiben
+                        #{i18n.t('Angemeldet bleiben')}
                     </label>
                 </div>
             </div>
@@ -414,7 +414,7 @@
             <button type="submit"
                     class="ui-button ui-button-primary"
                     style="width: 100%; padding: 0.75rem 1rem; font-size: 1rem; font-weight: 500; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; background-color: #4CAF50; color: white; border: none;">
-                <i class="pi pi-sign-in"></i> Anmelden
+                <i class="pi pi-sign-in"></i> #{i18n.t('Anmelden')}
             </button>
         </form>
     </div>

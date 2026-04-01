@@ -61,11 +61,11 @@
             <h:form id="actionForm">
                 <input type="hidden" name="_csrf" value="#{_csrf.token}"/>
 
-                <p:outputLabel for="userSelect" value="Benutzer-Session:" style="margin-right: 10px; font-weight: bold;"/>
+                <p:outputLabel for="userSelect" value="#{i18n.t('Benutzer-Session')}:" style="margin-right: 10px; font-weight: bold;"/>
                 <p:selectOneMenu id="userSelect"
                                  value="#{sessionInspectorBackingBean.selectedSessionId}"
                                  style="margin-right: 10px; min-width: 250px;">
-                    <f:selectItem itemLabel="-- Bitte wählen --" itemValue=""/>
+                    <f:selectItem itemLabel="-- #{i18n.t('Bitte wählen')} --" itemValue=""/>
                     <f:selectItems value="#{sessionInspectorBackingBean.activeSessions}"
                                    var="userSession"
                                    itemLabel="#{userSession.displayName}"
@@ -75,7 +75,7 @@
                             update="sessionTable totalSizePanel"/>
                 </p:selectOneMenu>
 
-                <p:commandButton value="Aktualisieren"
+                <p:commandButton value="#{i18n.t('Aktualisieren')}"
                                  icon="pi pi-refresh"
                                  action="#{sessionInspectorBackingBean.refresh()}"
                                  update="sessionTable totalSizePanel userSelect"
@@ -85,12 +85,12 @@
 
         <!-- Total Size Panel -->
         <div class="total-size-panel">
-            <p:panel id="totalSizePanel" header="Session Übersicht">
+            <p:panel id="totalSizePanel" header="#{i18n.t('Session Übersicht')}">
                 <h:panelGrid columns="2" cellpadding="10">
-                    <h:outputLabel value="Anzahl Objekte:" style="font-weight: bold;"/>
+                    <h:outputLabel value="#{i18n.t('Anzahl Objekte')}:" style="font-weight: bold;"/>
                     <h:outputText value="#{sessionInspectorBackingBean.sessionAttributes.size()}"/>
 
-                    <h:outputLabel value="Gesamtgrösse:" style="font-weight: bold;"/>
+                    <h:outputLabel value="#{i18n.t('Gesamtgrösse')}:" style="font-weight: bold;"/>
                     <h:outputText value="#{sessionInspectorBackingBean.formattedTotalSize}"/>
                 </h:panelGrid>
             </p:panel>
@@ -107,8 +107,8 @@
                          rowsPerPageTemplate="10,25,50,100"
                          paginatorPosition="both"
                          paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                         currentPageReportTemplate="Zeige {startRecord} bis {endRecord} von {totalRecords} Objekten"
-                         emptyMessage="Keine Session-Objekte gefunden"
+                         currentPageReportTemplate="#{i18n.t('Zeige')} {startRecord} #{i18n.t('bis')} {endRecord} #{i18n.t('von')} {totalRecords} #{i18n.t('Objekten')}"
+                         emptyMessage="#{i18n.t('Keine Session-Objekte gefunden')}"
                          styleClass="ui-table-striped"
                          reflow="true">
 
@@ -120,13 +120,13 @@
                     <h:outputText value="#{attr.type}"/>
                 </p:column>
 
-                <p:column headerText="Grösse (Bytes)" sortBy="#{attr.sizeInBytes}" styleClass="size-column">
+                <p:column headerText="#{i18n.t('Grösse')} (Bytes)" sortBy="#{attr.sizeInBytes}" styleClass="size-column">
                     <h:outputText value="#{attr.sizeInBytes}">
                         <f:convertNumber pattern="#,##0"/>
                     </h:outputText>
                 </p:column>
 
-                <p:column headerText="Grösse" sortBy="#{attr.sizeInBytes}" styleClass="size-column">
+                <p:column headerText="#{i18n.t('Grösse')}" sortBy="#{attr.sizeInBytes}" styleClass="size-column">
                     <h:outputText value="#{attr.formattedSize}"/>
                 </p:column>
 

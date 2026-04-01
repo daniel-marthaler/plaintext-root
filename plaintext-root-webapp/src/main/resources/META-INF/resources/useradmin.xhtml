@@ -57,21 +57,21 @@
         <p:growl id="messages" showDetail="true" life="3000"/>
 
         <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
-            <p:commandButton value="Ja" type="button" styleClass="ui-confirmdialog-yes"/>
-            <p:commandButton value="Nein" type="button" styleClass="ui-confirmdialog-no"/>
+            <p:commandButton value="#{i18n.t('Ja')}" type="button" styleClass="ui-confirmdialog-yes"/>
+            <p:commandButton value="#{i18n.t('Nein')}" type="button" styleClass="ui-confirmdialog-no"/>
         </p:confirmDialog>
 
-        <p:fieldset id="fs1" legend="Benutzer Liste">
+        <p:fieldset id="fs1" legend="#{i18n.t('Benutzer Liste')}">
 
             <div class="user-action-buttons">
-                <p:commandButton value="Neuer Benutzer"
+                <p:commandButton value="#{i18n.t('Neuer Benutzer')}"
                                  icon="pi pi-user-plus"
                                  actionListener="#{myUserBackingBean.newUser()}"
                                  oncomplete="PF('dlg').show()"
                                  update="fm"
                                  process="@this"/>
 
-                <p:commandButton value="Bearbeiten"
+                <p:commandButton value="#{i18n.t('Bearbeiten')}"
                                  icon="pi pi-pencil"
                                  actionListener="#{myUserBackingBean.select()}"
                                  oncomplete="PF('dlg').show()"
@@ -79,14 +79,14 @@
                                  process="@this"
                                  disabled="#{myUserBackingBean.selected == null}"/>
 
-                <p:commandButton value="Benutzer löschen"
+                <p:commandButton value="#{i18n.t('Benutzer löschen')}"
                                  icon="pi pi-trash"
                                  styleClass="ui-button-danger"
                                  actionListener="#{myUserBackingBean.delete()}"
                                  update="messages,tbl"
                                  process="@this"
                                  disabled="#{myUserBackingBean.selected == null}">
-                    <p:confirm header="Bestätigung" message="Wollen Sie Benutzer '#{myUserBackingBean.selected.username}' wirklich löschen?" icon="pi pi-exclamation-triangle"/>
+                    <p:confirm header="#{i18n.t('Bestätigung')}" message="#{i18n.t('Wollen Sie den Benutzer wirklich löschen?')}" icon="pi pi-exclamation-triangle"/>
                 </p:commandButton>
             </div>
 
@@ -109,7 +109,7 @@
                     <h:outputText value=" #{obj.id}" escape="false"/>
                 </p:column>
 
-                <p:column headerText="Benutzername" priority="1">
+                <p:column headerText="#{i18n.t('Benutzername')}" priority="1">
                     <h:outputText value=" #{obj.username}" escape="false"/>
                 </p:column>
 
@@ -117,7 +117,7 @@
                     <h:outputText value=" #{obj.mandat}" escape="false"/>
                 </p:column>
 
-                <p:column headerText="Startseite" priority="3">
+                <p:column headerText="#{i18n.t('Startseite')}" priority="3">
                     <h:outputText value=" #{obj.startpage}" escape="false"/>
                 </p:column>
 
@@ -138,32 +138,32 @@
                                      update="@none"
                                      process="@this"
                                      disabled="#{obj.id == plaintextSecurity.id}"
-                                     title="Als dieser Benutzer anmelden">
-                        <p:confirm header="Bestätigung"
-                                   message="Wollen Sie sich wirklich als Benutzer '#{obj.username}' anmelden?"
+                                     title="#{i18n.t('Als dieser Benutzer anmelden')}">
+                        <p:confirm header="#{i18n.t('Bestätigung')}"
+                                   message="#{i18n.t('Wollen Sie sich wirklich als dieser Benutzer anmelden?')}"
                                    icon="pi pi-exclamation-triangle"/>
                     </p:commandButton>
                 </p:column>
 
             </p:dataTable>
 
-            <p:dialog header="Benutzer Details" id="dlg" widgetVar="dlg" modal="true" columnClasses="label-column, input-column" showEffect="fade" hideEffect="fade" resizable="false" height="700">
+            <p:dialog header="#{i18n.t('Benutzer Details')}" id="dlg" widgetVar="dlg" modal="true" columnClasses="label-column, input-column" showEffect="fade" hideEffect="fade" resizable="false" height="700">
 
                 <h:panelGrid columns="2" styleClass="dialog-grid">
 
                     <h:outputText value="ID:" escape="false"/>
                     <h:outputText value="#{myUserBackingBean.selected.id}" escape="false"/>
 
-                    <h:outputText value="Benutzername:" escape="false"/>
-                    <p:inputText id="username" size="45" value="#{myUserBackingBean.selected.username}" required="true" requiredMessage="Benutzername ist erforderlich">
+                    <h:outputText value="#{i18n.t('Benutzername')}:" escape="false"/>
+                    <p:inputText id="username" size="45" value="#{myUserBackingBean.selected.username}" required="true" requiredMessage="#{i18n.t('Benutzername ist erforderlich')}">
                         <f:validateRegex pattern="^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$"/>
                         <p:ajax event="blur" update="messages" listener="#{myUserBackingBean.validateUsername()}"/>
                     </p:inputText>
 
-                    <h:outputText value="Passwort:" escape="false"/>
-                    <p:password size="45" value="#{myUserBackingBean.selected.password}" required="#{myUserBackingBean.myUserPw == null or myUserBackingBean.myUserPw == ''}" requiredMessage="Passwort ist bei einem neuen Benutzer erforderlich"/>
+                    <h:outputText value="#{i18n.t('Passwort')}:" escape="false"/>
+                    <p:password size="45" value="#{myUserBackingBean.selected.password}" required="#{myUserBackingBean.myUserPw == null or myUserBackingBean.myUserPw == ''}" requiredMessage="#{i18n.t('Passwort ist bei einem neuen Benutzer erforderlich')}"/>
 
-                    <h:outputText value="Ausgewählte Rollen:" escape="false"/>
+                    <h:outputText value="#{i18n.t('Ausgewählte Rollen')}:" escape="false"/>
                     <h:panelGroup>
                         <p:chips id="selectedRolesChips"
                                  value="#{myUserBackingBean.selectedRolesList}"
@@ -177,11 +177,11 @@
                                     update="availableRolesChips" />
                         </p:chips>
                         <small style="display: block; margin-top: 5px; color: #6c757d;">
-                            Rolle eingeben und Enter drücken. Klick auf X zum Entfernen.
+                            #{i18n.t('Rolle eingeben und Enter drücken. Klick auf X zum Entfernen.')}
                         </small>
                     </h:panelGroup>
 
-                    <h:outputText value="Verfügbare Rollen:" escape="false"/>
+                    <h:outputText value="#{i18n.t('Verfügbare Rollen')}:" escape="false"/>
                     <h:panelGroup>
                         <p:chips id="availableRolesChips"
                                  value="#{myUserBackingBean.availableRolesList}"
@@ -195,7 +195,7 @@
                                     update="selectedRolesChips" />
                         </p:chips>
                         <small style="display: block; margin-top: 5px; color: #6c757d;">
-                            Hier werden alle im System gefundenen Rollen angezeigt. Klick auf X um eine Rolle zu den ausgewählten Rollen hinzuzufügen.
+                            #{i18n.t('Hier werden alle im System gefundenen Rollen angezeigt. Klick auf X um eine Rolle zu den ausgewählten Rollen hinzuzufügen.')}
                         </small>
                     </h:panelGroup>
 
@@ -211,13 +211,13 @@
                                      itemValue="#{m}"/>
                     </p:selectOneMenu>
 
-                    <h:outputText value="Startseite:" escape="false"/>
+                    <h:outputText value="#{i18n.t('Startseite')}:" escape="false"/>
                     <p:inputText size="45" value="#{myUserBackingBean.selected.startpage}"/>
 
                     <h:outputText value="AutologinKey:" escape="false"/>
                     <h:panelGroup>
                         <p:inputText id="autologinKeyInput" size="35" value="#{myUserBackingBean.selected.autologinKey}"/>
-                        <p:commandButton value="Generieren"
+                        <p:commandButton value="#{i18n.t('Generieren')}"
                                          icon="pi pi-key"
                                          actionListener="#{myUserBackingBean.generateAutologinKey()}"
                                          update="autologinKeyInput"
@@ -227,7 +227,7 @@
 
                     <br/>
                     <h:panelGroup colspan="3" styleClass="dialog-buttons">
-                        <p:commandButton value="Speichern" icon="pi pi-check" action="#{myUserBackingBean.save()}" update="messages,fm:tbl,selectedRolesChips,availableRolesChips,mandatFm" oncomplete="if (args &amp;&amp; !args.validationFailed) PF('dlg').hide()"/>
+                        <p:commandButton value="#{i18n.t('Speichern')}" icon="pi pi-check" action="#{myUserBackingBean.save()}" update="messages,fm:tbl,selectedRolesChips,availableRolesChips,mandatFm" oncomplete="if (args &amp;&amp; !args.validationFailed) PF('dlg').hide()"/>
                     </h:panelGroup>
 
                 </h:panelGrid>

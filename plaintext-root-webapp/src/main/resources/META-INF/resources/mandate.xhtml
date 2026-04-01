@@ -74,8 +74,8 @@
         <p:growl id="messages" showDetail="true" life="5000"/>
 
         <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
-            <p:commandButton value="Ja" type="button" styleClass="ui-confirmdialog-yes"/>
-            <p:commandButton value="Nein" type="button" styleClass="ui-confirmdialog-no"/>
+            <p:commandButton value="#{i18n.t('Ja')}" type="button" styleClass="ui-confirmdialog-yes"/>
+            <p:commandButton value="#{i18n.t('Nein')}" type="button" styleClass="ui-confirmdialog-no"/>
         </p:confirmDialog>
 
         <div class="ui-grid ui-grid-responsive">
@@ -87,9 +87,9 @@
                         <h:panelGrid columns="2" style="width: 100%; margin-bottom: 15px;">
                             <p:inputText id="newMandatName"
                                        value="#{mandateBackingBean.newMandatName}"
-                                       placeholder="Neues Mandat..."
+                                       placeholder="#{i18n.t('Neues Mandat...')}"
                                        style="width: 100%;"/>
-                            <p:commandButton value="Erstellen"
+                            <p:commandButton value="#{i18n.t('Erstellen')}"
                                            icon="pi pi-plus"
                                            action="#{mandateBackingBean.createMandat()}"
                                            update="@form"
@@ -101,7 +101,7 @@
                                    value="#{mandateBackingBean.mandate}"
                                    var="mandat"
                                    type="none"
-                                   emptyMessage="Keine Mandate vorhanden">
+                                   emptyMessage="#{i18n.t('Keine Mandate vorhanden')}">
                             <div class="mandat-item #{mandat eq mandateBackingBean.selectedMandat ? 'selected' : ''}">
                                 <p:commandLink action="#{mandateBackingBean.selectMandat()}"
                                              update="@form"
@@ -112,7 +112,7 @@
                                                                 target="#{mandateBackingBean.selectedMandat}"/>
                                     <i class="pi pi-folder" style="margin-right: 8px;"/>
                                     <h:outputText value="#{mandat}"/>
-                                    <h:outputText value=" (aktiv)"
+                                    <h:outputText value=" (#{i18n.t('aktiv')})"
                                                 rendered="#{mandat eq mandateBackingBean.plaintextSecurity.mandat}"
                                                 style="font-weight: bold; color: var(--primary-color, #0d6efd); margin-left: 5px;"/>
                                 </p:commandLink>
@@ -120,7 +120,7 @@
                         </p:dataList>
 
                         <h:panelGroup id="deleteButtonPanel" rendered="#{not empty mandateBackingBean.selectedMandat}">
-                            <p:commandButton value="Löschen"
+                            <p:commandButton value="#{i18n.t('Löschen')}"
                                            icon="pi pi-trash"
                                            action="#{mandateBackingBean.deleteMandat()}"
                                            update="messages,mandateList,deleteButtonPanel,usersTable"
@@ -128,8 +128,8 @@
                                            styleClass="ui-button-danger"
                                            style="width: 100%; margin-top: 15px;"
                                            disabled="#{mandateBackingBean.selectedMandat eq 'default'}">
-                                <p:confirm header="Bestätigung"
-                                         message="Wollen Sie das Mandat '#{mandateBackingBean.selectedMandat}' wirklich löschen?"
+                                <p:confirm header="#{i18n.t('Bestätigung')}"
+                                         message="#{i18n.t('Wollen Sie das Mandat wirklich löschen?')}"
                                          icon="pi pi-exclamation-triangle"/>
                             </p:commandButton>
                         </h:panelGroup>
@@ -138,7 +138,7 @@
 
                 <!-- Rechte Spalte: Benutzer -->
                 <div class="ui-g-12 ui-md-8">
-                    <p:panel header="Benutzer und Mandate-Zuordnung" styleClass="mandate-card">
+                    <p:panel header="#{i18n.t('Benutzer und Mandate-Zuordnung')}" styleClass="mandate-card">
 
                         <p:dataTable id="usersTable"
                                    value="#{mandateBackingBean.users}"
@@ -146,7 +146,7 @@
                                    rows="20"
                                    paginator="true"
                                    paginatorPosition="bottom"
-                                   emptyMessage="Keine Benutzer vorhanden"
+                                   emptyMessage="#{i18n.t('Keine Benutzer vorhanden')}"
                                    filteredValue="#{mandateBackingBean.filteredUsers}"
                                    widgetVar="usersTable"
                                    styleClass="users-table"
@@ -154,7 +154,7 @@
 
                             <f:facet name="header">
                                 <div style="text-align: right;">
-                                    <p:commandButton value="Filter zurücksetzen"
+                                    <p:commandButton value="#{i18n.t('Filter zurücksetzen')}"
                                                    icon="pi pi-filter-slash"
                                                    update="usersTable"
                                                    process="@this"
@@ -163,12 +163,12 @@
                                 </div>
                             </f:facet>
 
-                            <p:column headerText="Benutzername"
+                            <p:column headerText="#{i18n.t('Benutzername')}"
                                     filterBy="#{user.username}"
                                     filterMatchMode="contains"
                                     priority="1">
                                 <h:outputText value="#{user.username}"/>
-                                <h:outputText value=" (Sie)"
+                                <h:outputText value=" (#{i18n.t('Sie')})"
                                             rendered="#{user.id eq mandateBackingBean.plaintextSecurity.id}"
                                             style="font-weight: bold; color: var(--primary-color, #0d6efd); margin-left: 5px;"/>
                             </p:column>
@@ -179,7 +179,7 @@
                                     priority="2">
                                 <p:selectOneMenu value="#{user.mandat}"
                                                style="width: 100%;">
-                                    <f:selectItem itemLabel="-- Kein Mandat --" itemValue="" noSelectionOption="true"/>
+                                    <f:selectItem itemLabel="-- #{i18n.t('Kein Mandat')} --" itemValue="" noSelectionOption="true"/>
                                     <f:selectItems value="#{mandateBackingBean.allMandate}"
                                                  var="m"
                                                  itemLabel="#{m}"
@@ -200,9 +200,9 @@
                         </p:dataTable>
 
                         <h:panelGrid columns="1" styleClass="info-hint-panel">
-                            <h:outputText value="Hinweis:" styleClass="hint-title"/>
-                            <h:outputText value="Ändern Sie das Mandat eines Benutzers, indem Sie es in der Dropdown-Liste auswählen. Die Änderung wird automatisch gespeichert." styleClass="hint-text"/>
-                            <h:outputText value="Benutzer ohne zugewiesenes Mandat erhalten automatisch das 'default' Mandat." styleClass="hint-text"/>
+                            <h:outputText value="#{i18n.t('Hinweis')}:" styleClass="hint-title"/>
+                            <h:outputText value="#{i18n.t('Ändern Sie das Mandat eines Benutzers, indem Sie es in der Dropdown-Liste auswählen. Die Änderung wird automatisch gespeichert.')}" styleClass="hint-text"/>
+                            <h:outputText value="#{i18n.t('Benutzer ohne zugewiesenes Mandat erhalten automatisch das default Mandat.')}" styleClass="hint-text"/>
                         </h:panelGrid>
 
                     </p:panel>

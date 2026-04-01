@@ -19,7 +19,7 @@
         #{performanceService.reload()}
 
         <h:panelGrid columns="1">
-            <p:commandButton value="Neu laden"
+            <p:commandButton value="#{i18n.t('Neu laden')}"
                              actionListener="#{performanceService.reload()}"
                              update="grid"/>
         </h:panelGrid>
@@ -44,7 +44,7 @@
                 </p:column>
 
                 <!-- Methodensignatur -->
-                <p:column headerText="Methode"
+                <p:column headerText="#{i18n.t('Methode')}"
                           style="width:40%"
                           filterBy="#{row[1].replace(', ms.','').replace('ch.plaintext.','')}"
                           filterMatchMode="contains"
@@ -64,7 +64,7 @@
                 </p:column>
 
                 <!-- Durchschnitt (ms) -->
-                <p:column headerText="Durchschnitt (ms)"
+                <p:column headerText="#{i18n.t('Durchschnitt')} (ms)"
                           style="width:8%; text-align:right;"
                           sortBy="#{row[3]}"
                           priority="2">
@@ -94,7 +94,7 @@
                 </p:column>
 
                 <!-- Letzter Aufruf -->
-                <p:column headerText="Letzter Aufruf"
+                <p:column headerText="#{i18n.t('Letzter Aufruf')}"
                           style="width:12%; text-align:right;"
                           sortBy="#{row[13]}"
                           priority="3">

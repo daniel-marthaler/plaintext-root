@@ -49,12 +49,12 @@
         <p:growl id="messages" showDetail="true" life="3000"/>
 
         <p:blockUI block="tbl" widgetVar="blockIt">
-            <h:outputText value="Bitte warten..."/>
+            <h:outputText value="#{i18n.t('Bitte warten...')}"/>
         </p:blockUI>
 
         <p:poll interval="10" update="fm:tbl" listener="#{cronBackingBean.refreshCrons()}"/>
 
-        <p:fieldset id="fs1" legend="Cron Jobs Liste">
+        <p:fieldset id="fs1" legend="#{i18n.t('Cron Jobs Liste')}">
 
             <p:dataTable emptyMessage="-"
                          widgetVar="tbl"
@@ -79,7 +79,7 @@
                     <h:outputText value="#{row.mandat}"/>
                 </p:column>
 
-                <p:column headerText="Ausführung" style="width:20%" priority="2">
+                <p:column headerText="#{i18n.t('Ausführung')}" style="width:20%" priority="2">
                     <p:commandButton value="#{row.cronExpression}"
                                      icon="pi pi-calendar"
                                      action="#{cronBackingBean.select(row.getCronName(), row.mandat)}"
@@ -87,7 +87,7 @@
                                      update="@form:bem"/>
                 </p:column>
 
-                <p:column headerText="Letzter Lauf" style="width:20%" priority="3">
+                <p:column headerText="#{i18n.t('Letzter Lauf')}" style="width:20%" priority="3">
                     <h:panelGroup layout="block" style="white-space: nowrap;">
                         <p:commandButton icon="pi pi-clock"
                                          ajax="true"
@@ -115,17 +115,17 @@
 
                 </p:column>
 
-                <p:column headerText="Zähler" style="width:10%" priority="4">
+                <p:column headerText="#{i18n.t('Zähler')}" style="width:10%" priority="4">
                     <h:outputText value=" #{row.getCron().getCounter()}" escape="false"
                                   rendered="#{cronBackingBean.isEnabled(row.getCronName(), row.mandat)}"/>
                 </p:column>
 
-                <p:column headerText="Letzter Dauer (s)" style="width:10%" priority="4">
+                <p:column headerText="#{i18n.t('Letzte Dauer')} (s)" style="width:10%" priority="4">
                     <h:outputText value=" #{row.getCron().getLastSeconds()}" escape="false"
                                   rendered="#{cronBackingBean.isEnabled(row.getCronName(), row.mandat)}"/>
                 </p:column>
 
-                <p:column headerText="Nächster Lauf" style="width:20%" priority="3">
+                <p:column headerText="#{i18n.t('Nächster Lauf')}" style="width:20%" priority="3">
                     <h:panelGroup layout="block" rendered="#{cronBackingBean.isEnabled(row.getCronName(), row.mandat)}">
                         <h:outputText value="#{cronBackingBean.getNextRun(row)}">
                             <f:convertDateTime locale="de" pattern="dd.MM.yy HH:mm" timeZone="Europe/Zurich"/>
@@ -185,7 +185,7 @@
             </p:dataTable>
 
 
-            <p:dialog header="Ausführungszeit anpassen"
+            <p:dialog header="#{i18n.t('Ausführungszeit anpassen')}"
                       id="bem"
                       widgetVar="bemDlg"
                       modal="true"
@@ -196,7 +196,7 @@
 
                 <h:panelGrid columns="2" styleClass="dialog-grid">
 
-                    <h:outputText value="Cron Ausdruck:" escape="false"/>
+                    <h:outputText value="#{i18n.t('Cron Ausdruck')}:" escape="false"/>
                     <p:inputText id="crone" value="#{cronBackingBean.crone}" size="45">
                         <p:ajax event="keyup" update="ms" listener="#{cronBackingBean.validate()}"/>
                     </p:inputText>
@@ -206,13 +206,13 @@
 
                     <br/>
                     <h:panelGroup colspan="3" styleClass="dialog-buttons">
-                        <p:commandButton value="Speichern"
+                        <p:commandButton value="#{i18n.t('Speichern')}"
                                          icon="pi pi-check"
                                          actionListener="#{cronBackingBean.save()}"
                                          oncomplete="PF('bemDlg').hide()"
                                          update="tbl"
                                          style="margin-right: 5px;"/>
-                        <p:commandButton value="Hilfe"
+                        <p:commandButton value="#{i18n.t('Hilfe')}"
                                          icon="pi pi-question-circle"
                                          oncomplete="PF('bemDlg2').show()"/>
                     </h:panelGroup>
@@ -298,7 +298,7 @@
                     <br/>
 
                     <h:panelGroup styleClass="dialog-buttons" style="text-align: center; width: 100%;">
-                        <p:commandButton value="Schliessen"
+                        <p:commandButton value="#{i18n.t('Schliessen')}"
                                          icon="pi pi-times"
                                          oncomplete="PF('bemDlg2').hide()"/>
                     </h:panelGroup>

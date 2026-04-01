@@ -18,7 +18,7 @@
                 <p:commandButton value="Nein" type="button" styleClass="ui-confirmdialog-no"/>
             </p:confirmDialog>
 
-            <p:fieldset legend="Übersetzungen (i18n)">
+            <p:fieldset legend="#{i18n.t('Übersetzungen')} (i18n)">
 
                 <div style="margin-bottom: 10px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                     <p:selectOneMenu value="#{i18nBackingBean.filterLanguage}" style="width: 200px;">
@@ -29,22 +29,22 @@
                                 update="tbl" process="@this"/>
                     </p:selectOneMenu>
 
-                    <p:commandButton value="Neue Übersetzung" icon="pi pi-plus"
+                    <p:commandButton value="#{i18n.t('Neue Übersetzung')}" icon="pi pi-plus"
                                      actionListener="#{i18nBackingBean.prepareNew()}"
                                      oncomplete="PF('newDlg').show()"
                                      update="newDialogContent" process="@this"/>
 
-                    <p:commandButton value="Bearbeiten" icon="pi pi-pencil"
+                    <p:commandButton value="#{i18n.t('Bearbeiten')}" icon="pi pi-pencil"
                                      oncomplete="PF('editDlg').show()"
                                      update="editDialogContent" process="@this"
                                      disabled="#{i18nBackingBean.selected == null}"/>
 
-                    <p:commandButton value="Löschen" icon="pi pi-trash" styleClass="ui-button-danger"
+                    <p:commandButton value="#{i18n.t('Löschen')}" icon="pi pi-trash" styleClass="ui-button-danger"
                                      actionListener="#{i18nBackingBean.delete()}"
                                      update="messages,tbl" process="@this"
                                      disabled="#{i18nBackingBean.selected == null}">
-                        <p:confirm header="Bestätigung"
-                                   message="Übersetzung wirklich löschen?"
+                        <p:confirm header="#{i18n.t('Bestätigung')}"
+                                   message="#{i18n.t('Übersetzung wirklich löschen?')}"
                                    icon="pi pi-exclamation-triangle"/>
                     </p:commandButton>
 
@@ -62,7 +62,7 @@
                                      oncomplete="PF('importDlg').show()"
                                      process="@this" type="button"/>
 
-                    <p:commandButton value="Cache leeren" icon="pi pi-refresh"
+                    <p:commandButton value="#{i18n.t('Cache leeren')}" icon="pi pi-refresh"
                                      actionListener="#{i18nBackingBean.clearCache()}"
                                      update="messages" process="@this"
                                      style="margin-left: auto;"/>
@@ -80,16 +80,16 @@
                         <h:outputText value="#{obj.defaultLabel}"/>
                     </p:column>
 
-                    <p:column headerText="Sprache" sortBy="#{obj.languageCode}" style="width: 100px;">
+                    <p:column headerText="#{i18n.t('Sprache')}" sortBy="#{obj.languageCode}" style="width: 100px;">
                         <h:outputText value="#{obj.languageCode}"/>
                     </p:column>
 
-                    <p:column headerText="Übersetzung" sortBy="#{obj.translatedText}">
+                    <p:column headerText="#{i18n.t('Übersetzung')}" sortBy="#{obj.translatedText}">
                         <h:outputText value="#{obj.translatedText}"
                                       style="#{obj.translatedText.startsWith('X_') ? 'color: #e74c3c; font-weight: bold;' : ''}"/>
                     </p:column>
 
-                    <p:column headerText="Aktionen" style="width: 80px; text-align: center;">
+                    <p:column headerText="#{i18n.t('Aktionen')}" style="width: 80px; text-align: center;">
                         <p:commandButton icon="pi pi-trash" styleClass="ui-button-danger ui-button-sm"
                                          actionListener="#{i18nBackingBean.delete()}"
                                          update="messages,tbl" process="@this"

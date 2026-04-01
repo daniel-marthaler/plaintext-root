@@ -18,31 +18,31 @@
                 <p:commandButton value="Nein" type="button" styleClass="ui-confirmdialog-no"/>
             </p:confirmDialog>
 
-            <p:fieldset legend="Dateiliste">
+            <p:fieldset legend="#{i18n.t('Dateiliste')}">
 
                 <div style="margin-bottom: 10px;">
-                    <h:outputText value="Gesamtspeicher: " style="font-weight: bold; margin-right: 10px;"/>
+                    <h:outputText value="#{i18n.t('Gesamtspeicher')}: " style="font-weight: bold; margin-right: 10px;"/>
                     <h:outputText value="#{filelistBackingBean.totalStorageUsedFormatted}" style="font-weight: bold; color: #007bff;"/>
                 </div>
 
                 <div style="margin-bottom: 10px;">
-                    <p:commandButton value="Hochladen" icon="pi pi-upload"
+                    <p:commandButton value="#{i18n.t('Hochladen')}" icon="pi pi-upload"
                                      oncomplete="PF('uploadDlg').show()"
                                      update="uploadPanel" process="@this"/>
 
-                    <p:commandButton value="Herunterladen" icon="pi pi-download"
+                    <p:commandButton value="#{i18n.t('Herunterladen')}" icon="pi pi-download"
                                      actionListener="#{filelistBackingBean.download()}"
                                      disabled="#{filelistBackingBean.selected == null}"
                                      style="margin-left: 5px;" ajax="false"/>
 
-                    <p:commandButton value="Metadaten bearbeiten" icon="pi pi-pencil"
+                    <p:commandButton value="#{i18n.t('Metadaten bearbeiten')}" icon="pi pi-pencil"
                                      actionListener="#{filelistBackingBean.select()}"
                                      oncomplete="PF('metadataDlg').show()"
                                      update="metadataDialog" process="@this"
                                      disabled="#{filelistBackingBean.selected == null}"
                                      style="margin-left: 5px;"/>
 
-                    <p:commandButton value="Löschen" icon="pi pi-trash" styleClass="ui-button-danger"
+                    <p:commandButton value="#{i18n.t('Löschen')}" icon="pi pi-trash" styleClass="ui-button-danger"
                                      actionListener="#{filelistBackingBean.delete()}"
                                      update="messages,tbl" process="@this"
                                      disabled="#{filelistBackingBean.selected == null}"
@@ -60,15 +60,15 @@
                     <p:ajax event="rowSelect" listener="#{filelistBackingBean.select()}" update="fm"/>
                     <p:ajax event="rowUnselect" listener="#{filelistBackingBean.clearSelection()}" update="fm"/>
 
-                    <p:column headerText="Dateiname" sortBy="#{obj.filename}">
+                    <p:column headerText="#{i18n.t('Dateiname')}" sortBy="#{obj.filename}">
                         <h:outputText value="#{obj.filename}"/>
                     </p:column>
 
-                    <p:column headerText="Kategorie" sortBy="#{obj.category}">
+                    <p:column headerText="#{i18n.t('Kategorie')}" sortBy="#{obj.category}">
                         <h:outputText value="#{obj.category}"/>
                     </p:column>
 
-                    <p:column headerText="Größe" sortBy="#{obj.fileSize}">
+                    <p:column headerText="#{i18n.t('Größe')}" sortBy="#{obj.fileSize}">
                         <h:outputText value="#{obj.fileSizeFormatted}"/>
                     </p:column>
 
@@ -76,15 +76,15 @@
                         <h:outputText value="#{obj.storageBackend}"/>
                     </p:column>
 
-                    <p:column headerText="Hochgeladen von" sortBy="#{obj.uploadedBy}">
+                    <p:column headerText="#{i18n.t('Hochgeladen von')}" sortBy="#{obj.uploadedBy}">
                         <h:outputText value="#{obj.uploadedBy}"/>
                     </p:column>
 
-                    <p:column headerText="Zugriffe" sortBy="#{obj.accessCount}" style="width: 80px;">
+                    <p:column headerText="#{i18n.t('Zugriffe')}" sortBy="#{obj.accessCount}" style="width: 80px;">
                         <h:outputText value="#{obj.accessCount}"/>
                     </p:column>
 
-                    <p:column headerText="Hochgeladen am" sortBy="#{obj.createdDate}">
+                    <p:column headerText="#{i18n.t('Hochgeladen am')}" sortBy="#{obj.createdDate}">
                         <h:outputText value="#{obj.createdDate}">
                             <f:convertDateTime type="localDateTime" pattern="dd.MM.yyyy HH:mm"/>
                         </h:outputText>
@@ -93,7 +93,7 @@
 
             </p:fieldset>
 
-            <p:dialog header="Datei hochladen" widgetVar="uploadDlg" modal="true"
+            <p:dialog header="#{i18n.t('Datei hochladen')}" widgetVar="uploadDlg" modal="true"
                       showEffect="fade" hideEffect="fade" width="600">
 
                 <h:panelGrid columns="2" style="width: 100%;" id="uploadPanel">
@@ -122,7 +122,7 @@
                                  oncomplete="if (args &amp;&amp; !args.validationFailed) PF('uploadDlg').hide()"/>
             </p:dialog>
 
-            <p:dialog header="Metadaten bearbeiten" widgetVar="metadataDlg" modal="true"
+            <p:dialog header="#{i18n.t('Metadaten bearbeiten')}" widgetVar="metadataDlg" modal="true"
                       showEffect="fade" hideEffect="fade" width="700" id="metadataDialog">
 
                 <h:panelGroup id="metadataContent" rendered="#{filelistBackingBean.selected != null}">
