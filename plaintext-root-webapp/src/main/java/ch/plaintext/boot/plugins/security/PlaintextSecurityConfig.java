@@ -82,7 +82,13 @@ public class PlaintextSecurityConfig {
                 .securityContext(ctx -> ctx
                         .securityContextRepository(securityContextRepository())
                 )
-                .csrf(csrf -> csrf.disable())
+                .csrf(csrf -> csrf
+                        .ignoringRequestMatchers(
+                                PathPatternRequestMatcher.pathPattern("/api/**"),
+                                PathPatternRequestMatcher.pathPattern("/login/oauth2/**"),
+                                PathPatternRequestMatcher.pathPattern("/oauth2/**")
+                        )
+                )
                 .headers(headers -> headers
                         .frameOptions(frame -> frame.sameOrigin())
                         .contentSecurityPolicy(csp -> csp

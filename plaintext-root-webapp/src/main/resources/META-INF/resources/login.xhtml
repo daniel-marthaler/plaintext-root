@@ -2,7 +2,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://xmlns.jcp.org/jsf/core">
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets">
 
 <h:head>
     <title>Plaintext - Login</title>
@@ -419,7 +420,7 @@
             </button>
         </form>
 
-        <!-- OIDC Login Button -->
+        <!-- OIDC Login Buttons -->
         <h:panelGroup rendered="#{oidcConfigService.oidcEnabled}">
             <div style="margin-top: 1.5rem; text-align: center;">
                 <div style="display: flex; align-items: center; margin-bottom: 1rem;">
@@ -427,11 +428,13 @@
                     <span style="padding: 0 1rem; color: var(--text-secondary); font-size: 0.9rem;">#{i18n.t('oder')}</span>
                     <hr style="flex: 1; border: none; border-top: 1px solid var(--border-color);"/>
                 </div>
-                <a href="#{request.contextPath}/oauth2/authorization/keycloak"
-                   style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; width: 100%; padding: 0.75rem 1rem; font-size: 1rem; font-weight: 500; border-radius: 6px; cursor: pointer; background-color: var(--primary-color); color: white; border: none; text-decoration: none;">
-                    <i class="#{oidcConfigService.activeButtonIcon}"></i>
-                    #{oidcConfigService.activeButtonLabel}
-                </a>
+                <ui:repeat value="#{oidcConfigService.activeConfigs}" var="oidc">
+                    <a href="#{request.contextPath}/oauth2/authorization/#{oidc.registrationId}"
+                       style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; width: 100%; padding: 0.75rem 1rem; font-size: 1rem; font-weight: 500; border-radius: 6px; cursor: pointer; background-color: var(--primary-color); color: white; border: none; text-decoration: none; margin-bottom: 0.5rem;">
+                        <i class="#{oidc.buttonIcon != null ? oidc.buttonIcon : 'pi pi-sign-in'}"></i>
+                        #{oidc.buttonLabel != null ? oidc.buttonLabel : oidc.name}
+                    </a>
+                </ui:repeat>
             </div>
         </h:panelGroup>
     </div>

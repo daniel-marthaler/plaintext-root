@@ -14,6 +14,8 @@ import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -25,20 +27,14 @@ public class JdbcClientRegistrationRepository implements ClientRegistrationRepos
 
     @Override
     public ClientRegistration findByRegistrationId(String registrationId) {
-        Optional<OidcConfig> configOpt = oidcConfigService.getActiveConfig();
-        if (configOpt.isEmpty()) {
-            log.debug("No active OIDC config found for registrationId: {}", registrationId);
-            return null;
+        List<OidcConfig> configs = oidcConfigService.getActiveConfigs();
+        for (OidcConfig config : configs) {
+            if (toRegistrationId(config).equals(registrationId)) {
+                return buildClientRegistration(config);
+            }
         }
-
-        OidcConfig config = configOpt.get();
-        String expectedId = toRegistrationId(config);
-        if (!expectedId.equals(registrationId)) {
-            log.debug("Registration ID mismatch: expected={}, requested={}", expectedId, registrationId);
-            return null;
-        }
-
-        return buildClientRegistration(config);
+        log.debug("No active OIDC config found for registrationId: {}", registrationId);
+        return null;
     }
 
     public Optional<ClientRegistration> getActiveRegistration() {
@@ -73,7 +69,7 @@ public class JdbcClientRegistrationRepository implements ClientRegistrationRepos
                 .build();
     }
 
-    static String toRegistrationId(OidcConfig config) {
-        return "keycloak";
+    public static String toRegistrationId(OidcConfig config) {
+        return config.getRegistrationId();
     }
 }

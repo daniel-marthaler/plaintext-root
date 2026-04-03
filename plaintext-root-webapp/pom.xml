@@ -85,6 +85,11 @@
             <artifactId>plaintext-admin-oidc</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>ch.plaintext</groupId>
+            <artifactId>plaintext-admin-apitoken</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
         <!-- === Spring Boot Starters === -->
         <dependency>

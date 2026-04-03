@@ -35,8 +35,12 @@ public class OidcConfigService {
         return repository.findFirstByEnabledTrue();
     }
 
+    public List<OidcConfig> getActiveConfigs() {
+        return repository.findByEnabledTrue();
+    }
+
     public boolean isOidcEnabled() {
-        return repository.findFirstByEnabledTrue().isPresent();
+        return !repository.findByEnabledTrue().isEmpty();
     }
 
     public String getActiveButtonLabel() {
