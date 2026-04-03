@@ -112,6 +112,7 @@
         <module>plaintext-admin-settings</module>
         <module>plaintext-admin-value-lists</module>
         <module>plaintext-admin-i18n</module>
+        <module>plaintext-admin-oidc</module>
     </modules>
 
     <dependencyManagement>
@@ -200,6 +201,11 @@
             <dependency>
                 <groupId>ch.plaintext</groupId>
                 <artifactId>plaintext-admin-i18n</artifactId>
+                <version>${plaintext.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.plaintext</groupId>
+                <artifactId>plaintext-admin-oidc</artifactId>
                 <version>${plaintext.version}</version>
             </dependency>
 
