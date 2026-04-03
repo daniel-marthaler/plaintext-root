@@ -107,7 +107,7 @@
         <!-- admin -->
         <module>plaintext-admin-requirements</module>
         <module>plaintext-admin-cron</module>
-        <module>plaintext-admin-filelist</module>
+
         <module>plaintext-admin-sessions</module>
         <module>plaintext-admin-settings</module>
         <module>plaintext-admin-value-lists</module>
@@ -193,11 +193,7 @@
                 <artifactId>plaintext-admin-requirements</artifactId>
                 <version>${plaintext.version}</version>
             </dependency>
-            <dependency>
-                <groupId>ch.plaintext</groupId>
-                <artifactId>plaintext-admin-filelist</artifactId>
-                <version>${plaintext.version}</version>
-            </dependency>
+
             <dependency>
                 <groupId>ch.plaintext</groupId>
                 <artifactId>plaintext-admin-i18n</artifactId>

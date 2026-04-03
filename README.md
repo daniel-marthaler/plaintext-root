@@ -48,7 +48,7 @@ graph TB
         ADMIN_SES[plaintext-admin-sessions]
         ADMIN_CRON[plaintext-admin-cron]
         ADMIN_WL[plaintext-admin-value-lists]
-        ADMIN_FL[plaintext-admin-filelist]
+
         ADMIN_ANF[plaintext-admin-requirements]
     end
 
@@ -92,7 +92,7 @@ graph TB
 | `plaintext-admin-sessions` | Active session monitoring and insights |
 | `plaintext-admin-cron` | Cron job monitoring and management UI |
 | `plaintext-admin-value-lists` | Key-value list management (lookup tables) |
-| `plaintext-admin-filelist` | File management module |
+
 | `plaintext-admin-requirements` | Requirements management with AI integration |
 
 ## Tech Stack

@@ -105,10 +105,6 @@ Cron job monitoring and management. Shows all registered `PlaintextCron` impleme
 
 Management UI for value lists (Wertelisten) — lookup tables with key-value pairs per mandate.
 
-### plaintext-admin-filelist
-
-File management module for listing and managing uploaded files.
-
 ### plaintext-admin-requirements
 
 Requirements management with AI integration (Claude automation). Includes REST API with full OpenAPI documentation.
@@ -153,6 +149,6 @@ plaintext-root-webapp
 ├── plaintext-admin-sessions
 ├── plaintext-admin-cron
 ├── plaintext-admin-value-lists
-├── plaintext-admin-filelist
+
 └── plaintext-admin-requirements
 ```
