@@ -98,9 +98,8 @@
         <module>plaintext-root-role-assignment</module>
         <module>plaintext-root-discovery</module>
 
-        <!-- templates -->
-        <!-- <module>plaintext-root-template-freya</module> -->
-        <module>plaintext-root-template-plaintext</module>
+        <!-- template -->
+        <module>plaintext-root-template</module>
 
         <module>plaintext-root-webapp</module>
 
@@ -205,17 +204,10 @@
                 <version>${plaintext.version}</version>
             </dependency>
 
-            <!-- Templates -->
-            <!--
+            <!-- Template -->
             <dependency>
                 <groupId>ch.plaintext</groupId>
-                <artifactId>plaintext-root-template-freya</artifactId>
-                <version>${plaintext.version}</version>
-            </dependency>
-            -->
-            <dependency>
-                <groupId>ch.plaintext</groupId>
-                <artifactId>plaintext-root-template-plaintext</artifactId>
+                <artifactId>plaintext-root-template</artifactId>
                 <version>${plaintext.version}</version>
             </dependency>
 

@@ -28,7 +28,7 @@
 graph TB
     subgraph "Web Layer"
         WEBAPP[plaintext-root-webapp<br/>Security, Login, Controllers]
-        TEMPLATE[plaintext-root-template-plaintext<br/>UI Template, CSS, JS]
+        TEMPLATE[plaintext-root-template<br/>UI Template, CSS, JS]
     end
 
     subgraph "Core Modules"
@@ -87,7 +87,7 @@ graph TB
 | `plaintext-root-flyway` | Database migration management |
 | `plaintext-root-discovery` | MQTT-based service discovery between Plaintext apps |
 | `plaintext-root-webapp` | Main web application with security, login, and controllers |
-| `plaintext-root-template-plaintext` | Open-source UI template (no commercial dependencies) |
+| `plaintext-root-template` | UI Template |
 | `plaintext-admin-settings` | Application settings management UI |
 | `plaintext-admin-sessions` | Active session monitoring and insights |
 | `plaintext-admin-cron` | Cron job monitoring and management UI |
@@ -199,7 +199,7 @@ The UI template is a separate Maven module that can be swapped:
 <!-- Open-source template (default) -->
 <dependency>
     <groupId>ch.plaintext</groupId>
-    <artifactId>plaintext-root-template-plaintext</artifactId>
+    <artifactId>plaintext-root-template</artifactId>
 </dependency>
 ```
 
@@ -260,7 +260,7 @@ plaintext-root/
 ├── plaintext-root-email/               # Email system
 ├── plaintext-root-flyway/              # DB migrations
 ├── plaintext-root-discovery/           # MQTT discovery
-├── plaintext-root-template-plaintext/  # Open-source UI template
+├── plaintext-root-template/            # UI template
 ├── plaintext-root-webapp/              # Main web application
 ├── plaintext-admin-settings/           # Settings admin
 ├── plaintext-admin-sessions/           # Session monitoring

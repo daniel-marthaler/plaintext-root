@@ -111,7 +111,7 @@ Requirements management with AI integration (Claude automation). Includes REST A
 
 ## Template & Application
 
-### plaintext-root-template-plaintext
+### plaintext-root-template
 
 Open-source UI template providing layout CSS, navigation JavaScript, and XHTML templates. Supports light/dark mode, three menu layouts, and eight color themes.
 
@@ -130,7 +130,7 @@ Main web application module. Bundles all other modules and provides:
 
 ```
 plaintext-root-webapp
-├── plaintext-root-template-plaintext
+├── plaintext-root-template
 ├── plaintext-root-interfaces
 ├── plaintext-root-jpa
 │   └── plaintext-root-common

@@ -239,7 +239,6 @@ graph TB
     subgraph "Maven Dependencies"
         APP[plaintext-root-webapp]
         TPL_P[template-plaintext<br/><i>Open Source</i>]
-        TPL_F[template-freya<br/><i>Commercial</i>]
     end
 
     APP -->|Default| TPL_P

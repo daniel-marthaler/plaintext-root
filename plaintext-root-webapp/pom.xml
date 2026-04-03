@@ -16,10 +16,10 @@
 
     <dependencies>
 
-        <!-- === Template (swap plaintext-root-template-freya for commercial) === -->
+        <!-- === Template === -->
         <dependency>
             <groupId>ch.plaintext</groupId>
-            <artifactId>plaintext-root-template-plaintext</artifactId>
+            <artifactId>plaintext-root-template</artifactId>
         </dependency>
 
         <!-- === Plaintext Framework Modules === -->
@@ -263,8 +263,8 @@
                         </goals>
                         <configuration>
                             <includeGroupIds>ch.plaintext</includeGroupIds>
-                            <includeArtifactIds>plaintext-root-template-plaintext,plaintext-root-template-freya</includeArtifactIds>
-                            <includes>META-INF/resources/**,META-INF/faces-config.xml,META-INF/primefaces-freya.taglib.xml</includes>
+                            <includeArtifactIds>plaintext-root-template</includeArtifactIds>
+                            <includes>META-INF/resources/**</includes>
                             <outputDirectory>${project.build.outputDirectory}</outputDirectory>
                         </configuration>
                     </execution>
