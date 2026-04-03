@@ -9,32 +9,29 @@ import ch.plaintext.oidc.service.OidcConfigService;
 import jakarta.annotation.PostConstruct;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
-import jakarta.enterprise.context.SessionScoped;
-import jakarta.inject.Named;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-@Named
-@SessionScoped
-@Getter
-@Setter
 @Slf4j
+@Component("oidcConfigBackingBean")
+@Scope("session")
+@Data
 public class OidcConfigBackingBean implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    private final OidcConfigService oidcConfigService;
-    private final PlaintextSecurity plaintextSecurity;
+    @Autowired
+    private transient OidcConfigService oidcConfigService;
 
-    public OidcConfigBackingBean(OidcConfigService oidcConfigService, PlaintextSecurity plaintextSecurity) {
-        this.oidcConfigService = oidcConfigService;
-        this.plaintextSecurity = plaintextSecurity;
-    }
+    @Autowired
+    private transient PlaintextSecurity plaintextSecurity;
 
     private List<OidcConfig> configs = new ArrayList<>();
     private OidcConfig selected;
