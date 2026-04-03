@@ -37,7 +37,8 @@ public class PlaintextSecurityConfig {
     // Framework-Defaults: CSRF ignorieren
     private static final List<String> DEFAULT_CSRF_IGNORE = List.of(
             "/autologin", "/discovery/login", "/nosec/**",
-            "/api/preferences/**"
+            "/api/preferences/**",
+            "/**/*.xhtml"  // JSF uses ViewState for CSRF protection
     );
 
     // Framework-Defaults: Ohne Authentication erreichbar
