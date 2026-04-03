@@ -74,4 +74,9 @@ public class OidcConfig {
     @LastModifiedDate
     @Column(name = "LAST_MODIFIED_DATE")
     private LocalDateTime lastModifiedDate;
+
+    @Transient
+    public String getRegistrationId() {
+        return name != null ? name.toLowerCase().replaceAll("[^a-z0-9]", "-") : "oidc";
+    }
 }
