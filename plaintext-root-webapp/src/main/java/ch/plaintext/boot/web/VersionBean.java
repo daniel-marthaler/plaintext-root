@@ -43,6 +43,10 @@ public class VersionBean {
         return buildTimestamp;
     }
 
+    public String getRootVersion() {
+        return version;
+    }
+
     public String getFullVersion() {
         if (buildTimestamp != null && !buildTimestamp.isEmpty()) {
             return version + " (Build: " + buildTimestamp + ")";
