@@ -3,5 +3,7 @@ target/
 .idea/
 .DS_Store
 buildTimestamp.txt
+version.txt
+versionRelease.txt
+build-conf.txt
 plaintext-scripts/
-plaintext-root-template-freya/
