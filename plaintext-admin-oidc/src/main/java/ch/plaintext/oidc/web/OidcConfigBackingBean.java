@@ -68,7 +68,9 @@ public class OidcConfigBackingBean implements Serializable {
     }
 
     public void newConfig() {
+        log.info("OIDC: newConfig() called, creating new OidcConfig");
         selected = new OidcConfig();
+        log.info("OIDC: selected is now: {}", selected);
     }
 
     public void select(OidcConfig config) {
@@ -77,6 +79,7 @@ public class OidcConfigBackingBean implements Serializable {
     }
 
     public void save() {
+        log.info("OIDC: save() called, selected={}", selected);
         FacesContext context = FacesContext.getCurrentInstance();
 
         if (selected.getIssuerUrl() == null || selected.getIssuerUrl().isBlank()) {
