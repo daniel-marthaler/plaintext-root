@@ -59,18 +59,8 @@ execute_command() {
 COMMAND=$1
 
 if [ -n "$COMMAND" ]; then
-    # Stop Twingate at the start if it would interfere with NAS operations
-    # (commands that deploy: 1, 5, 6, 7, build, release, deploy-*)
-    case "$COMMAND" in
-        0|run|help|-h|--help) ;; # no NAS access needed
-        *)
-            if is_twingate_running; then
-                stop_twingate
-            fi
-            ;;
-    esac
-
-    # Ensure Twingate is restarted on exit (if we stopped it)
+    # Twingate handling: only stop as last resort in ensure_nas_reachable()
+    # Restart on exit if it was stopped during NAS connectivity check
     trap 'restart_twingate_if_needed' EXIT
 
     # Check if command is a sequence of digits (multi-command execution)
