@@ -9,10 +9,10 @@ import ch.plaintext.oidc.service.OidcConfigService;
 import jakarta.annotation.PostConstruct;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
+import jakarta.faces.view.ViewScoped;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
@@ -21,7 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Slf4j
-@Scope("view")
+@ViewScoped
 @Component
 @Data
 public class OidcConfigBackingBean implements Serializable {
