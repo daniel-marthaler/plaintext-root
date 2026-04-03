@@ -39,7 +39,7 @@ if [[ -n "$1" ]]; then
         kill|k)         do_kill; exit 0 ;;
         install|i)      do_clean_install; exit $? ;;
         logs|l)         do_logs; exit 0 ;;
-        modules|m)      exec "$SCRIPT_DIR/modules" ;;
+        modules|m)      PROJECT_DIR="$SCRIPT_DIR" exec "$HOME/codeplain/plaintext-scripts/modules" ;;
         build|b)        exec "$SCRIPT_DIR/build.sh" ;;
         start-pg|pg)    exec "$HOME/codeplain/plaintext-scripts/start-postgres.sh" ;;
         stop-pg)        exec "$HOME/codeplain/plaintext-scripts/stop-postgres.sh" ;;
@@ -239,7 +239,7 @@ EOF
         4) # Modules - open in new terminal
             osascript << EOF 2>/dev/null &
 tell application "Terminal"
-    set newTab to do script "cd \"${SCRIPT_DIR}\" && ./modules; exit"
+    set newTab to do script "cd \"${SCRIPT_DIR}\" && PROJECT_DIR='${SCRIPT_DIR}' ~/codeplain/plaintext-scripts/modules; exit"
     set targetWindow to window 1
     repeat
         delay 2
