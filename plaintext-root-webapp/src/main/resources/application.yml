@@ -46,6 +46,8 @@ joinfaces:
       - "*.xhtml"
       - "*.html"
       - "/faces/*"
+  faces:
+    state-saving-method: client
   primefaces:
     theme: none
 
