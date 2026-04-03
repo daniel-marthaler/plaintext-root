@@ -5,9 +5,6 @@
                 template="/includes/template.xhtml">
 
     <ui:define name="content">
-        <f:metadata>
-            <f:event type="preRenderView" listener="#{oidcConfigBackingBean.checkAccess()}"/>
-        </f:metadata>
         <h:form id="fm">
             <input type="hidden" name="_csrf" value="#{_csrf.token}"/>
 
