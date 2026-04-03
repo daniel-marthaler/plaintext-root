@@ -70,8 +70,7 @@ public class UserPreferencesRestController {
                 return ResponseEntity.status(401).body("NOT_AUTHENTICATED");
             }
 
-            User user = (User) auth.getPrincipal();
-            String username = user.getUsername();
+            String username = auth.getName();
 
             // Validate input parameters
             validateParam("darkMode", darkMode, VALID_DARK_MODES);
@@ -181,8 +180,7 @@ public class UserPreferencesRestController {
                 return ResponseEntity.status(401).body("NOT_AUTHENTICATED");
             }
 
-            User user = (User) auth.getPrincipal();
-            String username = user.getUsername();
+            String username = auth.getName();
 
             // Validate inputs
             if (name == null || name.trim().isEmpty()) {
@@ -238,8 +236,7 @@ public class UserPreferencesRestController {
                 return ResponseEntity.status(401).body("NOT_AUTHENTICATED");
             }
 
-            User user = (User) auth.getPrincipal();
-            String username = user.getUsername();
+            String username = auth.getName();
 
             if (colorKey == null || colorKey.trim().isEmpty()) {
                 return ResponseEntity.badRequest().body("colorKey is required");
@@ -291,8 +288,7 @@ public class UserPreferencesRestController {
                 return ResponseEntity.status(401).body("NOT_AUTHENTICATED");
             }
 
-            User user = (User) auth.getPrincipal();
-            String username = user.getUsername();
+            String username = auth.getName();
 
             UserPreference prefs = storage.findByUniqueId(username);
             if (prefs == null) {

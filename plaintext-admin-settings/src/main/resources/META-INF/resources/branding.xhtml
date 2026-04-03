@@ -137,6 +137,46 @@
                 </div>
             </p:fieldset>
 
+            <!-- Language Switcher Settings -->
+            <p:fieldset legend="#{i18n.t('Sprachwechsel (Topbar)')}" toggleable="true" style="margin-bottom: 1rem;">
+                <div class="grid">
+                    <div class="col-12 md:col-8">
+                        <h:panelGrid columns="2" cellpadding="5" style="width:100%;">
+                            <h:outputText value="#{i18n.t('Sprachwechsel anzeigen')}:" style="font-weight:bold;"/>
+                            <p:toggleSwitch id="i18nEnabled" value="#{brandingBackingBean.i18nEnabled}"/>
+
+                            <h:outputText value="#{i18n.t('Icon')}:" style="font-weight:bold;"/>
+                            <h:panelGroup>
+                                <p:selectOneMenu id="i18nIcon" value="#{brandingBackingBean.i18nIcon}" style="width:280px;">
+                                    <f:selectItem itemLabel="Globe (pi-globe)" itemValue="pi pi-globe"/>
+                                    <f:selectItem itemLabel="Language (pi-language)" itemValue="pi pi-language"/>
+                                    <f:selectItem itemLabel="Flag (pi-flag)" itemValue="pi pi-flag"/>
+                                    <f:selectItem itemLabel="Comments (pi-comments)" itemValue="pi pi-comments"/>
+                                    <f:selectItem itemLabel="Bookmark (pi-bookmark)" itemValue="pi pi-bookmark"/>
+                                    <p:ajax update="i18nIconPreview"/>
+                                </p:selectOneMenu>
+                            </h:panelGroup>
+                        </h:panelGrid>
+
+                        <p:commandButton value="#{i18n.t('Speichern')}" icon="pi pi-save"
+                                         actionListener="#{brandingBackingBean.saveI18nSettings()}"
+                                         update="messages"
+                                         process="i18nEnabled i18nIcon @this"
+                                         style="margin-top:10px;"/>
+                    </div>
+
+                    <div class="col-12 md:col-4">
+                        <p style="font-weight:bold; margin-bottom:5px;">#{i18n.t('Vorschau')}:</p>
+                        <h:panelGroup id="i18nIconPreview">
+                            <div style="background:var(--surface-50); padding:15px; border-radius:8px; display:inline-flex; align-items:center; gap:10px;">
+                                <i class="#{brandingBackingBean.i18nIcon}" style="font-size:1.5rem; color:var(--primary-color);"/>
+                                <span style="color:var(--text-color-secondary);">#{i18n.t('Sprache wechseln')}</span>
+                            </div>
+                        </h:panelGroup>
+                    </div>
+                </div>
+            </p:fieldset>
+
             <!-- Footer Settings -->
             <p:fieldset legend="#{i18n.t('Footer')}" toggleable="true" style="margin-bottom: 1rem;">
                 <div class="grid">

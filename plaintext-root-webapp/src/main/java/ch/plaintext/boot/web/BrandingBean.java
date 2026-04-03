@@ -32,6 +32,7 @@ public class BrandingBean {
     private int lightLogoHeight = 40;
     private int darkLogoWidth = 180;
     private int darkLogoHeight = 40;
+    private String i18nIcon = "pi pi-globe";
 
     public BrandingBean(BrandingService brandingService, PlaintextSecurity security) {
         this.brandingService = brandingService;
@@ -62,6 +63,7 @@ public class BrandingBean {
             lightLogoHeight = brandingService.getLogoHeight(mandat, "light");
             darkLogoWidth = brandingService.getLogoWidth(mandat, "dark");
             darkLogoHeight = brandingService.getLogoHeight(mandat, "dark");
+            i18nIcon = brandingService.getI18nIcon(mandat);
 
             log.debug("Branding refreshed for mandat={}: hasLightLogo={}, hasDarkLogo={}", mandat, hasLightLogo, hasDarkLogo);
         } catch (Exception e) {

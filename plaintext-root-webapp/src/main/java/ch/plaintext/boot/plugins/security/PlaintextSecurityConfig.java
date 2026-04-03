@@ -3,6 +3,8 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 package ch.plaintext.boot.plugins.security;
 
+import ch.plaintext.boot.plugins.security.oidc.JdbcClientRegistrationRepository;
+import ch.plaintext.boot.plugins.security.oidc.PlaintextOidcUserService;
 import ch.plaintext.boot.plugins.security.service.MyRememberMeRepositoryRepository;
 import ch.plaintext.boot.plugins.security.service.MyUserDetailsService;
 import org.springframework.context.annotation.Bean;
@@ -29,6 +31,8 @@ public class PlaintextSecurityConfig {
     private final MyUserDetailsService userDetail;
     private final PlaintextAuthenticationSuccessHandler authenticationSuccessHandler;
     private final PlaintextSecurityProperties securityProperties;
+    private final JdbcClientRegistrationRepository clientRegistrationRepository;
+    private final PlaintextOidcUserService oidcUserService;
 
     // Framework-Defaults: CSRF ignorieren
     private static final List<String> DEFAULT_CSRF_IGNORE = List.of(
@@ -43,17 +47,22 @@ public class PlaintextSecurityConfig {
             "/login.xhtml", "/login.html", "/jakarta.faces.resource/**",
             "/actuator/health",
             "/h2-console/**",
-            "/nosec/**"
+            "/nosec/**",
+            "/oauth2/**", "/login/oauth2/**"
     );
 
     public PlaintextSecurityConfig(MyRememberMeRepositoryRepository tokenRepository,
                                    MyUserDetailsService detail,
                                    PlaintextAuthenticationSuccessHandler authenticationSuccessHandler,
-                                   PlaintextSecurityProperties securityProperties) {
+                                   PlaintextSecurityProperties securityProperties,
+                                   JdbcClientRegistrationRepository clientRegistrationRepository,
+                                   PlaintextOidcUserService oidcUserService) {
         this.tokenRepository = tokenRepository;
         this.userDetail = detail;
         this.authenticationSuccessHandler = authenticationSuccessHandler;
         this.securityProperties = securityProperties;
+        this.clientRegistrationRepository = clientRegistrationRepository;
+        this.oidcUserService = oidcUserService;
     }
 
     @Bean
@@ -87,7 +96,7 @@ public class PlaintextSecurityConfig {
                                         "connect-src 'self'; " +
                                         "frame-ancestors 'self'; " +
                                         "base-uri 'self'; " +
-                                        "form-action 'self'")
+                                        "form-action 'self' https://*.plaintext.ch")
                         )
                 )
                 .authorizeHttpRequests(authorize -> {
@@ -105,6 +114,15 @@ public class PlaintextSecurityConfig {
                         .failureUrl("/login.html?error=true")
                         .successHandler(authenticationSuccessHandler)
                         .permitAll()
+                )
+                .oauth2Login(oauth2 -> oauth2
+                        .loginPage("/login.html")
+                        .clientRegistrationRepository(clientRegistrationRepository)
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .oidcUserService(oidcUserService)
+                        )
+                        .successHandler(authenticationSuccessHandler)
+                        .failureUrl("/login.html?error=oidc")
                 )
                 .logout(logout -> logout
                         .logoutRequestMatcher(PathPatternRequestMatcher.pathPattern(org.springframework.http.HttpMethod.POST, "/logout"))

@@ -57,8 +57,8 @@ public class UserPreferencesBackingBean implements Serializable {
     @PostConstruct
     public void init() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        User user = (User) auth.getPrincipal();
-        prefs = storage.findByUniqueId(user.getUsername());
+        String username = auth.getName();
+        prefs = storage.findByUniqueId(username);
 
         // Load theme from cookie if available (for seamless login experience)
         String cookieTheme = loadThemeFromCookie();
@@ -71,7 +71,7 @@ public class UserPreferencesBackingBean implements Serializable {
 
         if (prefs != null) {
             log.info("PREFS-INIT user={} componentTheme={} darkMode={} customColor={} cookieColor={} cookieCustomColor={}",
-                    user.getUsername(), prefs.getComponentTheme(), prefs.getDarkMode(), prefs.getCustomColor(), cookieColor, cookieCustomColor);
+                    username, prefs.getComponentTheme(), prefs.getDarkMode(), prefs.getCustomColor(), cookieColor, cookieCustomColor);
 
             // If cookie theme differs from DB, update DB to match cookie
             if (cookieTheme != null && !cookieTheme.equals(prefs.getDarkMode())) {
@@ -121,7 +121,7 @@ public class UserPreferencesBackingBean implements Serializable {
             }
         } else {
             prefs = new UserPreference();
-            prefs.setUniqueId(user.getUsername());
+            prefs.setUniqueId(username);
             save();
         }
 

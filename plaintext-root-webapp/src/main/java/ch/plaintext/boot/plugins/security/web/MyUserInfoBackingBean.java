@@ -53,8 +53,11 @@ public class MyUserInfoBackingBean implements Serializable {
     public String getUsername() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && auth.getPrincipal() != null) {
-            if (auth.getPrincipal() instanceof org.springframework.security.core.userdetails.User) {
-                return ((org.springframework.security.core.userdetails.User) auth.getPrincipal()).getUsername();
+            if (auth.getPrincipal() instanceof org.springframework.security.core.userdetails.User user) {
+                return user.getUsername();
+            }
+            if (auth.getPrincipal() instanceof org.springframework.security.oauth2.core.oidc.user.OidcUser oidcUser) {
+                return oidcUser.getEmail() != null ? oidcUser.getEmail() : auth.getName();
             }
             return auth.getName();
         }

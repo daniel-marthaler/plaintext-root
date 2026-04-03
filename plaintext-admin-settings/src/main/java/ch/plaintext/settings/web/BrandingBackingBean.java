@@ -48,6 +48,9 @@ public class BrandingBackingBean implements Serializable {
     private String lightLogoPreview;
     private String darkLogoPreview;
 
+    private boolean i18nEnabled;
+    private String i18nIcon;
+
     private boolean root;
 
     public BrandingBackingBean(BrandingService brandingService, PlaintextSecurity security,
@@ -82,7 +85,9 @@ public class BrandingBackingBean implements Serializable {
         showVersion = brandingService.isShowVersion(mandat);
         showRootVersion = brandingService.isShowRootVersion(mandat);
         showBuildTimestamp = brandingService.isShowBuildTimestamp(mandat);
-        showBuildTimestamp = brandingService.isShowBuildTimestamp(mandat);
+
+        i18nEnabled = brandingService.isI18nEnabled(mandat);
+        i18nIcon = brandingService.getI18nIcon(mandat);
 
         brandingService.getLogo(mandat, "light").ifPresent(logo -> {
             hasLightLogo = true;
@@ -173,6 +178,17 @@ public class BrandingBackingBean implements Serializable {
         } catch (Exception e) {
             log.error("Error deleting dark logo", e);
             addMessage(FacesMessage.SEVERITY_ERROR, "Fehler", "Löschen fehlgeschlagen");
+        }
+    }
+
+    public void saveI18nSettings() {
+        try {
+            brandingService.saveI18nSettings(security.getMandat(), i18nEnabled, i18nIcon);
+            refreshBrandingBean();
+            addMessage(FacesMessage.SEVERITY_INFO, "Erfolg", "Spracheinstellungen gespeichert");
+        } catch (Exception e) {
+            log.error("Error saving i18n settings", e);
+            addMessage(FacesMessage.SEVERITY_ERROR, "Fehler", "Speichern fehlgeschlagen");
         }
     }
 

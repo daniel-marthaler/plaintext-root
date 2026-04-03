@@ -13,7 +13,7 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-source "$HOME/.plaintext-scripts/tui-common.sh"
+source "$HOME/code/plaintext-scripts/tui-common.sh"
 
 # ── Load build-conf.txt ──────────────────────────────────────
 if [[ -f "$SCRIPT_DIR/build-conf.txt" ]]; then
@@ -29,7 +29,7 @@ fi
 : "${WEBAPP_MODULE:?WEBAPP_MODULE must be set in build-conf.txt}"
 : "${TUI_TITLE:=DEV RUNNER}"
 
-source "$HOME/.plaintext-scripts/tui-start-logic.sh"
+source "$HOME/code/plaintext-scripts/tui-start-logic.sh"
 
 # ── Non-interactive mode (CLI args) ─────────────────────────
 
@@ -41,8 +41,8 @@ if [[ -n "$1" ]]; then
         logs|l)         do_logs; exit 0 ;;
         modules|m)      exec "$SCRIPT_DIR/modules" ;;
         build|b)        exec "$SCRIPT_DIR/build.sh" ;;
-        start-pg|pg)    exec "$HOME/.plaintext-scripts/start-postgres.sh" ;;
-        stop-pg)        exec "$HOME/.plaintext-scripts/stop-postgres.sh" ;;
+        start-pg|pg)    exec "$HOME/code/plaintext-scripts/start-postgres.sh" ;;
+        stop-pg)        exec "$HOME/code/plaintext-scripts/stop-postgres.sh" ;;
         help|-h|--help)
             echo -e "${FG_BLUE}${BOLD}${TUI_TITLE}${RESET}"
             echo ""
@@ -258,7 +258,7 @@ EOF
         6) # Start Postgres
             osascript << EOF 2>/dev/null &
 tell application "Terminal"
-    set newTab to do script "cd \"${SCRIPT_DIR}\" && ~/.plaintext-scripts/start-postgres.sh; exit"
+    set newTab to do script "cd \"${SCRIPT_DIR}\" && ~/code/plaintext-scripts/start-postgres.sh; exit"
     set targetWindow to window 1
     repeat
         delay 2
@@ -277,7 +277,7 @@ EOF
         7) # Stop Postgres
             osascript << EOF 2>/dev/null &
 tell application "Terminal"
-    set newTab to do script "cd \"${SCRIPT_DIR}\" && ~/.plaintext-scripts/stop-postgres.sh; exit"
+    set newTab to do script "cd \"${SCRIPT_DIR}\" && ~/code/plaintext-scripts/stop-postgres.sh; exit"
     set targetWindow to window 1
     repeat
         delay 2

@@ -3,6 +3,8 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 package ch.plaintext.boot.plugins.security;
 
+import ch.plaintext.boot.plugins.security.oidc.JdbcClientRegistrationRepository;
+import ch.plaintext.boot.plugins.security.oidc.PlaintextOidcUserService;
 import ch.plaintext.boot.plugins.security.service.MyRememberMeRepositoryRepository;
 import ch.plaintext.boot.plugins.security.service.MyUserDetailsService;
 import org.junit.jupiter.api.Test;
@@ -38,13 +40,21 @@ class PlaintextSecurityConfigTest2 {
     @Mock
     private PlaintextSecurityProperties securityProperties;
 
+    @Mock
+    private JdbcClientRegistrationRepository clientRegistrationRepository;
+
+    @Mock
+    private PlaintextOidcUserService oidcUserService;
+
+    private PlaintextSecurityConfig createConfig() {
+        return new PlaintextSecurityConfig(
+                tokenRepository, userDetail, authenticationSuccessHandler,
+                securityProperties, clientRegistrationRepository, oidcUserService);
+    }
+
     @Test
     void passwordEncoder_shouldReturnBCryptEncoder() {
-        when(securityProperties.getCsrfIgnorePatterns()).thenReturn(new ArrayList<>());
-        when(securityProperties.getPermitAllPatterns()).thenReturn(new ArrayList<>());
-
-        PlaintextSecurityConfig config = new PlaintextSecurityConfig(
-                tokenRepository, userDetail, authenticationSuccessHandler, securityProperties);
+        PlaintextSecurityConfig config = createConfig();
 
         PasswordEncoder encoder = config.passwordEncoder();
 
@@ -55,11 +65,7 @@ class PlaintextSecurityConfigTest2 {
 
     @Test
     void authenticationManager_shouldNotThrow() throws Exception {
-        when(securityProperties.getCsrfIgnorePatterns()).thenReturn(new ArrayList<>());
-        when(securityProperties.getPermitAllPatterns()).thenReturn(new ArrayList<>());
-
-        PlaintextSecurityConfig config = new PlaintextSecurityConfig(
-                tokenRepository, userDetail, authenticationSuccessHandler, securityProperties);
+        PlaintextSecurityConfig config = createConfig();
 
         AuthenticationConfiguration authConfig = mock(AuthenticationConfiguration.class);
         AuthenticationManager mockManager = mock(AuthenticationManager.class);
@@ -73,11 +79,7 @@ class PlaintextSecurityConfigTest2 {
 
     @Test
     void securityContextRepository_shouldReturnInstance() {
-        when(securityProperties.getCsrfIgnorePatterns()).thenReturn(new ArrayList<>());
-        when(securityProperties.getPermitAllPatterns()).thenReturn(new ArrayList<>());
-
-        PlaintextSecurityConfig config = new PlaintextSecurityConfig(
-                tokenRepository, userDetail, authenticationSuccessHandler, securityProperties);
+        PlaintextSecurityConfig config = createConfig();
 
         SecurityContextRepository repo = config.securityContextRepository();
 
@@ -86,11 +88,7 @@ class PlaintextSecurityConfigTest2 {
 
     @Test
     void rememberMeServices_shouldReturnInstance() {
-        when(securityProperties.getCsrfIgnorePatterns()).thenReturn(new ArrayList<>());
-        when(securityProperties.getPermitAllPatterns()).thenReturn(new ArrayList<>());
-
-        PlaintextSecurityConfig config = new PlaintextSecurityConfig(
-                tokenRepository, userDetail, authenticationSuccessHandler, securityProperties);
+        PlaintextSecurityConfig config = createConfig();
 
         PersistentTokenBasedRememberMeServices services = config.rememberMeServices();
 
@@ -99,11 +97,7 @@ class PlaintextSecurityConfigTest2 {
 
     @Test
     void rememberMeFilter_shouldReturnInstance() {
-        when(securityProperties.getCsrfIgnorePatterns()).thenReturn(new ArrayList<>());
-        when(securityProperties.getPermitAllPatterns()).thenReturn(new ArrayList<>());
-
-        PlaintextSecurityConfig config = new PlaintextSecurityConfig(
-                tokenRepository, userDetail, authenticationSuccessHandler, securityProperties);
+        PlaintextSecurityConfig config = createConfig();
 
         PersistentTokenBasedRememberMeServices services = config.rememberMeServices();
         AuthenticationManager authManager = mock(AuthenticationManager.class);

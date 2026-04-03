@@ -23,6 +23,7 @@ public class BrandingService {
     private static final String KEY_SHOW_VERSION = "branding.footer.showVersion";
     private static final String KEY_SHOW_ROOT_VERSION = "branding.footer.showRootVersion";
     private static final String KEY_SHOW_BUILD_TIMESTAMP = "branding.footer.showBuildTimestamp";
+    private static final String KEY_I18N_ICON = "branding.i18n.icon";
 
     private static final Set<String> ALLOWED_CONTENT_TYPES = Set.of(
             "image/png", "image/svg+xml", "image/webp", "image/jpeg"
@@ -114,6 +115,23 @@ public class BrandingService {
         settingsService.setSetting(KEY_SHOW_ROOT_VERSION, mandat, String.valueOf(showRootVersion), "BOOLEAN", "Show root version in footer");
         settingsService.setSetting(KEY_SHOW_BUILD_TIMESTAMP, mandat, String.valueOf(showBuildTimestamp), "BOOLEAN", "Show build timestamp in footer");
         log.info("Saved branding footer settings: mandat={}", mandat);
+    }
+
+    public boolean isI18nEnabled(String mandat) {
+        Boolean val = settingsService.getBoolean("i18n.enabled", mandat);
+        return val == null || val;
+    }
+
+    public String getI18nIcon(String mandat) {
+        String val = settingsService.getString(KEY_I18N_ICON, mandat);
+        return val != null && !val.isBlank() ? val : "pi pi-globe";
+    }
+
+    @Transactional
+    public void saveI18nSettings(String mandat, boolean enabled, String icon) {
+        settingsService.setSetting("i18n.enabled", mandat, String.valueOf(enabled), "BOOLEAN", "Enable language switcher in topbar");
+        settingsService.setSetting(KEY_I18N_ICON, mandat, icon, "STRING", "Icon class for language switcher");
+        log.info("Saved i18n settings: mandat={}, enabled={}, icon={}", mandat, enabled, icon);
     }
 
     public Integer getLogoWidth(String mandat, String theme) {

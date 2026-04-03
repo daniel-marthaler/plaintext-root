@@ -365,6 +365,7 @@
                 : param.error == 'unknown_source_app' ? i18n.t('Discovery Auto-Login fehlgeschlagen (unbekannte Quell-App)')
                 : param.error == 'user_not_found' ? i18n.t('Discovery Auto-Login fehlgeschlagen (Benutzer nicht gefunden)')
                 : param.error == 'discovery_login_failed' ? i18n.t('Discovery Auto-Login fehlgeschlagen')
+                : param.error == 'oidc' ? i18n.t('OIDC-Anmeldung fehlgeschlagen')
                 : i18n.t('Ungültiger Benutzername oder Passwort')}</span>
         </div>
 
@@ -417,6 +418,22 @@
                 <i class="pi pi-sign-in"></i> #{i18n.t('Anmelden')}
             </button>
         </form>
+
+        <!-- OIDC Login Button -->
+        <h:panelGroup rendered="#{oidcConfigService.oidcEnabled}">
+            <div style="margin-top: 1.5rem; text-align: center;">
+                <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+                    <hr style="flex: 1; border: none; border-top: 1px solid var(--border-color);"/>
+                    <span style="padding: 0 1rem; color: var(--text-secondary); font-size: 0.9rem;">#{i18n.t('oder')}</span>
+                    <hr style="flex: 1; border: none; border-top: 1px solid var(--border-color);"/>
+                </div>
+                <a href="#{request.contextPath}/oauth2/authorization/keycloak"
+                   style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; width: 100%; padding: 0.75rem 1rem; font-size: 1rem; font-weight: 500; border-radius: 6px; cursor: pointer; background-color: var(--primary-color); color: white; border: none; text-decoration: none;">
+                    <i class="#{oidcConfigService.activeButtonIcon}"></i>
+                    #{oidcConfigService.activeButtonLabel}
+                </a>
+            </div>
+        </h:panelGroup>
     </div>
 
 </h:body>

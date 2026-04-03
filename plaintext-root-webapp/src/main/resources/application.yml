@@ -37,6 +37,7 @@ logging:
   level:
     root: WARN
     ch.plaintext: DEBUG
+    org.springframework.security: DEBUG
 
 joinfaces:
   faces-servlet:

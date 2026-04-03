@@ -161,7 +161,15 @@
                     </p:inputText>
 
                     <h:outputText value="#{i18n.t('Passwort')}:" escape="false"/>
-                    <p:password size="45" value="#{myUserBackingBean.selected.password}" required="#{myUserBackingBean.myUserPw == null or myUserBackingBean.myUserPw == ''}" requiredMessage="#{i18n.t('Passwort ist bei einem neuen Benutzer erforderlich')}"/>
+                    <h:panelGroup>
+                        <p:password size="45" value="#{myUserBackingBean.selected.password}" required="#{myUserBackingBean.myUserPw == null or myUserBackingBean.myUserPw == ''}" requiredMessage="#{i18n.t('Passwort ist bei einem neuen Benutzer erforderlich')}"/>
+                        <h:outputText value="&#x2705; #{i18n.t('Passwort gesetzt')}"
+                                      rendered="#{not empty myUserBackingBean.myUserPw and myUserBackingBean.myUserPw.startsWith('$2a$')}"
+                                      style="display: block; margin-top: 4px; font-size: 0.85rem; color: var(--green-500);"/>
+                        <h:outputText value="&#x1F513; #{i18n.t('Kein Passwort (OIDC-User)')}"
+                                      rendered="#{empty myUserBackingBean.myUserPw or not myUserBackingBean.myUserPw.startsWith('$2a$')}"
+                                      style="display: block; margin-top: 4px; font-size: 0.85rem; color: var(--orange-500);"/>
+                    </h:panelGroup>
 
                     <h:outputText value="#{i18n.t('Ausgewählte Rollen')}:" escape="false"/>
                     <h:panelGroup>
@@ -223,6 +231,16 @@
                                          update="autologinKeyInput"
                                          process="@this"
                                          style="margin-left: 5px;"/>
+                    </h:panelGroup>
+
+                    <h:outputText value="OIDC:" escape="false"/>
+                    <h:panelGroup>
+                        <h:outputText value="&#x1F517; #{i18n.t('Verknüpft mit')} #{myUserBackingBean.selected.oidcSubject}"
+                                      rendered="#{not empty myUserBackingBean.selected.oidcSubject}"
+                                      style="font-size: 0.85rem; color: var(--green-500);"/>
+                        <h:outputText value="#{i18n.t('Nicht verknüpft')}"
+                                      rendered="#{empty myUserBackingBean.selected.oidcSubject}"
+                                      style="font-size: 0.85rem; color: var(--text-color-secondary);"/>
                     </h:panelGroup>
 
                     <br/>

@@ -3,11 +3,12 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 package ch.plaintext.boot.plugins.security;
 
+import ch.plaintext.boot.plugins.security.oidc.JdbcClientRegistrationRepository;
+import ch.plaintext.boot.plugins.security.oidc.PlaintextOidcUserService;
 import ch.plaintext.boot.plugins.security.service.MyRememberMeRepositoryRepository;
 import ch.plaintext.boot.plugins.security.service.MyUserDetailsService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -34,10 +35,21 @@ class PlaintextSecurityConfigTest {
     @Mock
     private PlaintextSecurityProperties securityProperties;
 
+    @Mock
+    private JdbcClientRegistrationRepository clientRegistrationRepository;
+
+    @Mock
+    private PlaintextOidcUserService oidcUserService;
+
+    private PlaintextSecurityConfig createConfig() {
+        return new PlaintextSecurityConfig(
+                tokenRepository, userDetailsService, successHandler,
+                securityProperties, clientRegistrationRepository, oidcUserService);
+    }
+
     @Test
     void passwordEncoder_shouldReturnBCryptEncoder() {
-        PlaintextSecurityConfig config = new PlaintextSecurityConfig(
-                tokenRepository, userDetailsService, successHandler, securityProperties);
+        PlaintextSecurityConfig config = createConfig();
 
         PasswordEncoder encoder = config.passwordEncoder();
 
@@ -47,8 +59,7 @@ class PlaintextSecurityConfigTest {
 
     @Test
     void passwordEncoder_shouldEncodeAndMatchPassword() {
-        PlaintextSecurityConfig config = new PlaintextSecurityConfig(
-                tokenRepository, userDetailsService, successHandler, securityProperties);
+        PlaintextSecurityConfig config = createConfig();
 
         PasswordEncoder encoder = config.passwordEncoder();
         String raw = "testPassword123";
@@ -60,8 +71,7 @@ class PlaintextSecurityConfigTest {
 
     @Test
     void securityContextRepository_shouldReturnHttpSessionRepository() {
-        PlaintextSecurityConfig config = new PlaintextSecurityConfig(
-                tokenRepository, userDetailsService, successHandler, securityProperties);
+        PlaintextSecurityConfig config = createConfig();
 
         SecurityContextRepository repo = config.securityContextRepository();
 
@@ -70,8 +80,7 @@ class PlaintextSecurityConfigTest {
 
     @Test
     void rememberMeServices_shouldReturnService() {
-        PlaintextSecurityConfig config = new PlaintextSecurityConfig(
-                tokenRepository, userDetailsService, successHandler, securityProperties);
+        PlaintextSecurityConfig config = createConfig();
 
         assertNotNull(config.rememberMeServices());
     }

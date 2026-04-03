@@ -23,6 +23,9 @@ public class MyUserEntity {
     private String startpage = "";
     private String autologinKey = "";
 
+    @Column(name = "OIDC_SUBJECT")
+    private String oidcSubject;
+
     @Convert(converter = MyUserSetConverter.class)
     private Set<String> roles = new HashSet<>();
 

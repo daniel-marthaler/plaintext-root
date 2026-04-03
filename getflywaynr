@@ -1,2 +1,2 @@
 #!/bin/bash
-exec "$HOME/.plaintext-scripts/getflywaynr"
+exec "$HOME/code/plaintext-scripts/getflywaynr"
