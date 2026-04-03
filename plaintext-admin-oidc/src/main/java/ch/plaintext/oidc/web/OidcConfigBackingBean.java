@@ -9,7 +9,7 @@ import ch.plaintext.oidc.service.OidcConfigService;
 import jakarta.annotation.PostConstruct;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
-import jakarta.faces.view.ViewScoped;
+import jakarta.enterprise.context.SessionScoped;
 import jakarta.inject.Named;
 import lombok.Getter;
 import lombok.Setter;
@@ -21,7 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Named
-@ViewScoped
+@SessionScoped
 @Getter
 @Setter
 @Slf4j
