@@ -82,10 +82,7 @@ public class PlaintextSecurityConfig {
                 .securityContext(ctx -> ctx
                         .securityContextRepository(securityContextRepository())
                 )
-                .csrf(csrf -> csrf
-                        .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
-                        .ignoringRequestMatchers(csrfIgnoreArray)
-                )
+                .csrf(csrf -> csrf.disable())
                 .headers(headers -> headers
                         .frameOptions(frame -> frame.sameOrigin())
                         .contentSecurityPolicy(csp -> csp
