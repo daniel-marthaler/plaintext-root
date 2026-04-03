@@ -47,7 +47,7 @@ joinfaces:
       - "*.html"
       - "/faces/*"
   faces:
-    state-saving-method: client
+    number-of-views-in-session: 100
   primefaces:
     theme: none
 
