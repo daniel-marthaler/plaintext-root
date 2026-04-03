@@ -14,6 +14,10 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
 import jakarta.annotation.PostConstruct;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -41,6 +45,8 @@ public class DiscoveryStatsBackingBean {
     private int totalSessions;
     private int totalActiveSessions;
     private int uniqueActiveUsers;
+    private String detailJson;
+    private String detailTitle;
 
     @PostConstruct
     public void init() {
@@ -117,6 +123,55 @@ public class DiscoveryStatsBackingBean {
         } else {
             long daysAgo = java.time.Duration.between(lastSeen, now).toDays();
             return daysAgo + " days ago";
+        }
+    }
+
+    public void showAppDetail(DiscoveryApp app) {
+        detailTitle = "App: " + app.getAppName();
+        detailJson = toJson(app);
+    }
+
+    public void showUserDetail(UserRow userRow) {
+        detailTitle = "User: " + userRow.getDisplayName();
+        detailJson = toJson(Map.of(
+            "email", userRow.getUserEmail(),
+            "userName", userRow.getUserName() != null ? userRow.getUserName() : "",
+            "active", userRow.isActive(),
+            "lastActivity", userRow.getLastActivity() != null ? userRow.getLastActivity().toString() : "",
+            "sessions", userRow.getSessions().stream().map(s -> Map.of(
+                "app", s.getApp().getAppName(),
+                "appUrl", s.getApp().getAppUrl(),
+                "environment", s.getApp().getEnvironment().name(),
+                "loggedInAt", s.getLoggedInAt() != null ? s.getLoggedInAt().toString() : "",
+                "lastActivity", s.getLastActivityAt() != null ? s.getLastActivityAt().toString() : "",
+                "sessionActive", Boolean.TRUE.equals(s.getSessionActive())
+            )).toList()
+        ));
+    }
+
+    public void showHealthDetail() {
+        detailTitle = "Health";
+        int activeApps = (int) allApps.stream().filter(a -> Boolean.TRUE.equals(a.getActive())).count();
+        detailJson = toJson(Map.of(
+            "status", "healthy",
+            "totalApps", totalApps,
+            "activeApps", activeApps,
+            "totalSessions", totalSessions,
+            "activeSessions", totalActiveSessions,
+            "uniqueActiveUsers", uniqueActiveUsers,
+            "timestamp", LocalDateTime.now().toString()
+        ));
+    }
+
+    private String toJson(Object obj) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.registerModule(new JavaTimeModule());
+            mapper.enable(SerializationFeature.INDENT_OUTPUT);
+            mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+            return mapper.writeValueAsString(obj);
+        } catch (Exception e) {
+            return "{ \"error\": \"" + e.getMessage() + "\" }";
         }
     }
 

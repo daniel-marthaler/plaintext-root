@@ -51,6 +51,12 @@
                                          action="#{discoveryStatsBackingBean.loadStatistics()}"
                                          update="fm"
                                          styleClass="ui-button-outlined"/>
+                        <br/><br/>
+                        <p:commandButton value="📋 Health JSON"
+                                         action="#{discoveryStatsBackingBean.showHealthDetail()}"
+                                         update="detailDialog"
+                                         oncomplete="PF('detailDlg').show()"
+                                         styleClass="ui-button-outlined ui-button-sm"/>
                     </div>
                 </div>
             </div>
@@ -100,6 +106,15 @@
                         <h:outputText value="#{app.version}" style="font-family: monospace;"/>
                     </p:column>
 
+                    <p:column headerText="" style="width: 60px;" priority="1">
+                        <p:commandButton icon="pi pi-code"
+                                         title="JSON"
+                                         action="#{discoveryStatsBackingBean.showAppDetail(app)}"
+                                         update="detailDialog"
+                                         oncomplete="PF('detailDlg').show()"
+                                         styleClass="ui-button-outlined ui-button-sm ui-button-rounded"/>
+                    </p:column>
+
                 </p:dataTable>
             </p:fieldset>
 
@@ -139,8 +154,30 @@
                         <h:outputText value="#{discoveryStatsBackingBean.formatLastSeen(userRow.lastActivity)}"/>
                     </p:column>
 
+                    <p:column headerText="" style="width: 60px;" priority="1">
+                        <p:commandButton icon="pi pi-code"
+                                         title="JSON"
+                                         action="#{discoveryStatsBackingBean.showUserDetail(userRow)}"
+                                         update="detailDialog"
+                                         oncomplete="PF('detailDlg').show()"
+                                         styleClass="ui-button-outlined ui-button-sm ui-button-rounded"/>
+                    </p:column>
+
                 </p:dataTable>
             </p:fieldset>
+
+            <!-- JSON Detail Dialog -->
+            <p:dialog id="detailDialog"
+                      header="#{discoveryStatsBackingBean.detailTitle}"
+                      widgetVar="detailDlg"
+                      modal="true"
+                      responsive="true"
+                      width="700"
+                      height="500"
+                      resizable="true"
+                      draggable="true">
+                <pre style="background: var(--surface-ground, #f5f5f5); padding: 16px; border-radius: 6px; overflow: auto; max-height: 400px; font-size: 13px; line-height: 1.5; font-family: 'JetBrains Mono', 'Fira Code', monospace; white-space: pre-wrap; word-break: break-word;"><h:outputText value="#{discoveryStatsBackingBean.detailJson}" escape="true"/></pre>
+            </p:dialog>
 
         </h:form>
     </ui:define>

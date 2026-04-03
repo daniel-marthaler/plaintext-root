@@ -142,7 +142,8 @@
                              selection="#{adminEntityBackingBean.selectedEntity}"
                              rowKey="#{adminEntityBackingBean.getEntityId(entity)}"
                              paginator="true"
-                             rows="20"
+                             rows="100"
+                             rowsPerPageTemplate="100,200,500,1000"
                              paginatorPosition="bottom"
                              emptyMessage="#{i18n.t('Keine Daten gefunden')}"
                              reflow="true">

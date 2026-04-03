@@ -9,7 +9,14 @@
         <h:form id="fm">
             <input type="hidden" name="_csrf" value="#{_csrf.token}"/>
 
-            <p:dataTable emptyMessage="-" var="row" value="#{flywayService.infoFromDatabase()}" rowIndexVar="ri">
+            <p:dataTable emptyMessage="-" var="row" value="#{flywayService.infoFromDatabase()}" rowIndexVar="ri"
+                         paginator="true"
+                         rows="100"
+                         rowsPerPageTemplate="100,200,500,1000"
+                         paginatorPosition="both"
+                         sortBy="#{row.getInstalledRank()}"
+                         sortOrder="descending"
+                         filterDelay="300">
 
                 <p:column headerText="Nr" style="width:4%">
                     <h:outputText value="#{ri+1}"/>
@@ -19,7 +26,7 @@
                     <h:outputText value="#{row.getSuccess()}"/>
                 </p:column>
 
-                <p:column headerText="Description" style="width:8%">
+                <p:column headerText="Description" style="width:8%" filterBy="#{row.getDescription()}" filterMatchMode="contains">
                     <h:outputText value="#{row.getDescription()}"/>
                 </p:column>
 
