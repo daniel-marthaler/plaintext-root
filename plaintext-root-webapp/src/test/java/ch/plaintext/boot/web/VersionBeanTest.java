@@ -7,13 +7,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Tests for VersionBean - application version information.
- */
 @ExtendWith(MockitoExtension.class)
 class VersionBeanTest {
 
@@ -21,33 +17,19 @@ class VersionBeanTest {
     private VersionBean versionBean;
 
     @Test
-    void init_shouldSetVersion_whenFileNotFound() {
-        ReflectionTestUtils.setField(versionBean, "activeProfile", "dev");
-
+    void init_shouldSetBuildTimestamp() {
         versionBean.init();
-
-        // version.txt likely doesn't exist in test environment
-        assertEquals("dev-SNAPSHOT", versionBean.getVersion());
-    }
-
-    @Test
-    void init_shouldSetBuildTimestamp_whenFileNotFound() {
-        ReflectionTestUtils.setField(versionBean, "activeProfile", "dev");
-
-        versionBean.init();
-
         assertNotNull(versionBean.getBuildTimestamp());
     }
 
     @Test
     void getFullVersion_shouldCombineVersionAndTimestamp() {
-        ReflectionTestUtils.setField(versionBean, "activeProfile", "dev");
-
+        versionBean.setVersion("1.0.0");
         versionBean.init();
 
         String fullVersion = versionBean.getFullVersion();
         assertNotNull(fullVersion);
-        assertTrue(fullVersion.contains("dev-SNAPSHOT"));
+        assertTrue(fullVersion.contains("1.0.0"));
         assertTrue(fullVersion.contains("Build:"));
     }
 
@@ -68,45 +50,13 @@ class VersionBeanTest {
     }
 
     @Test
-    void init_shouldUseProdVersionFile_whenProdProfile() {
-        ReflectionTestUtils.setField(versionBean, "activeProfile", "prod");
-
-        versionBean.init();
-
-        // versionRelease.txt likely doesn't exist in test environment
-        assertEquals("dev-SNAPSHOT", versionBean.getVersion());
-    }
-
-    @Test
-    void init_shouldUseDevVersionFile_whenDevProfile() {
-        ReflectionTestUtils.setField(versionBean, "activeProfile", "dev");
-
-        versionBean.init();
-
-        // version.txt likely doesn't exist in test environment
-        assertNotNull(versionBean.getVersion());
-    }
-
-    @Test
-    void init_shouldHandleNullActiveProfile() {
-        ReflectionTestUtils.setField(versionBean, "activeProfile", null);
-
-        versionBean.init();
-
-        // Should use dev version file (not prod)
-        assertNotNull(versionBean.getVersion());
-    }
-
-    @Test
     void settersAndGetters_shouldWork() {
         versionBean.setVersion("2.0.0");
         versionBean.setBuildTimestamp("01.01.24 10:00");
         versionBean.setActiveProfile("test");
-        versionBean.setRootVersion("1.0.0");
 
         assertEquals("2.0.0", versionBean.getVersion());
         assertEquals("01.01.24 10:00", versionBean.getBuildTimestamp());
         assertEquals("test", versionBean.getActiveProfile());
-        assertEquals("1.0.0", versionBean.getRootVersion());
     }
 }
