@@ -49,7 +49,13 @@ public class PlaintextAuthenticationSuccessHandler implements AuthenticationSucc
             log.warn("Failed to publish login event: {}", e.getMessage());
         }
 
-        String redirectUrl = request.getContextPath() + "/index.html";
+        String contextPath = request.getContextPath();
+        String redirectUrl;
+        if (contextPath != null && !contextPath.isEmpty()) {
+            redirectUrl = contextPath + "/index.html";
+        } else {
+            redirectUrl = "index.html";
+        }
 
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
         if (authorities != null && !authorities.isEmpty()) {
