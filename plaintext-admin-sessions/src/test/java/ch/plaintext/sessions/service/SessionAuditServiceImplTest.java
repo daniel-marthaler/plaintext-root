@@ -9,7 +9,6 @@ import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -18,13 +17,13 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -60,25 +59,21 @@ class SessionAuditServiceImplTest {
     }
 
     @Test
-    void updateOrCreateUpdatesExistingSession() {
-        UserSession existing = new UserSession();
-        existing.setId(1L);
-        existing.setSessionId("sess-1");
-        existing.setLastActivityTime(LocalDateTime.now().minusHours(1));
-
-        when(repository.findBySessionId("sess-1")).thenReturn(List.of(existing));
-        when(repository.save(any(UserSession.class))).thenReturn(existing);
+    void updateOrCreateCallsUpsertForExistingSession() {
+        when(authentication.getName()).thenReturn("testuser");
+        Collection<GrantedAuthority> authorities = List.of(
+                new SimpleGrantedAuthority("PROPERTY_MANDAT_testMandat")
+        );
+        doReturn(authorities).when(authentication).getAuthorities();
 
         service.updateOrCreate(42L, "sess-1", authentication, "ua");
 
-        ArgumentCaptor<UserSession> captor = ArgumentCaptor.forClass(UserSession.class);
-        verify(repository).save(captor.capture());
-        assertThat(captor.getValue().getLastActivityTime()).isAfter(LocalDateTime.now().minusMinutes(1));
+        verify(repository).upsertSession(eq(42L), eq("testuser"), eq("sess-1"),
+                eq("testMandat"), eq("ua"), any(LocalDateTime.class));
     }
 
     @Test
-    void updateOrCreateCreatesNewSessionWhenNoneExists() {
-        when(repository.findBySessionId("sess-new")).thenReturn(Collections.emptyList());
+    void updateOrCreateCallsUpsertWithCorrectArguments() {
         when(authentication.getName()).thenReturn("testuser");
 
         Collection<GrantedAuthority> authorities = List.of(
@@ -86,73 +81,49 @@ class SessionAuditServiceImplTest {
         );
         doReturn(authorities).when(authentication).getAuthorities();
 
-        when(repository.save(any(UserSession.class))).thenAnswer(inv -> inv.getArgument(0));
-
         service.updateOrCreate(42L, "sess-new", authentication, "TestAgent/1.0");
 
-        ArgumentCaptor<UserSession> captor = ArgumentCaptor.forClass(UserSession.class);
-        verify(repository).save(captor.capture());
-        UserSession saved = captor.getValue();
-
-        assertThat(saved.getUserId()).isEqualTo(42L);
-        assertThat(saved.getSessionId()).isEqualTo("sess-new");
-        assertThat(saved.getUsername()).isEqualTo("testuser");
-        assertThat(saved.getMandat()).isEqualTo("testMandat");
-        assertThat(saved.getUserAgent()).isEqualTo("TestAgent/1.0");
-        assertThat(saved.getActive()).isTrue();
+        verify(repository).upsertSession(eq(42L), eq("testuser"), eq("sess-new"),
+                eq("testMandat"), eq("TestAgent/1.0"), any(LocalDateTime.class));
+        verify(repository, never()).save(any(UserSession.class));
+        verify(repository, never()).delete(any(UserSession.class));
     }
 
     @Test
     void updateOrCreateSetsUnknownMandatWhenNoMatchingAuthority() {
-        when(repository.findBySessionId("sess-new")).thenReturn(Collections.emptyList());
         when(authentication.getName()).thenReturn("testuser");
 
         Collection<GrantedAuthority> authorities = List.of(
                 new SimpleGrantedAuthority("ROLE_ADMIN")
         );
         doReturn(authorities).when(authentication).getAuthorities();
-        when(repository.save(any(UserSession.class))).thenAnswer(inv -> inv.getArgument(0));
 
         service.updateOrCreate(42L, "sess-new", authentication, "ua");
 
-        ArgumentCaptor<UserSession> captor = ArgumentCaptor.forClass(UserSession.class);
-        verify(repository).save(captor.capture());
-        assertThat(captor.getValue().getMandat()).isEqualTo("unknown");
+        verify(repository).upsertSession(eq(42L), eq("testuser"), eq("sess-new"),
+                eq("unknown"), eq("ua"), any(LocalDateTime.class));
     }
 
     @Test
     void updateOrCreateSetsUnknownUsernameWhenAuthenticationIsNull() {
-        when(repository.findBySessionId("sess-new")).thenReturn(Collections.emptyList());
-        when(repository.save(any(UserSession.class))).thenAnswer(inv -> inv.getArgument(0));
-
         service.updateOrCreate(42L, "sess-new", null, "ua");
 
-        ArgumentCaptor<UserSession> captor = ArgumentCaptor.forClass(UserSession.class);
-        verify(repository).save(captor.capture());
-        assertThat(captor.getValue().getUsername()).isEqualTo("unknown");
-        assertThat(captor.getValue().getMandat()).isEqualTo("unknown");
+        verify(repository).upsertSession(eq(42L), eq("unknown"), eq("sess-new"),
+                eq("unknown"), eq("ua"), any(LocalDateTime.class));
     }
 
     @Test
-    void updateOrCreateHandlesDuplicateSessions() {
-        UserSession old = new UserSession();
-        old.setId(1L);
-        old.setSessionId("sess-dup");
+    void updateOrCreateUsesEmptyStringForNullUserAgent() {
+        when(authentication.getName()).thenReturn("testuser");
+        Collection<GrantedAuthority> authorities = List.of(
+                new SimpleGrantedAuthority("PROPERTY_MANDAT_testMandat")
+        );
+        doReturn(authorities).when(authentication).getAuthorities();
 
-        UserSession newer = new UserSession();
-        newer.setId(2L);
-        newer.setSessionId("sess-dup");
+        service.updateOrCreate(42L, "sess-1", authentication, null);
 
-        List<UserSession> duplicates = new ArrayList<>(List.of(old, newer));
-        when(repository.findBySessionId("sess-dup")).thenReturn(duplicates);
-        when(repository.save(any(UserSession.class))).thenAnswer(inv -> inv.getArgument(0));
-
-        service.updateOrCreate(42L, "sess-dup", authentication, "ua");
-
-        // Should delete the older one (id=1) and keep the newer one (id=2)
-        verify(repository).delete(old);
-        verify(repository, never()).delete(newer);
-        verify(repository).save(newer);
+        verify(repository).upsertSession(eq(42L), eq("testuser"), eq("sess-1"),
+                eq("testMandat"), eq(""), any(LocalDateTime.class));
     }
 
     @Test
