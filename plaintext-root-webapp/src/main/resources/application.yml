@@ -55,6 +55,7 @@ mad:
   autologin: true
 
 plaintext:
+  version: '@project.version@'
   stage: ${PLAINTEXT_ENV:dev}
   root:
     version: '@project.version@'

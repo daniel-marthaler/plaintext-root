@@ -24,14 +24,17 @@ public class VersionBean {
     @Value("${spring.profiles.active:dev}")
     private String activeProfile;
 
-    @Value("${plaintext.root.version:dev-SNAPSHOT}")
+    @Value("${plaintext.version:${plaintext.root.version:dev-SNAPSHOT}}")
     private String version;
+
+    @Value("${plaintext.root.version:dev-SNAPSHOT}")
+    private String rootVersion;
 
     private String buildTimestamp;
 
     @PostConstruct
     public void init() {
-        log.info("Version: {}", version);
+        log.info("Version: {}, Root: {}", version, rootVersion);
         buildTimestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd.MM.yy HH:mm"));
     }
 
@@ -44,7 +47,7 @@ public class VersionBean {
     }
 
     public String getRootVersion() {
-        return version;
+        return rootVersion;
     }
 
     public String getFullVersion() {
