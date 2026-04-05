@@ -39,6 +39,9 @@ logging:
     ch.plaintext: DEBUG
     org.springframework.security: DEBUG
 
+server:
+  forward-headers-strategy: FRAMEWORK
+
 joinfaces:
   faces-servlet:
     url-mappings:
