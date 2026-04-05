@@ -69,6 +69,10 @@ public class PlaintextAuthenticationSuccessHandler implements AuthenticationSucc
             }
         }
 
+        // Ensure absolute path for redirect (relative would resolve against /login/oauth2/code/)
+        if (!redirectUrl.startsWith("/") && !redirectUrl.startsWith("http")) {
+            redirectUrl = "/" + redirectUrl;
+        }
         log.debug("Redirecting user {} to {}", userEmail, redirectUrl);
         response.sendRedirect(redirectUrl);
     }
