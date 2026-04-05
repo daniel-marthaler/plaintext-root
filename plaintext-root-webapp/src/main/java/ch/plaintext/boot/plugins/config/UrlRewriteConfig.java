@@ -43,13 +43,15 @@ public class UrlRewriteConfig {
             HttpServletRequest httpRequest = (HttpServletRequest) request;
             String path = httpRequest.getRequestURI();
 
-            // Skip Swagger and technical URLs
+            // Skip Swagger, OAuth2 and technical URLs
             if (path.contains("/swagger") ||
                 path.contains("/swagger-ui") ||
                 path.contains("/webjars") ||
                 path.contains("/api-docs") ||
                 path.contains("/v3/api-docs") ||
-                path.contains("/actuator")) {
+                path.contains("/actuator") ||
+                path.contains("/oauth2/") ||
+                path.contains("/login/oauth2/")) {
                 chain.doFilter(request, response);
                 return;
             }
