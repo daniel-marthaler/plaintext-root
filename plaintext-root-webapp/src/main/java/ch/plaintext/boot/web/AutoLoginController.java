@@ -6,10 +6,10 @@ package ch.plaintext.boot.web;
 import ch.plaintext.boot.plugins.security.PlaintextLoginEvent;
 import ch.plaintext.boot.plugins.security.model.MyUserEntity;
 import ch.plaintext.boot.plugins.security.persistence.MyUserRepository;
+import ch.plaintext.settings.ISetupConfigService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
@@ -30,18 +30,18 @@ public class AutoLoginController {
     private final SecurityContextRepository securityContextRepository;
     private final MyUserRepository userRepository;
     private final ApplicationEventPublisher eventPublisher;
-
-    @Value("${mad.autologin:false}")
-    private boolean autoLoginEnabled;
+    private final ISetupConfigService setupConfigService;
 
     public AutoLoginController(UserDetailsService userDetailsService,
                                SecurityContextRepository securityContextRepository,
                                MyUserRepository userRepository,
-                               ApplicationEventPublisher eventPublisher) {
+                               ApplicationEventPublisher eventPublisher,
+                               ISetupConfigService setupConfigService) {
         this.userDetailsService = userDetailsService;
         this.securityContextRepository = securityContextRepository;
         this.userRepository = userRepository;
         this.eventPublisher = eventPublisher;
+        this.setupConfigService = setupConfigService;
     }
 
     @GetMapping("/autologin")
@@ -50,12 +50,6 @@ public class AutoLoginController {
                            HttpServletResponse response) {
 
         log.info("AutoLogin requested with key: {}", key);
-
-        // Check if autologin is enabled
-        if (!autoLoginEnabled) {
-            log.warn("AutoLogin is disabled in configuration");
-            return "redirect:/login";
-        }
 
         // Validate key is provided
         if (key == null || key.isEmpty()) {
@@ -74,6 +68,13 @@ public class AutoLoginController {
 
             // Load UserDetails from database
             UserDetails userDetails = userDetailsService.loadUserByUsername(user.getUsername());
+
+            // Check if autologin is enabled for this user's mandat
+            String mandat = extractMandat(userDetails);
+            if (!setupConfigService.isAutologinEnabled(mandat)) {
+                log.warn("AutoLogin is disabled for mandat: {}", mandat);
+                return "redirect:/login";
+            }
 
             // Create an authenticated token using the 3-parameter constructor
             // This constructor automatically sets authenticated=true
@@ -97,7 +98,6 @@ public class AutoLoginController {
             // Publish login event for discovery module
             try {
                 Long userId = extractUserId(userDetails);
-                String mandat = extractMandat(userDetails);
                 String baseUrl = extractBaseUrl(request);
                 eventPublisher.publishEvent(new PlaintextLoginEvent(this, user.getUsername(), userId, user.getUsername(), mandat, baseUrl));
                 log.debug("Published PlaintextLoginEvent for auto-login user: {} baseUrl: {}", user.getUsername(), baseUrl);

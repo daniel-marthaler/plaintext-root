@@ -6,6 +6,7 @@ package ch.plaintext.boot.plugins.security.web;
 import ch.plaintext.PlaintextSecurity;
 import ch.plaintext.boot.plugins.security.model.MyUserEntity;
 import ch.plaintext.boot.plugins.security.persistence.MyUserRepository;
+import ch.plaintext.settings.ISetupConfigService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,6 +29,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 /**
@@ -43,12 +45,15 @@ class MyUserInfoBackingBeanTest {
     @Mock
     private PlaintextSecurity plaintextSecurity;
 
+    @Mock
+    private ISetupConfigService setupConfigService;
+
     @InjectMocks
     private MyUserInfoBackingBean bean;
 
     @BeforeEach
     void setUp() {
-        ReflectionTestUtils.setField(bean, "autoLoginEnabled", false);
+        when(setupConfigService.isAutologinEnabled(anyString())).thenReturn(false);
     }
 
     @AfterEach
@@ -275,15 +280,22 @@ class MyUserInfoBackingBeanTest {
 
     @Test
     void getAutologinKey_shouldReturnNull_whenDisabled() {
-        ReflectionTestUtils.setField(bean, "autoLoginEnabled", false);
+        when(setupConfigService.isAutologinEnabled(anyString())).thenReturn(false);
+        setupAuthentication(Arrays.asList(
+                new SimpleGrantedAuthority("ROLE_USER"),
+                new SimpleGrantedAuthority("PROPERTY_MANDAT_default")
+        ));
 
         assertNull(bean.getAutologinKey());
     }
 
     @Test
     void getAutologinKey_shouldReturnKey_whenEnabled() {
-        ReflectionTestUtils.setField(bean, "autoLoginEnabled", true);
-        setupAuthentication(Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
+        when(setupConfigService.isAutologinEnabled(anyString())).thenReturn(true);
+        setupAuthentication(Arrays.asList(
+                new SimpleGrantedAuthority("ROLE_USER"),
+                new SimpleGrantedAuthority("PROPERTY_MANDAT_default")
+        ));
 
         MyUserEntity user = new MyUserEntity();
         user.setAutologinKey("abc123xyz");
@@ -294,8 +306,11 @@ class MyUserInfoBackingBeanTest {
 
     @Test
     void getAutologinKey_shouldReturnNull_whenUserNotFound() {
-        ReflectionTestUtils.setField(bean, "autoLoginEnabled", true);
-        setupAuthentication(Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
+        when(setupConfigService.isAutologinEnabled(anyString())).thenReturn(true);
+        setupAuthentication(Arrays.asList(
+                new SimpleGrantedAuthority("ROLE_USER"),
+                new SimpleGrantedAuthority("PROPERTY_MANDAT_default")
+        ));
 
         when(userRepository.findByUsername("test@example.com")).thenReturn(null);
 
@@ -304,8 +319,11 @@ class MyUserInfoBackingBeanTest {
 
     @Test
     void getAutologinKey_shouldReturnNull_whenKeyEmpty() {
-        ReflectionTestUtils.setField(bean, "autoLoginEnabled", true);
-        setupAuthentication(Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
+        when(setupConfigService.isAutologinEnabled(anyString())).thenReturn(true);
+        setupAuthentication(Arrays.asList(
+                new SimpleGrantedAuthority("ROLE_USER"),
+                new SimpleGrantedAuthority("PROPERTY_MANDAT_default")
+        ));
 
         MyUserEntity user = new MyUserEntity();
         user.setAutologinKey("");
@@ -316,15 +334,22 @@ class MyUserInfoBackingBeanTest {
 
     @Test
     void isAutologinKeyAvailable_shouldReturnFalse_whenDisabled() {
-        ReflectionTestUtils.setField(bean, "autoLoginEnabled", false);
+        when(setupConfigService.isAutologinEnabled(anyString())).thenReturn(false);
+        setupAuthentication(Arrays.asList(
+                new SimpleGrantedAuthority("ROLE_USER"),
+                new SimpleGrantedAuthority("PROPERTY_MANDAT_default")
+        ));
 
         assertFalse(bean.isAutologinKeyAvailable());
     }
 
     @Test
     void isAutologinKeyAvailable_shouldReturnTrue_whenKeyExists() {
-        ReflectionTestUtils.setField(bean, "autoLoginEnabled", true);
-        setupAuthentication(Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
+        when(setupConfigService.isAutologinEnabled(anyString())).thenReturn(true);
+        setupAuthentication(Arrays.asList(
+                new SimpleGrantedAuthority("ROLE_USER"),
+                new SimpleGrantedAuthority("PROPERTY_MANDAT_default")
+        ));
 
         MyUserEntity user = new MyUserEntity();
         user.setAutologinKey("abc123");

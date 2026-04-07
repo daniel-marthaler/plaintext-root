@@ -8,10 +8,58 @@
         <h:form id="fm" enctype="multipart/form-data">
             <input type="hidden" name="_csrf" value="#{_csrf.token}"/>
             <f:metadata>
-                <f:event type="preRenderView" listener="#{brandingBackingBean.checkAccess()}"/>
+                <f:event type="preRenderView" listener="#{setupBackingBean.checkAccess()}"/>
             </f:metadata>
 
             <p:growl id="messages" showDetail="true" life="3000"/>
+
+            <!-- Login Settings -->
+            <p:fieldset legend="#{i18n.t('Login')}" toggleable="true" style="margin-bottom: 1rem;">
+                <div class="grid">
+                    <div class="col-12 md:col-8">
+                        <h:panelGrid columns="2" cellpadding="5" style="width:100%;">
+                            <h:outputText value="#{i18n.t('Auto-Login Link aktivieren')}:" style="font-weight:bold;"/>
+                            <p:toggleSwitch id="autologinEnabled" value="#{setupBackingBean.autologinEnabled}"/>
+
+                            <h:outputText value="#{i18n.t('Automatischer OIDC-Redirect')}:" style="font-weight:bold;"/>
+                            <p:toggleSwitch id="oidcAutoRedirectEnabled" value="#{setupBackingBean.oidcAutoRedirectEnabled}">
+                                <p:ajax update="oidcConfigPanel"/>
+                            </p:toggleSwitch>
+
+                            <h:outputText value="#{i18n.t('OIDC-Provider')}:" style="font-weight:bold;"
+                                          rendered="#{setupBackingBean.oidcAutoRedirectEnabled}"/>
+                            <h:panelGroup id="oidcConfigPanel">
+                                <p:selectOneMenu id="oidcAutoRedirectConfigId"
+                                                 value="#{setupBackingBean.oidcAutoRedirectConfigId}"
+                                                 rendered="#{setupBackingBean.oidcAutoRedirectEnabled}"
+                                                 style="width:280px;">
+                                    <f:selectItem itemLabel="-- #{i18n.t('Auswählen')} --" itemValue="#{null}"/>
+                                    <f:selectItems value="#{oidcConfigService.findAll()}" var="oidc"
+                                                   itemLabel="#{oidc.name}" itemValue="#{oidc.id}"/>
+                                </p:selectOneMenu>
+                            </h:panelGroup>
+                        </h:panelGrid>
+
+                        <p:commandButton value="#{i18n.t('Speichern')}" icon="pi pi-save"
+                                         actionListener="#{setupBackingBean.saveLoginSettings()}"
+                                         update="messages"
+                                         process="autologinEnabled oidcAutoRedirectEnabled oidcAutoRedirectConfigId @this"
+                                         style="margin-top:10px;"/>
+
+                        <div style="margin-top:15px;">
+                            <small style="color: var(--text-color-secondary, #6c757d);">
+                                <i class="pi pi-info-circle" style="margin-right:5px;"/>
+                                #{i18n.t('Auto-Login Link: Wenn deaktiviert, funktionieren bestehende Login-Links nicht mehr und die Option verschwindet aus den Benutzereinstellungen.')}
+                            </small>
+                            <br/>
+                            <small style="color: var(--text-color-secondary, #6c757d);">
+                                <i class="pi pi-info-circle" style="margin-right:5px;"/>
+                                #{i18n.t('OIDC-Redirect: Wenn aktiviert, werden Benutzer beim Login automatisch zum ausgewählten OIDC-Provider weitergeleitet.')}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </p:fieldset>
 
             <!-- Logo Light -->
             <p:fieldset legend="#{i18n.t('Logo (Light Mode)')}" toggleable="true" style="margin-bottom: 1rem;">
@@ -19,16 +67,16 @@
                     <div class="col-12 md:col-6">
                         <h:panelGrid columns="2" cellpadding="5" style="width:100%;">
                             <h:outputText value="#{i18n.t('Breite')} (px):" style="font-weight:bold;"/>
-                            <p:inputNumber id="lightWidth" value="#{brandingBackingBean.lightLogoWidth}"
+                            <p:inputNumber id="lightWidth" value="#{setupBackingBean.lightLogoWidth}"
                                            minValue="20" maxValue="500" decimalPlaces="0" style="width:120px;"/>
 
                             <h:outputText value="#{i18n.t('Höhe')} (px):" style="font-weight:bold;"/>
-                            <p:inputNumber id="lightHeight" value="#{brandingBackingBean.lightLogoHeight}"
+                            <p:inputNumber id="lightHeight" value="#{setupBackingBean.lightLogoHeight}"
                                            minValue="10" maxValue="200" decimalPlaces="0" style="width:120px;"/>
                         </h:panelGrid>
 
                         <div style="margin-top:10px;">
-                            <p:fileUpload listener="#{brandingBackingBean.handleLightLogoUpload}"
+                            <p:fileUpload listener="#{setupBackingBean.handleLightLogoUpload}"
                                           mode="advanced" auto="true" allowTypes="/(\.|\/)(png|svg|webp|jpe?g)$/i"
                                           maxFileSize="2097152" fileLimit="1"
                                           update="messages lightPreviewPanel"
@@ -37,14 +85,14 @@
                                           style="margin-bottom:10px;"/>
                         </div>
 
-                        <h:panelGroup rendered="#{brandingBackingBean.hasLightLogo}">
+                        <h:panelGroup rendered="#{setupBackingBean.hasLightLogo}">
                             <p:commandButton value="#{i18n.t('Dimensionen speichern')}" icon="pi pi-save"
-                                             actionListener="#{brandingBackingBean.saveLightLogoDimensions()}"
+                                             actionListener="#{setupBackingBean.saveLightLogoDimensions()}"
                                              update="messages" process="lightWidth lightHeight @this"
                                              style="margin-right:5px;"/>
                             <p:commandButton value="#{i18n.t('Logo entfernen')}" icon="pi pi-trash"
                                              styleClass="ui-button-danger"
-                                             actionListener="#{brandingBackingBean.deleteLightLogo()}"
+                                             actionListener="#{setupBackingBean.deleteLightLogo()}"
                                              update="messages fm"
                                              process="@this">
                                 <p:confirm header="#{i18n.t('Bestätigung')}" message="Light-Logo wirklich löschen?"
@@ -55,17 +103,17 @@
 
                     <div class="col-12 md:col-6">
                         <h:panelGroup id="lightPreviewPanel">
-                            <h:panelGroup rendered="#{brandingBackingBean.hasLightLogo}">
+                            <h:panelGroup rendered="#{setupBackingBean.hasLightLogo}">
                                 <p style="font-weight:bold; margin-bottom:5px;">#{i18n.t('Vorschau')}:</p>
                                 <div style="background:#f8f9fa; padding:15px; border-radius:8px; display:inline-block;">
-                                    <img src="#{brandingBackingBean.lightLogoPreview}"
-                                         width="#{brandingBackingBean.lightLogoWidth}"
-                                         height="#{brandingBackingBean.lightLogoHeight}"
+                                    <img src="#{setupBackingBean.lightLogoPreview}"
+                                         width="#{setupBackingBean.lightLogoWidth}"
+                                         height="#{setupBackingBean.lightLogoHeight}"
                                          alt="Light Logo Preview"
                                          style="max-width:100%; object-fit:contain;"/>
                                 </div>
                             </h:panelGroup>
-                            <h:panelGroup rendered="#{!brandingBackingBean.hasLightLogo}">
+                            <h:panelGroup rendered="#{!setupBackingBean.hasLightLogo}">
                                 <p style="color:var(--text-color-secondary); font-style:italic;">
                                     #{i18n.t('Kein Light-Logo hochgeladen')}
                                 </p>
@@ -81,16 +129,16 @@
                     <div class="col-12 md:col-6">
                         <h:panelGrid columns="2" cellpadding="5" style="width:100%;">
                             <h:outputText value="#{i18n.t('Breite')} (px):" style="font-weight:bold;"/>
-                            <p:inputNumber id="darkWidth" value="#{brandingBackingBean.darkLogoWidth}"
+                            <p:inputNumber id="darkWidth" value="#{setupBackingBean.darkLogoWidth}"
                                            minValue="20" maxValue="500" decimalPlaces="0" style="width:120px;"/>
 
                             <h:outputText value="#{i18n.t('Höhe')} (px):" style="font-weight:bold;"/>
-                            <p:inputNumber id="darkHeight" value="#{brandingBackingBean.darkLogoHeight}"
+                            <p:inputNumber id="darkHeight" value="#{setupBackingBean.darkLogoHeight}"
                                            minValue="10" maxValue="200" decimalPlaces="0" style="width:120px;"/>
                         </h:panelGrid>
 
                         <div style="margin-top:10px;">
-                            <p:fileUpload listener="#{brandingBackingBean.handleDarkLogoUpload}"
+                            <p:fileUpload listener="#{setupBackingBean.handleDarkLogoUpload}"
                                           mode="advanced" auto="true" allowTypes="/(\.|\/)(png|svg|webp|jpe?g)$/i"
                                           maxFileSize="2097152" fileLimit="1"
                                           update="messages darkPreviewPanel"
@@ -99,14 +147,14 @@
                                           style="margin-bottom:10px;"/>
                         </div>
 
-                        <h:panelGroup rendered="#{brandingBackingBean.hasDarkLogo}">
+                        <h:panelGroup rendered="#{setupBackingBean.hasDarkLogo}">
                             <p:commandButton value="#{i18n.t('Dimensionen speichern')}" icon="pi pi-save"
-                                             actionListener="#{brandingBackingBean.saveDarkLogoDimensions()}"
+                                             actionListener="#{setupBackingBean.saveDarkLogoDimensions()}"
                                              update="messages" process="darkWidth darkHeight @this"
                                              style="margin-right:5px;"/>
                             <p:commandButton value="#{i18n.t('Logo entfernen')}" icon="pi pi-trash"
                                              styleClass="ui-button-danger"
-                                             actionListener="#{brandingBackingBean.deleteDarkLogo()}"
+                                             actionListener="#{setupBackingBean.deleteDarkLogo()}"
                                              update="messages fm"
                                              process="@this">
                                 <p:confirm header="#{i18n.t('Bestätigung')}" message="Dark-Logo wirklich löschen?"
@@ -117,17 +165,17 @@
 
                     <div class="col-12 md:col-6">
                         <h:panelGroup id="darkPreviewPanel">
-                            <h:panelGroup rendered="#{brandingBackingBean.hasDarkLogo}">
+                            <h:panelGroup rendered="#{setupBackingBean.hasDarkLogo}">
                                 <p style="font-weight:bold; margin-bottom:5px;">#{i18n.t('Vorschau')}:</p>
                                 <div style="background:#1e1e2f; padding:15px; border-radius:8px; display:inline-block;">
-                                    <img src="#{brandingBackingBean.darkLogoPreview}"
-                                         width="#{brandingBackingBean.darkLogoWidth}"
-                                         height="#{brandingBackingBean.darkLogoHeight}"
+                                    <img src="#{setupBackingBean.darkLogoPreview}"
+                                         width="#{setupBackingBean.darkLogoWidth}"
+                                         height="#{setupBackingBean.darkLogoHeight}"
                                          alt="Dark Logo Preview"
                                          style="max-width:100%; object-fit:contain;"/>
                                 </div>
                             </h:panelGroup>
-                            <h:panelGroup rendered="#{!brandingBackingBean.hasDarkLogo}">
+                            <h:panelGroup rendered="#{!setupBackingBean.hasDarkLogo}">
                                 <p style="color:var(--text-color-secondary); font-style:italic;">
                                     #{i18n.t('Kein Dark-Logo hochgeladen')}
                                 </p>
@@ -143,11 +191,11 @@
                     <div class="col-12 md:col-8">
                         <h:panelGrid columns="2" cellpadding="5" style="width:100%;">
                             <h:outputText value="#{i18n.t('Sprachwechsel anzeigen')}:" style="font-weight:bold;"/>
-                            <p:toggleSwitch id="i18nEnabled" value="#{brandingBackingBean.i18nEnabled}"/>
+                            <p:toggleSwitch id="i18nEnabled" value="#{setupBackingBean.i18nEnabled}"/>
 
                             <h:outputText value="#{i18n.t('Icon')}:" style="font-weight:bold;"/>
                             <h:panelGroup>
-                                <p:selectOneMenu id="i18nIcon" value="#{brandingBackingBean.i18nIcon}" style="width:280px;">
+                                <p:selectOneMenu id="i18nIcon" value="#{setupBackingBean.i18nIcon}" style="width:280px;">
                                     <f:selectItem itemLabel="Globe (pi-globe)" itemValue="pi pi-globe"/>
                                     <f:selectItem itemLabel="Language (pi-language)" itemValue="pi pi-language"/>
                                     <f:selectItem itemLabel="Flag (pi-flag)" itemValue="pi pi-flag"/>
@@ -159,7 +207,7 @@
                         </h:panelGrid>
 
                         <p:commandButton value="#{i18n.t('Speichern')}" icon="pi pi-save"
-                                         actionListener="#{brandingBackingBean.saveI18nSettings()}"
+                                         actionListener="#{setupBackingBean.saveI18nSettings()}"
                                          update="messages"
                                          process="i18nEnabled i18nIcon @this"
                                          style="margin-top:10px;"/>
@@ -169,7 +217,7 @@
                         <p style="font-weight:bold; margin-bottom:5px;">#{i18n.t('Vorschau')}:</p>
                         <h:panelGroup id="i18nIconPreview">
                             <div style="background:var(--surface-50); padding:15px; border-radius:8px; display:inline-flex; align-items:center; gap:10px;">
-                                <i class="#{brandingBackingBean.i18nIcon}" style="font-size:1.5rem; color:var(--primary-color);"/>
+                                <i class="#{setupBackingBean.i18nIcon}" style="font-size:1.5rem; color:var(--primary-color);"/>
                                 <span style="color:var(--text-color-secondary);">#{i18n.t('Sprache wechseln')}</span>
                             </div>
                         </h:panelGroup>
@@ -183,22 +231,22 @@
                     <div class="col-12 md:col-8">
                         <h:panelGrid columns="2" cellpadding="5" style="width:100%;">
                             <h:outputText value="#{i18n.t('Footer-Text')}:" style="font-weight:bold;"/>
-                            <p:inputText id="footerText" value="#{brandingBackingBean.footerText}"
-                                         placeholder="z.B. Copyright © Meine Firma"
+                            <p:inputText id="footerText" value="#{setupBackingBean.footerText}"
+                                         placeholder="z.B. Copyright &#169; Meine Firma"
                                          style="width:100%;"/>
 
                             <h:outputText value="#{i18n.t('Version anzeigen')}:" style="font-weight:bold;"/>
-                            <p:toggleSwitch id="showVersion" value="#{brandingBackingBean.showVersion}"/>
+                            <p:toggleSwitch id="showVersion" value="#{setupBackingBean.showVersion}"/>
 
                             <h:outputText value="#{i18n.t('Root-Version anzeigen')}:" style="font-weight:bold;"/>
-                            <p:toggleSwitch id="showRootVersion" value="#{brandingBackingBean.showRootVersion}"/>
+                            <p:toggleSwitch id="showRootVersion" value="#{setupBackingBean.showRootVersion}"/>
 
                             <h:outputText value="#{i18n.t('Build-Zeitpunkt anzeigen')}:" style="font-weight:bold;"/>
-                            <p:toggleSwitch id="showBuildTimestamp" value="#{brandingBackingBean.showBuildTimestamp}"/>
+                            <p:toggleSwitch id="showBuildTimestamp" value="#{setupBackingBean.showBuildTimestamp}"/>
                         </h:panelGrid>
 
                         <p:commandButton value="#{i18n.t('Footer speichern')}" icon="pi pi-save"
-                                         actionListener="#{brandingBackingBean.saveFooterSettings()}"
+                                         actionListener="#{setupBackingBean.saveFooterSettings()}"
                                          update="messages"
                                          process="footerText showVersion showRootVersion showBuildTimestamp @this"
                                          style="margin-top:10px;"/>
@@ -207,16 +255,16 @@
                     <div class="col-12 md:col-4">
                         <p style="font-weight:bold; margin-bottom:5px;">#{i18n.t('Vorschau')}:</p>
                         <div style="background:var(--surface-50); padding:10px; border-radius:8px; font-size:0.8rem; color:var(--text-color-secondary);">
-                            <h:outputText value="#{brandingBackingBean.footerText}"
-                                          rendered="#{not empty brandingBackingBean.footerText}"/>
+                            <h:outputText value="#{setupBackingBean.footerText}"
+                                          rendered="#{not empty setupBackingBean.footerText}"/>
                             <h:outputText value="Copyright &#169; Plaintext.ch"
-                                          rendered="#{empty brandingBackingBean.footerText}"/>
+                                          rendered="#{empty setupBackingBean.footerText}"/>
                             <h:outputText value=" | Version #{versionBean.version}"
-                                          rendered="#{brandingBackingBean.showVersion}"/>
+                                          rendered="#{setupBackingBean.showVersion}"/>
                             <h:outputText value=" | Root #{versionBean.rootVersion}"
-                                          rendered="#{brandingBackingBean.showRootVersion}"/>
+                                          rendered="#{setupBackingBean.showRootVersion}"/>
                             <h:outputText value=" | #{versionBean.buildTimestamp}"
-                                          rendered="#{brandingBackingBean.showBuildTimestamp}"/>
+                                          rendered="#{setupBackingBean.showBuildTimestamp}"/>
                         </div>
                     </div>
                 </div>

@@ -5,7 +5,9 @@ package ch.plaintext.settings.web;
 
 import ch.plaintext.PlaintextSecurity;
 import ch.plaintext.settings.entity.BrandingLogo;
+import ch.plaintext.settings.entity.SetupConfig;
 import ch.plaintext.settings.service.BrandingService;
+import ch.plaintext.settings.service.SetupConfigService;
 import jakarta.annotation.PostConstruct;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
@@ -27,12 +29,14 @@ import java.util.Base64;
 @Getter
 @Setter
 @Slf4j
-public class BrandingBackingBean implements Serializable {
+public class SetupBackingBean implements Serializable {
 
     private final transient BrandingService brandingService;
+    private final transient SetupConfigService setupConfigService;
     private final PlaintextSecurity security;
     private final transient ApplicationContext applicationContext;
 
+    // Branding fields
     private String footerText;
     private boolean showVersion;
     private boolean showRootVersion;
@@ -51,11 +55,17 @@ public class BrandingBackingBean implements Serializable {
     private boolean i18nEnabled;
     private String i18nIcon;
 
+    // Login settings fields
+    private boolean autologinEnabled;
+    private boolean oidcAutoRedirectEnabled;
+    private Long oidcAutoRedirectConfigId;
+
     private boolean root;
 
-    public BrandingBackingBean(BrandingService brandingService, PlaintextSecurity security,
-                              ApplicationContext applicationContext) {
+    public SetupBackingBean(BrandingService brandingService, SetupConfigService setupConfigService,
+                            PlaintextSecurity security, ApplicationContext applicationContext) {
         this.brandingService = brandingService;
+        this.setupConfigService = setupConfigService;
         this.security = security;
         this.applicationContext = applicationContext;
     }
@@ -81,6 +91,7 @@ public class BrandingBackingBean implements Serializable {
     private void loadData() {
         String mandat = security.getMandat();
 
+        // Branding settings
         footerText = brandingService.getFooterText(mandat);
         showVersion = brandingService.isShowVersion(mandat);
         showRootVersion = brandingService.isShowRootVersion(mandat);
@@ -102,7 +113,16 @@ public class BrandingBackingBean implements Serializable {
             darkLogoHeight = logo.getLogoHeight();
             darkLogoPreview = buildDataUri(logo);
         });
+
+        // Login settings
+        setupConfigService.findByMandat(mandat).ifPresent(config -> {
+            autologinEnabled = config.isAutologinEnabled();
+            oidcAutoRedirectEnabled = config.isOidcAutoRedirectEnabled();
+            oidcAutoRedirectConfigId = config.getOidcAutoRedirectConfigId();
+        });
     }
+
+    // === Logo methods ===
 
     public void handleLightLogoUpload(FileUploadEvent event) {
         handleLogoUpload(event, "light");
@@ -129,7 +149,6 @@ public class BrandingBackingBean implements Serializable {
                     width, height
             );
 
-            // Update preview
             if ("light".equals(theme)) {
                 hasLightLogo = true;
                 lightLogoPreview = "data:" + file.getContentType() + ";base64,"
@@ -227,6 +246,25 @@ public class BrandingBackingBean implements Serializable {
             addMessage(FacesMessage.SEVERITY_ERROR, "Fehler", "Speichern fehlgeschlagen");
         }
     }
+
+    // === Login settings ===
+
+    public void saveLoginSettings() {
+        try {
+            String mandat = security.getMandat();
+            SetupConfig config = setupConfigService.getOrCreate(mandat);
+            config.setAutologinEnabled(autologinEnabled);
+            config.setOidcAutoRedirectEnabled(oidcAutoRedirectEnabled);
+            config.setOidcAutoRedirectConfigId(oidcAutoRedirectConfigId);
+            setupConfigService.save(config);
+            addMessage(FacesMessage.SEVERITY_INFO, "Erfolg", "Login-Einstellungen gespeichert");
+        } catch (Exception e) {
+            log.error("Error saving login settings", e);
+            addMessage(FacesMessage.SEVERITY_ERROR, "Fehler", "Speichern fehlgeschlagen");
+        }
+    }
+
+    // === Helpers ===
 
     private String buildDataUri(BrandingLogo logo) {
         return "data:" + logo.getContentType() + ";base64,"

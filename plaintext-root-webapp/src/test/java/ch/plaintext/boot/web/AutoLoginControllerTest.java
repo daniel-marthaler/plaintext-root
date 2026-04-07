@@ -5,6 +5,7 @@ package ch.plaintext.boot.web;
 
 import ch.plaintext.boot.plugins.security.model.MyUserEntity;
 import ch.plaintext.boot.plugins.security.persistence.MyUserRepository;
+import ch.plaintext.settings.ISetupConfigService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,7 +25,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.context.SecurityContextRepository;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -32,6 +32,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 /**
@@ -49,6 +50,9 @@ class AutoLoginControllerTest {
 
     @Mock
     private MyUserRepository userRepository;
+
+    @Mock
+    private ISetupConfigService setupConfigService;
 
     @Mock
     private HttpServletRequest request;
@@ -71,12 +75,16 @@ class AutoLoginControllerTest {
         testUser.setPassword("encodedPassword");
         testUser.setAutologinKey("validKey123");
 
-        // Setup user details
+        // Setup user details with mandat authority
         List<GrantedAuthority> authorities = Arrays.asList(
                 new SimpleGrantedAuthority("ROLE_USER"),
-                new SimpleGrantedAuthority("PROPERTY_MYUSERID_123")
+                new SimpleGrantedAuthority("PROPERTY_MYUSERID_123"),
+                new SimpleGrantedAuthority("PROPERTY_MANDAT_default")
         );
         userDetails = new User("test@example.com", "encodedPassword", authorities);
+
+        // Default: autologin enabled
+        when(setupConfigService.isAutologinEnabled(anyString())).thenReturn(true);
 
         // Clear security context before each test
         SecurityContextHolder.clearContext();
@@ -87,7 +95,7 @@ class AutoLoginControllerTest {
     @Test
     void autoLogin_shouldSucceed_whenValidKeyAndFeatureEnabled() {
         // Given: Auto-login is enabled
-        ReflectionTestUtils.setField(autoLoginController, "autoLoginEnabled", true);
+        when(setupConfigService.isAutologinEnabled(anyString())).thenReturn(true);
 
         // Mock repository to return test user for auto-login key
         when(userRepository.findByAutologinKey("validKey123")).thenReturn(testUser);
@@ -121,7 +129,7 @@ class AutoLoginControllerTest {
     @Test
     void autoLogin_shouldSetCorrectAuthorities() {
         // Given
-        ReflectionTestUtils.setField(autoLoginController, "autoLoginEnabled", true);
+        when(setupConfigService.isAutologinEnabled(anyString())).thenReturn(true);
         when(userRepository.findByAutologinKey("validKey123")).thenReturn(testUser);
         when(userRepository.findAll()).thenReturn(Collections.singletonList(testUser));
         when(userDetailsService.loadUserByUsername("test@example.com")).thenReturn(userDetails);
@@ -146,8 +154,10 @@ class AutoLoginControllerTest {
 
     @Test
     void autoLogin_shouldRedirectToLogin_whenFeatureDisabled() {
-        // Given: Auto-login is disabled
-        ReflectionTestUtils.setField(autoLoginController, "autoLoginEnabled", false);
+        // Given: Auto-login is disabled for the user's mandat
+        when(setupConfigService.isAutologinEnabled(anyString())).thenReturn(false);
+        when(userRepository.findByAutologinKey("validKey123")).thenReturn(testUser);
+        when(userDetailsService.loadUserByUsername("test@example.com")).thenReturn(userDetails);
 
         // When
         String result = autoLoginController.autoLogin("validKey123", request, response);
@@ -155,9 +165,8 @@ class AutoLoginControllerTest {
         // Then
         assertEquals("redirect:/login", result);
 
-        // Verify no user lookup was performed
-        verify(userRepository, never()).findByAutologinKey(any());
-        verify(userDetailsService, never()).loadUserByUsername(any());
+        // Verify user was looked up but authentication was not completed
+        verify(userRepository).findByAutologinKey("validKey123");
         verify(securityContextRepository, never()).saveContext(any(), any(), any());
 
         // Verify no authentication was set
@@ -169,7 +178,7 @@ class AutoLoginControllerTest {
     @Test
     void autoLogin_shouldRedirectToLogin_whenKeyIsNull() {
         // Given
-        ReflectionTestUtils.setField(autoLoginController, "autoLoginEnabled", true);
+        when(setupConfigService.isAutologinEnabled(anyString())).thenReturn(true);
 
         // When
         String result = autoLoginController.autoLogin(null, request, response);
@@ -185,7 +194,7 @@ class AutoLoginControllerTest {
     @Test
     void autoLogin_shouldRedirectToLogin_whenKeyIsEmpty() {
         // Given
-        ReflectionTestUtils.setField(autoLoginController, "autoLoginEnabled", true);
+        when(setupConfigService.isAutologinEnabled(anyString())).thenReturn(true);
 
         // When
         String result = autoLoginController.autoLogin("", request, response);
@@ -200,7 +209,7 @@ class AutoLoginControllerTest {
     @Test
     void autoLogin_shouldRedirectToLogin_whenUserNotFoundForKey() {
         // Given
-        ReflectionTestUtils.setField(autoLoginController, "autoLoginEnabled", true);
+        when(setupConfigService.isAutologinEnabled(anyString())).thenReturn(true);
         when(userRepository.findAll()).thenReturn(Collections.singletonList(testUser));
         when(userRepository.findByAutologinKey("invalidKey")).thenReturn(null);
 
@@ -223,7 +232,7 @@ class AutoLoginControllerTest {
     @Test
     void autoLogin_shouldRedirectToLogin_whenUserDetailsServiceThrowsException() {
         // Given
-        ReflectionTestUtils.setField(autoLoginController, "autoLoginEnabled", true);
+        when(setupConfigService.isAutologinEnabled(anyString())).thenReturn(true);
         when(userRepository.findAll()).thenReturn(Collections.singletonList(testUser));
         when(userRepository.findByAutologinKey("validKey123")).thenReturn(testUser);
         when(userDetailsService.loadUserByUsername("test@example.com"))
@@ -242,7 +251,7 @@ class AutoLoginControllerTest {
     @Test
     void autoLogin_shouldRedirectToLogin_whenRepositoryThrowsException() {
         // Given
-        ReflectionTestUtils.setField(autoLoginController, "autoLoginEnabled", true);
+        when(setupConfigService.isAutologinEnabled(anyString())).thenReturn(true);
         when(userRepository.findAll()).thenReturn(Collections.singletonList(testUser));
         when(userRepository.findByAutologinKey("validKey123"))
                 .thenThrow(new RuntimeException("Database error"));
@@ -260,7 +269,7 @@ class AutoLoginControllerTest {
     @Test
     void autoLogin_shouldRedirectToLogin_whenSecurityContextSaveThrowsException() {
         // Given
-        ReflectionTestUtils.setField(autoLoginController, "autoLoginEnabled", true);
+        when(setupConfigService.isAutologinEnabled(anyString())).thenReturn(true);
         when(userRepository.findAll()).thenReturn(Collections.singletonList(testUser));
         when(userRepository.findByAutologinKey("validKey123")).thenReturn(testUser);
         when(userDetailsService.loadUserByUsername("test@example.com")).thenReturn(userDetails);
@@ -287,7 +296,7 @@ class AutoLoginControllerTest {
         );
         SecurityContextHolder.setContext(existingContext);
 
-        ReflectionTestUtils.setField(autoLoginController, "autoLoginEnabled", true);
+        when(setupConfigService.isAutologinEnabled(anyString())).thenReturn(true);
         when(userRepository.findAll()).thenReturn(Collections.singletonList(testUser));
         when(userRepository.findByAutologinKey("validKey123")).thenReturn(testUser);
         when(userDetailsService.loadUserByUsername("test@example.com")).thenReturn(userDetails);
@@ -304,7 +313,7 @@ class AutoLoginControllerTest {
     @Test
     void autoLogin_shouldCreateNewSecurityContext() {
         // Given
-        ReflectionTestUtils.setField(autoLoginController, "autoLoginEnabled", true);
+        when(setupConfigService.isAutologinEnabled(anyString())).thenReturn(true);
         when(userRepository.findAll()).thenReturn(Collections.singletonList(testUser));
         when(userRepository.findByAutologinKey("validKey123")).thenReturn(testUser);
         when(userDetailsService.loadUserByUsername("test@example.com")).thenReturn(userDetails);
@@ -321,7 +330,7 @@ class AutoLoginControllerTest {
     @Test
     void autoLogin_shouldWorkEndToEnd_withCompleteFlow() {
         // Given: Complete setup
-        ReflectionTestUtils.setField(autoLoginController, "autoLoginEnabled", true);
+        when(setupConfigService.isAutologinEnabled(anyString())).thenReturn(true);
 
         MyUserEntity user = new MyUserEntity();
         user.setId(999L);
@@ -358,7 +367,7 @@ class AutoLoginControllerTest {
     @Test
     void autoLogin_shouldHandleMultipleConsecutiveCalls() {
         // Given
-        ReflectionTestUtils.setField(autoLoginController, "autoLoginEnabled", true);
+        when(setupConfigService.isAutologinEnabled(anyString())).thenReturn(true);
         when(userRepository.findAll()).thenReturn(Collections.singletonList(testUser));
         when(userRepository.findByAutologinKey("validKey123")).thenReturn(testUser);
         when(userDetailsService.loadUserByUsername("test@example.com")).thenReturn(userDetails);
@@ -385,7 +394,7 @@ class AutoLoginControllerTest {
     @Test
     void autoLogin_shouldHandleWhitespaceKey() {
         // Given
-        ReflectionTestUtils.setField(autoLoginController, "autoLoginEnabled", true);
+        when(setupConfigService.isAutologinEnabled(anyString())).thenReturn(true);
         when(userRepository.findAll()).thenReturn(Collections.singletonList(testUser));
         when(userRepository.findByAutologinKey("   ")).thenReturn(null);
 
@@ -401,7 +410,7 @@ class AutoLoginControllerTest {
     void autoLogin_shouldHandleVeryLongKey() {
         // Given: Very long key
         String longKey = "a".repeat(1000);
-        ReflectionTestUtils.setField(autoLoginController, "autoLoginEnabled", true);
+        when(setupConfigService.isAutologinEnabled(anyString())).thenReturn(true);
         when(userRepository.findAll()).thenReturn(Collections.singletonList(testUser));
         when(userRepository.findByAutologinKey(longKey)).thenReturn(testUser);
         when(userDetailsService.loadUserByUsername("test@example.com")).thenReturn(userDetails);
@@ -418,7 +427,7 @@ class AutoLoginControllerTest {
     void autoLogin_shouldHandleSpecialCharactersInKey() {
         // Given: Key with special characters
         String specialKey = "key!@#$%^&*()_+-=[]{}|;':\",./<>?";
-        ReflectionTestUtils.setField(autoLoginController, "autoLoginEnabled", true);
+        when(setupConfigService.isAutologinEnabled(anyString())).thenReturn(true);
         when(userRepository.findAll()).thenReturn(Collections.singletonList(testUser));
         when(userRepository.findByAutologinKey(specialKey)).thenReturn(testUser);
         when(userDetailsService.loadUserByUsername("test@example.com")).thenReturn(userDetails);

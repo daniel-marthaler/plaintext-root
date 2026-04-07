@@ -82,13 +82,13 @@ public class PlaintextSecurityConfig {
                 .securityContext(ctx -> ctx
                         .securityContextRepository(securityContextRepository())
                 )
-                .csrf(csrf -> csrf
-                        .ignoringRequestMatchers(
-                                PathPatternRequestMatcher.pathPattern("/api/**"),
-                                PathPatternRequestMatcher.pathPattern("/login/oauth2/**"),
-                                PathPatternRequestMatcher.pathPattern("/oauth2/**")
-                        )
-                )
+                .csrf(csrf -> {
+                        var matchers = new java.util.ArrayList<org.springframework.security.web.util.matcher.RequestMatcher>();
+                        for (String pattern : csrfIgnore) {
+                            matchers.add(PathPatternRequestMatcher.pathPattern(pattern));
+                        }
+                        csrf.ignoringRequestMatchers(matchers.toArray(new org.springframework.security.web.util.matcher.RequestMatcher[0]));
+                })
                 .headers(headers -> headers
                         .frameOptions(frame -> frame.sameOrigin())
                         .contentSecurityPolicy(csp -> csp

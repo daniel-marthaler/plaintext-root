@@ -6,12 +6,12 @@ package ch.plaintext.boot.plugins.security.web;
 import ch.plaintext.PlaintextSecurity;
 import ch.plaintext.boot.plugins.security.model.MyUserEntity;
 import ch.plaintext.boot.plugins.security.persistence.MyUserRepository;
+import ch.plaintext.settings.ISetupConfigService;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -37,8 +37,8 @@ public class MyUserInfoBackingBean implements Serializable {
     @Autowired
     private PlaintextSecurity plaintextSecurity;
 
-    @Value("${mad.autologin:false}")
-    private boolean autoLoginEnabled;
+    @Autowired
+    private ISetupConfigService setupConfigService;
 
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
@@ -176,7 +176,7 @@ public class MyUserInfoBackingBean implements Serializable {
      * Returns the autologin key for the current user, or null if not available.
      */
     public String getAutologinKey() {
-        if (!autoLoginEnabled || userRepository == null) {
+        if (setupConfigService == null || !setupConfigService.isAutologinEnabled(getMandat()) || userRepository == null) {
             return null;
         }
 
@@ -264,7 +264,7 @@ public class MyUserInfoBackingBean implements Serializable {
     public void regenerateAutologinKey() {
         FacesContext context = FacesContext.getCurrentInstance();
 
-        if (!autoLoginEnabled || userRepository == null) {
+        if (setupConfigService == null || !setupConfigService.isAutologinEnabled(getMandat()) || userRepository == null) {
             context.addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_WARN, "Warnung", "Autologin ist nicht aktiviert."));
             return;

@@ -6,6 +6,7 @@ package ch.plaintext.boot.plugins.security.web;
 import ch.plaintext.PlaintextSecurity;
 import ch.plaintext.boot.plugins.security.model.MyUserEntity;
 import ch.plaintext.boot.plugins.security.persistence.MyUserRepository;
+import ch.plaintext.settings.ISetupConfigService;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.ExternalContext;
 import jakarta.faces.context.FacesContext;
@@ -27,7 +28,6 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -35,6 +35,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 /**
@@ -52,6 +53,9 @@ class MyUserInfoBackingBeanExtendedTest {
     private PlaintextSecurity plaintextSecurity;
 
     @Mock
+    private ISetupConfigService setupConfigService;
+
+    @Mock
     private FacesContext facesContext;
 
     @Mock
@@ -67,7 +71,7 @@ class MyUserInfoBackingBeanExtendedTest {
 
     @BeforeEach
     void setUp() {
-        ReflectionTestUtils.setField(bean, "autoLoginEnabled", true);
+        when(setupConfigService.isAutologinEnabled(anyString())).thenReturn(true);
     }
 
     @AfterEach
@@ -263,7 +267,11 @@ class MyUserInfoBackingBeanExtendedTest {
         try (MockedStatic<FacesContext> mocked = mockStatic(FacesContext.class)) {
             mocked.when(FacesContext::getCurrentInstance).thenReturn(facesContext);
 
-            ReflectionTestUtils.setField(bean, "autoLoginEnabled", false);
+            when(setupConfigService.isAutologinEnabled(anyString())).thenReturn(false);
+            setupAuthentication(Arrays.asList(
+                    new SimpleGrantedAuthority("ROLE_USER"),
+                    new SimpleGrantedAuthority("PROPERTY_MANDAT_default")
+            ));
 
             bean.regenerateAutologinKey();
 
@@ -326,7 +334,11 @@ class MyUserInfoBackingBeanExtendedTest {
 
     @Test
     void getAutologinUrl_shouldReturnNull_whenNoKey() {
-        ReflectionTestUtils.setField(bean, "autoLoginEnabled", false);
+        when(setupConfigService.isAutologinEnabled(anyString())).thenReturn(false);
+        setupAuthentication(Arrays.asList(
+                new SimpleGrantedAuthority("ROLE_USER"),
+                new SimpleGrantedAuthority("PROPERTY_MANDAT_default")
+        ));
         assertNull(bean.getAutologinUrl());
     }
 
@@ -337,7 +349,10 @@ class MyUserInfoBackingBeanExtendedTest {
             when(facesContext.getExternalContext()).thenReturn(externalContext);
             when(externalContext.getRequest()).thenReturn(httpRequest);
 
-            setupAuthentication(Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
+            setupAuthentication(Arrays.asList(
+                    new SimpleGrantedAuthority("ROLE_USER"),
+                    new SimpleGrantedAuthority("PROPERTY_MANDAT_default")
+            ));
 
             MyUserEntity user = new MyUserEntity();
             user.setAutologinKey("testKey123");
@@ -364,7 +379,10 @@ class MyUserInfoBackingBeanExtendedTest {
             when(facesContext.getExternalContext()).thenReturn(externalContext);
             when(externalContext.getRequest()).thenReturn(httpRequest);
 
-            setupAuthentication(Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
+            setupAuthentication(Arrays.asList(
+                    new SimpleGrantedAuthority("ROLE_USER"),
+                    new SimpleGrantedAuthority("PROPERTY_MANDAT_default")
+            ));
 
             MyUserEntity user = new MyUserEntity();
             user.setAutologinKey("testKey123");
@@ -390,7 +408,10 @@ class MyUserInfoBackingBeanExtendedTest {
             when(facesContext.getExternalContext()).thenReturn(externalContext);
             when(externalContext.getRequest()).thenReturn(httpRequest);
 
-            setupAuthentication(Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
+            setupAuthentication(Arrays.asList(
+                    new SimpleGrantedAuthority("ROLE_USER"),
+                    new SimpleGrantedAuthority("PROPERTY_MANDAT_default")
+            ));
 
             MyUserEntity user = new MyUserEntity();
             user.setAutologinKey("testKey123");
@@ -415,7 +436,10 @@ class MyUserInfoBackingBeanExtendedTest {
             when(facesContext.getExternalContext()).thenReturn(externalContext);
             when(externalContext.getRequest()).thenReturn(httpRequest);
 
-            setupAuthentication(Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
+            setupAuthentication(Arrays.asList(
+                    new SimpleGrantedAuthority("ROLE_USER"),
+                    new SimpleGrantedAuthority("PROPERTY_MANDAT_default")
+            ));
 
             MyUserEntity user = new MyUserEntity();
             user.setAutologinKey("testKey123");

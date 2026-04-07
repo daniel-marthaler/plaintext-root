@@ -420,6 +420,15 @@
             </button>
         </form>
 
+        <!-- OIDC Auto-Redirect (only when no error/logout parameter) -->
+        <h:panelGroup rendered="#{loginSetupBean.oidcAutoRedirectActive and empty param.error and empty param.logout}">
+            <script type="text/javascript">
+                //<![CDATA[
+                window.location.href = '#{request.contextPath}/oauth2/authorization/#{loginSetupBean.oidcAutoRedirectRegistrationId}';
+                //]]>
+            </script>
+        </h:panelGroup>
+
         <!-- OIDC Login Buttons -->
         <h:panelGroup rendered="#{oidcConfigService.oidcEnabled}">
             <div style="margin-top: 1.5rem; text-align: center;">

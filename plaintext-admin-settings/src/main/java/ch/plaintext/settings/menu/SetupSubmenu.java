@@ -6,11 +6,11 @@ package ch.plaintext.settings.menu;
 import ch.plaintext.boot.menu.MenuAnnotation;
 
 @MenuAnnotation(
-    title = "Branding",
-    link = "branding.html",
+    title = "Setup",
+    link = "setup.html",
     parent = "Root",
     order = 2,
-    icon = "pi pi-palette"
+    icon = "pi pi-cog"
 )
-public class BrandingSubmenu {
+public class SetupSubmenu {
 }

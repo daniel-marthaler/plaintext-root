@@ -8,16 +8,16 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class BrandingSubmenuTest {
+class SetupSubmenuTest {
 
     @Test
     void classHasMenuAnnotation() {
-        MenuAnnotation annotation = BrandingSubmenu.class.getAnnotation(MenuAnnotation.class);
+        MenuAnnotation annotation = SetupSubmenu.class.getAnnotation(MenuAnnotation.class);
         assertThat(annotation).isNotNull();
-        assertThat(annotation.title()).isEqualTo("Branding");
-        assertThat(annotation.link()).isEqualTo("branding.html");
+        assertThat(annotation.title()).isEqualTo("Setup");
+        assertThat(annotation.link()).isEqualTo("setup.html");
         assertThat(annotation.parent()).isEqualTo("Root");
         assertThat(annotation.order()).isEqualTo(2);
-        assertThat(annotation.icon()).isEqualTo("pi pi-palette");
+        assertThat(annotation.icon()).isEqualTo("pi pi-cog");
     }
 }

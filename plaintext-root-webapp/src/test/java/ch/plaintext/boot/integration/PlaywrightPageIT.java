@@ -182,7 +182,7 @@ class PlaywrightPageIT {
             "/useradmin.html",
             "/mandate.html",
             "/settings.html",
-            "/branding.html",
+            "/setup.html",
             "/sessions.html",
             "/sessioninsights.html",
             "/cron.html",
@@ -222,7 +222,7 @@ class PlaywrightPageIT {
 
         String[] allPages = {
                 "/index.html", "/myuser.html", "/useradmin.html", "/mandate.html",
-                "/settings.html", "/branding.html",
+                "/settings.html", "/setup.html",
                 "/sessions.html", "/sessioninsights.html",
                 "/cron.html", "/wertelisten.html", "/flyway.html",
                 "/rootentities.html", "/adminentities.html",

@@ -5,6 +5,7 @@ package ch.plaintext.boot.web;
 
 import ch.plaintext.boot.plugins.security.model.MyUserEntity;
 import ch.plaintext.boot.plugins.security.persistence.MyUserRepository;
+import ch.plaintext.settings.ISetupConfigService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.AfterEach;
@@ -24,13 +25,13 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.context.SecurityContextRepository;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 /**
@@ -54,6 +55,9 @@ class AutoLoginControllerExtendedTest {
     private ApplicationEventPublisher eventPublisher;
 
     @Mock
+    private ISetupConfigService setupConfigService;
+
+    @Mock
     private HttpServletRequest request;
 
     @Mock
@@ -64,7 +68,7 @@ class AutoLoginControllerExtendedTest {
 
     @BeforeEach
     void setUp() {
-        ReflectionTestUtils.setField(controller, "autoLoginEnabled", true);
+        when(setupConfigService.isAutologinEnabled(anyString())).thenReturn(true);
         SecurityContextHolder.clearContext();
     }
 
