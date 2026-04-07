@@ -41,6 +41,10 @@ logging:
 
 server:
   forward-headers-strategy: FRAMEWORK
+  servlet:
+    session:
+      cookie:
+        same-site: lax
 
 joinfaces:
   faces-servlet:

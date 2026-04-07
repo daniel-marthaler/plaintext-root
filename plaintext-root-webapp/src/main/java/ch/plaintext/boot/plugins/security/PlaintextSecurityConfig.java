@@ -89,20 +89,23 @@ public class PlaintextSecurityConfig {
                         }
                         csrf.ignoringRequestMatchers(matchers.toArray(new org.springframework.security.web.util.matcher.RequestMatcher[0]));
                 })
-                .headers(headers -> headers
-                        .frameOptions(frame -> frame.sameOrigin())
-                        .contentSecurityPolicy(csp -> csp
-                                .policyDirectives("default-src 'self'; " +
-                                        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com; " +
-                                        "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com; " +
-                                        "img-src 'self' data: https://*.tile.openstreetmap.org https://raw.githubusercontent.com; " +
-                                        "font-src 'self' data:; " +
-                                        "connect-src 'self'; " +
-                                        "frame-ancestors 'self'; " +
-                                        "base-uri 'self'; " +
-                                        "form-action 'self' https://*.plaintext.ch")
-                        )
-                )
+                .headers(headers -> {
+                    headers.frameOptions(frame -> frame.sameOrigin());
+                    headers.contentTypeOptions(org.springframework.security.config.Customizer.withDefaults());
+                    headers.referrerPolicy(ref -> ref.policy(
+                            org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN));
+                    headers.permissionsPolicy(pp -> pp.policy("camera=(), microphone=(), geolocation=(), payment=()"));
+                    headers.contentSecurityPolicy(csp -> csp
+                            .policyDirectives("default-src 'self'; " +
+                                    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com; " +
+                                    "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com; " +
+                                    "img-src 'self' data: https://*.tile.openstreetmap.org https://raw.githubusercontent.com; " +
+                                    "font-src 'self' data:; " +
+                                    "connect-src 'self'; " +
+                                    "frame-ancestors 'self'; " +
+                                    "base-uri 'self'; " +
+                                    "form-action 'self' https://*.plaintext.ch"));
+                })
                 .authorizeHttpRequests(authorize -> {
                     authorize
                             .requestMatchers(permitAllArray).permitAll()
