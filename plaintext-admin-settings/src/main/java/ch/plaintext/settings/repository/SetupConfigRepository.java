@@ -11,4 +11,8 @@ import java.util.Optional;
 public interface SetupConfigRepository extends JpaRepository<SetupConfig, Long> {
 
     Optional<SetupConfig> findByMandat(String mandat);
+
+    Optional<SetupConfig> findFirstByOidcAutoRedirectEnabledTrue();
+
+    Optional<SetupConfig> findFirstByAutologinEnabledTrue();
 }

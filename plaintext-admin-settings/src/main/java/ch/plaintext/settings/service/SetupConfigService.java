@@ -47,6 +47,14 @@ public class SetupConfigService implements ISetupConfigService {
         return repository.findByMandat(mandat);
     }
 
+    public Optional<SetupConfig> findFirstWithOidcAutoRedirect() {
+        return repository.findFirstByOidcAutoRedirectEnabledTrue();
+    }
+
+    public Optional<SetupConfig> findFirstWithAutologin() {
+        return repository.findFirstByAutologinEnabledTrue();
+    }
+
     @Transactional
     public SetupConfig save(SetupConfig config) {
         SetupConfig saved = repository.save(config);

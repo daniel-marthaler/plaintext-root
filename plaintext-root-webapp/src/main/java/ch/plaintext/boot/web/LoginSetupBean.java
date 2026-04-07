@@ -5,31 +5,32 @@ package ch.plaintext.boot.web;
 
 import ch.plaintext.oidc.entity.OidcConfig;
 import ch.plaintext.oidc.service.OidcConfigService;
-import ch.plaintext.settings.ISetupConfigService;
+import ch.plaintext.settings.entity.SetupConfig;
+import ch.plaintext.settings.service.SetupConfigService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
+import java.util.Optional;
 
 @Component("loginSetupBean")
 @Slf4j
 public class LoginSetupBean implements Serializable {
 
     @Autowired
-    private ISetupConfigService setupConfigService;
+    private SetupConfigService setupConfigService;
 
     @Autowired(required = false)
     private OidcConfigService oidcConfigService;
 
-    private static final String DEFAULT_MANDAT = "default";
-
     public boolean isOidcAutoRedirectActive() {
         try {
-            if (!setupConfigService.isOidcAutoRedirectEnabled(DEFAULT_MANDAT)) {
+            Optional<SetupConfig> config = setupConfigService.findFirstWithOidcAutoRedirect();
+            if (config.isEmpty()) {
                 return false;
             }
-            Long configId = setupConfigService.getOidcAutoRedirectConfigId(DEFAULT_MANDAT);
+            Long configId = config.get().getOidcAutoRedirectConfigId();
             if (configId == null || oidcConfigService == null) {
                 return false;
             }
@@ -43,7 +44,11 @@ public class LoginSetupBean implements Serializable {
 
     public String getOidcAutoRedirectRegistrationId() {
         try {
-            Long configId = setupConfigService.getOidcAutoRedirectConfigId(DEFAULT_MANDAT);
+            Optional<SetupConfig> config = setupConfigService.findFirstWithOidcAutoRedirect();
+            if (config.isEmpty()) {
+                return null;
+            }
+            Long configId = config.get().getOidcAutoRedirectConfigId();
             if (configId == null || oidcConfigService == null) {
                 return null;
             }
