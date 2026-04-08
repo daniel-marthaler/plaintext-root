@@ -43,6 +43,13 @@ public class SetupConfigService implements ISetupConfigService {
                 .orElse(null);
     }
 
+    @Override
+    public boolean isPasswordManagementEnabled(String mandat) {
+        return repository.findByMandat(mandat)
+                .map(SetupConfig::isPasswordManagementEnabled)
+                .orElse(true);
+    }
+
     public Optional<SetupConfig> findByMandat(String mandat) {
         return repository.findByMandat(mandat);
     }
@@ -53,6 +60,10 @@ public class SetupConfigService implements ISetupConfigService {
 
     public Optional<SetupConfig> findFirstWithAutologin() {
         return repository.findFirstByAutologinEnabledTrue();
+    }
+
+    public boolean isPasswordManagementDisabledAnywhere() {
+        return repository.findFirstByPasswordManagementEnabledFalse().isPresent();
     }
 
     @Transactional

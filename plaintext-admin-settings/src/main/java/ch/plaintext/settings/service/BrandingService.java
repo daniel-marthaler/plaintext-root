@@ -24,6 +24,8 @@ public class BrandingService {
     private static final String KEY_SHOW_ROOT_VERSION = "branding.footer.showRootVersion";
     private static final String KEY_SHOW_BUILD_TIMESTAMP = "branding.footer.showBuildTimestamp";
     private static final String KEY_I18N_ICON = "branding.i18n.icon";
+    private static final String KEY_I18N_ENABLED = "branding.i18n.enabled";
+    private static final String KEY_I18N_ENABLED_OLD = "i18n.enabled";
 
     private static final Set<String> ALLOWED_CONTENT_TYPES = Set.of(
             "image/png", "image/svg+xml", "image/webp", "image/jpeg"
@@ -118,7 +120,11 @@ public class BrandingService {
     }
 
     public boolean isI18nEnabled(String mandat) {
-        Boolean val = settingsService.getBoolean("i18n.enabled", mandat);
+        Boolean val = settingsService.getBoolean(KEY_I18N_ENABLED, mandat);
+        if (val == null) {
+            // Fallback: alten Key pruefen (Rueckwaertskompatibilitaet)
+            val = settingsService.getBoolean(KEY_I18N_ENABLED_OLD, mandat);
+        }
         return val == null || val;
     }
 
@@ -129,7 +135,7 @@ public class BrandingService {
 
     @Transactional
     public void saveI18nSettings(String mandat, boolean enabled, String icon) {
-        settingsService.setSetting("i18n.enabled", mandat, String.valueOf(enabled), "BOOLEAN", "Enable language switcher in topbar");
+        settingsService.setSetting(KEY_I18N_ENABLED, mandat, String.valueOf(enabled), "BOOLEAN", "Enable language switcher in topbar");
         settingsService.setSetting(KEY_I18N_ICON, mandat, icon, "STRING", "Icon class for language switcher");
         log.info("Saved i18n settings: mandat={}, enabled={}, icon={}", mandat, enabled, icon);
     }

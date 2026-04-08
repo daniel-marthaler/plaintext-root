@@ -42,6 +42,15 @@ public class LoginSetupBean implements Serializable {
         }
     }
 
+    public boolean isPasswordManagementActive() {
+        try {
+            return !setupConfigService.isPasswordManagementDisabledAnywhere();
+        } catch (Exception e) {
+            log.debug("Error checking password management: {}", e.getMessage());
+            return true;
+        }
+    }
+
     public String getOidcAutoRedirectRegistrationId() {
         try {
             Optional<SetupConfig> config = setupConfigService.findFirstWithOidcAutoRedirect();

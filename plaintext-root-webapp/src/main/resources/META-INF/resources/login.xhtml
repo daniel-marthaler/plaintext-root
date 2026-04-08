@@ -376,6 +376,7 @@
             <span>#{i18n.t('Sie wurden erfolgreich abgemeldet')}</span>
         </div>
 
+        <h:panelGroup rendered="#{loginSetupBean.passwordManagementActive}">
         <form action="#{request.contextPath}/login" method="post" class="login-form">
             <!-- CSRF Token -->
             <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
@@ -419,6 +420,7 @@
                 <i class="pi pi-sign-in"></i> #{i18n.t('Anmelden')}
             </button>
         </form>
+        </h:panelGroup>
 
         <!-- OIDC Auto-Redirect (only when no error/logout parameter) -->
         <h:panelGroup rendered="#{loginSetupBean.oidcAutoRedirectActive and empty param.error and empty param.logout}">

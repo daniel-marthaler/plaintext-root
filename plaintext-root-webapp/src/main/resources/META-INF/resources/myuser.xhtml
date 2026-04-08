@@ -87,6 +87,7 @@
                 </p:panelGrid>
 
                 <!-- Passwort ändern -->
+                <p:outputPanel rendered="#{myUserInfoBackingBean.passwordManagementEnabled}">
                 <h3 style="margin-bottom: 20px; color: var(--text-color, #333);">#{i18n.t('Passwort ändern')}</h3>
                 <p:outputPanel id="passwordPanel">
                     <p:messages id="passwordMessages" showDetail="true" closable="true"/>
@@ -122,6 +123,7 @@
                                          process="@this currentPassword newPassword confirmPassword"
                                          ajax="true"/>
                     </p:panelGrid>
+                </p:outputPanel>
                 </p:outputPanel>
 
                 <!-- Account Status (only visible in advanced mode) -->

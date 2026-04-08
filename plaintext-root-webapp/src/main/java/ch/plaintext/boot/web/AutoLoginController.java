@@ -54,7 +54,7 @@ public class AutoLoginController {
         // Validate key is provided
         if (key == null || key.isEmpty()) {
             log.warn("No AutoLogin key provided");
-            return "redirect:/login";
+            return "redirect:/login.html";
         }
 
         try {
@@ -63,7 +63,7 @@ public class AutoLoginController {
 
             if (user == null) {
                 log.warn("No user found with AutoLogin key: {}", key);
-                return "redirect:/login";
+                return "redirect:/login.html";
             }
 
             // Load UserDetails from database
@@ -73,7 +73,7 @@ public class AutoLoginController {
             String mandat = extractMandat(userDetails);
             if (!setupConfigService.isAutologinEnabled(mandat)) {
                 log.warn("AutoLogin is disabled for mandat: {}", mandat);
-                return "redirect:/login";
+                return "redirect:/login.html";
             }
 
             // Create an authenticated token using the 3-parameter constructor
@@ -116,7 +116,7 @@ public class AutoLoginController {
 
         } catch (Exception e) {
             log.error("AutoLogin failed", e);
-            return "redirect:/login";
+            return "redirect:/login.html";
         }
     }
 

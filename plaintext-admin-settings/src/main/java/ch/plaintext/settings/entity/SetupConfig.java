@@ -35,6 +35,9 @@ public class SetupConfig {
     @Column(name = "OIDC_AUTO_REDIRECT_CONFIG_ID")
     private Long oidcAutoRedirectConfigId;
 
+    @Column(name = "PASSWORD_MANAGEMENT_ENABLED", nullable = false)
+    private boolean passwordManagementEnabled = true;
+
     @CreatedBy
     @Column(name = "CREATED_BY")
     private String createdBy;

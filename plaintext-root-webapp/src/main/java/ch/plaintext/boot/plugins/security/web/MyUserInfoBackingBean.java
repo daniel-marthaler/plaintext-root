@@ -252,6 +252,13 @@ public class MyUserInfoBackingBean implements Serializable {
     }
 
     /**
+     * Checks if password management is enabled for the current user's mandat.
+     */
+    public boolean isPasswordManagementEnabled() {
+        return setupConfigService == null || setupConfigService.isPasswordManagementEnabled(getMandat());
+    }
+
+    /**
      * Checks if autologin is enabled and the current user has an autologin key.
      */
     public boolean isAutologinKeyAvailable() {

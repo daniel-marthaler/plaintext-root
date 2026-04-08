@@ -15,4 +15,6 @@ public interface SetupConfigRepository extends JpaRepository<SetupConfig, Long> 
     Optional<SetupConfig> findFirstByOidcAutoRedirectEnabledTrue();
 
     Optional<SetupConfig> findFirstByAutologinEnabledTrue();
+
+    Optional<SetupConfig> findFirstByPasswordManagementEnabledFalse();
 }

@@ -10,4 +10,6 @@ public interface ISetupConfigService {
     boolean isOidcAutoRedirectEnabled(String mandat);
 
     Long getOidcAutoRedirectConfigId(String mandat);
+
+    boolean isPasswordManagementEnabled(String mandat);
 }

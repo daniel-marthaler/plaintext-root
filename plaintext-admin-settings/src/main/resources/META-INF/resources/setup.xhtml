@@ -21,6 +21,9 @@
                             <h:outputText value="#{i18n.t('Auto-Login Link aktivieren')}:" style="font-weight:bold;"/>
                             <p:toggleSwitch id="autologinEnabled" value="#{setupBackingBean.autologinEnabled}"/>
 
+                            <h:outputText value="#{i18n.t('Passwort-Verwaltung aktivieren')}:" style="font-weight:bold;"/>
+                            <p:toggleSwitch id="passwordManagementEnabled" value="#{setupBackingBean.passwordManagementEnabled}"/>
+
                             <h:outputText value="#{i18n.t('Automatischer OIDC-Redirect')}:" style="font-weight:bold;"/>
                             <p:toggleSwitch id="oidcAutoRedirectEnabled" value="#{setupBackingBean.oidcAutoRedirectEnabled}">
                                 <p:ajax update="oidcConfigPanel"/>
@@ -43,7 +46,7 @@
                         <p:commandButton value="#{i18n.t('Speichern')}" icon="pi pi-save"
                                          actionListener="#{setupBackingBean.saveLoginSettings()}"
                                          update="messages"
-                                         process="autologinEnabled oidcAutoRedirectEnabled oidcAutoRedirectConfigId @this"
+                                         process="autologinEnabled passwordManagementEnabled oidcAutoRedirectEnabled oidcAutoRedirectConfigId @this"
                                          style="margin-top:10px;"/>
 
                         <div style="margin-top:15px;">
@@ -106,7 +109,7 @@
                             <h:panelGroup rendered="#{setupBackingBean.hasLightLogo}">
                                 <p style="font-weight:bold; margin-bottom:5px;">#{i18n.t('Vorschau')}:</p>
                                 <div style="background:#f8f9fa; padding:15px; border-radius:8px; display:inline-block;">
-                                    <img src="#{setupBackingBean.lightLogoPreview}"
+                                    <img src="#{request.contextPath}/api/branding/logo?theme=light&amp;t=#{System.currentTimeMillis()}"
                                          width="#{setupBackingBean.lightLogoWidth}"
                                          height="#{setupBackingBean.lightLogoHeight}"
                                          alt="Light Logo Preview"
@@ -168,7 +171,7 @@
                             <h:panelGroup rendered="#{setupBackingBean.hasDarkLogo}">
                                 <p style="font-weight:bold; margin-bottom:5px;">#{i18n.t('Vorschau')}:</p>
                                 <div style="background:#1e1e2f; padding:15px; border-radius:8px; display:inline-block;">
-                                    <img src="#{setupBackingBean.darkLogoPreview}"
+                                    <img src="#{request.contextPath}/api/branding/logo?theme=dark&amp;t=#{System.currentTimeMillis()}"
                                          width="#{setupBackingBean.darkLogoWidth}"
                                          height="#{setupBackingBean.darkLogoHeight}"
                                          alt="Dark Logo Preview"

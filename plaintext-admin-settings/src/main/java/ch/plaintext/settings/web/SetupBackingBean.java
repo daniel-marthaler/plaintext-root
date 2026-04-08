@@ -49,8 +49,8 @@ public class SetupBackingBean implements Serializable {
 
     private boolean hasLightLogo;
     private boolean hasDarkLogo;
-    private String lightLogoPreview;
-    private String darkLogoPreview;
+    private transient String lightLogoPreview;
+    private transient String darkLogoPreview;
 
     private boolean i18nEnabled;
     private String i18nIcon;
@@ -59,6 +59,7 @@ public class SetupBackingBean implements Serializable {
     private boolean autologinEnabled;
     private boolean oidcAutoRedirectEnabled;
     private Long oidcAutoRedirectConfigId;
+    private boolean passwordManagementEnabled = true;
 
     private boolean root;
 
@@ -119,6 +120,7 @@ public class SetupBackingBean implements Serializable {
             autologinEnabled = config.isAutologinEnabled();
             oidcAutoRedirectEnabled = config.isOidcAutoRedirectEnabled();
             oidcAutoRedirectConfigId = config.getOidcAutoRedirectConfigId();
+            passwordManagementEnabled = config.isPasswordManagementEnabled();
         });
     }
 
@@ -256,6 +258,7 @@ public class SetupBackingBean implements Serializable {
             config.setAutologinEnabled(autologinEnabled);
             config.setOidcAutoRedirectEnabled(oidcAutoRedirectEnabled);
             config.setOidcAutoRedirectConfigId(oidcAutoRedirectConfigId);
+            config.setPasswordManagementEnabled(passwordManagementEnabled);
             setupConfigService.save(config);
             addMessage(FacesMessage.SEVERITY_INFO, "Erfolg", "Login-Einstellungen gespeichert");
         } catch (Exception e) {
