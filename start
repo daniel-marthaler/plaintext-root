@@ -45,7 +45,7 @@ if [[ -n "$1" ]]; then
             echo -e "  ${FG_CYAN}./start start${RESET}    ${FG_DIM}s${RESET}   Build + start"
             echo -e "  ${FG_CYAN}./start kill${RESET}     ${FG_DIM}k${RESET}   Kill all Java processes"
             echo -e "  ${FG_CYAN}./start install${RESET}  ${FG_DIM}i${RESET}   mvn clean install"
-            echo -e "  ${FG_CYAN}./start logs${RESET}     ${FG_DIM}l${RESET}   Open logs in new Terminal"
+            echo -e "  ${FG_CYAN}./start logs${RESET}     ${FG_DIM}l${RESET}   Open logs in new iTerm"
             echo -e "  ${FG_CYAN}./start modules${RESET}  ${FG_DIM}m${RESET}   Open module manager"
             echo -e "  ${FG_CYAN}./start build${RESET}    ${FG_DIM}b${RESET}   Run build system"
             echo -e "  ${FG_CYAN}./start start-pg${RESET} ${FG_DIM}pg${RESET}  Start PostgreSQL"
@@ -183,21 +183,11 @@ execute_command() {
     case "$idx" in
         0) # Start - open in new terminal
             osascript << EOF 2>/dev/null &
-tell application "Terminal"
-    set newTab to do script "cd \"${SCRIPT_DIR}\" && ./start start; exit"
-    set targetWindow to window 1
-    repeat
-        delay 5
-        try
-            if not busy of newTab then
-                close targetWindow saving no
-                exit repeat
-            end if
-        end try
-    end repeat
+tell application "iTerm"
+    create window with default profile command "cd \"${SCRIPT_DIR}\" && ./start start; exit"
 end tell
 EOF
-            STATUS_MSG="Build+Start opened in new Terminal"
+            STATUS_MSG="Build+Start opened in new iTerm"
             STATUS_COLOR="$FG_GREEN"
             ;;
         1) # Kill
@@ -207,21 +197,11 @@ EOF
             ;;
         2) # Clean Install - open in new terminal
             osascript << EOF 2>/dev/null &
-tell application "Terminal"
-    set newTab to do script "cd \"${SCRIPT_DIR}\" && ./start install; exit"
-    set targetWindow to window 1
-    repeat
-        delay 5
-        try
-            if not busy of newTab then
-                close targetWindow saving no
-                exit repeat
-            end if
-        end try
-    end repeat
+tell application "iTerm"
+    create window with default profile command "cd \"${SCRIPT_DIR}\" && ./start install; exit"
 end tell
 EOF
-            STATUS_MSG="Clean Install opened in new Terminal"
+            STATUS_MSG="Clean Install opened in new iTerm"
             STATUS_COLOR="$FG_GREEN"
             ;;
         3) # Logs
@@ -231,69 +211,39 @@ EOF
             ;;
         4) # Modules - open in new terminal
             osascript << EOF 2>/dev/null &
-tell application "Terminal"
-    set newTab to do script "cd \"${SCRIPT_DIR}\" && PROJECT_DIR='${SCRIPT_DIR}' ~/codeplain/plaintext-scripts/modules; exit"
-    set targetWindow to window 1
-    repeat
-        delay 2
-        try
-            if not busy of newTab then
-                close targetWindow saving no
-                exit repeat
-            end if
-        end try
-    end repeat
+tell application "iTerm"
+    create window with default profile command "cd \"${SCRIPT_DIR}\" && PROJECT_DIR='${SCRIPT_DIR}' ~/codeplain/plaintext-scripts/modules; exit"
 end tell
 EOF
-            STATUS_MSG="Modules opened in new Terminal"
+            STATUS_MSG="Modules opened in new iTerm"
             STATUS_COLOR="$FG_GREEN"
             ;;
         5) # Build - open in new terminal
-            osascript -e "tell application \"Terminal\" to do script \"cd \\\"${SCRIPT_DIR}\\\" && ./build.sh\"" 2>/dev/null || true
-            STATUS_MSG="Build opened in new Terminal"
+            osascript -e "tell application \"iTerm\" to create window with default profile command \"cd \\\"${SCRIPT_DIR}\\\" && ./build.sh\"" 2>/dev/null || true
+            STATUS_MSG="Build opened in new iTerm"
             STATUS_COLOR="$FG_GREEN"
             ;;
         6) # Start Postgres
             osascript << EOF 2>/dev/null &
-tell application "Terminal"
-    set newTab to do script "cd \"${SCRIPT_DIR}\" && ~/codeplain/plaintext-scripts/start-postgres.sh; exit"
-    set targetWindow to window 1
-    repeat
-        delay 2
-        try
-            if not busy of newTab then
-                close targetWindow saving no
-                exit repeat
-            end if
-        end try
-    end repeat
+tell application "iTerm"
+    create window with default profile command "cd \"${SCRIPT_DIR}\" && ~/codeplain/plaintext-scripts/start-postgres.sh; exit"
 end tell
 EOF
-            STATUS_MSG="Start Postgres opened in new Terminal"
+            STATUS_MSG="Start Postgres opened in new iTerm"
             STATUS_COLOR="$FG_GREEN"
             ;;
         7) # Stop Postgres
             osascript << EOF 2>/dev/null &
-tell application "Terminal"
-    set newTab to do script "cd \"${SCRIPT_DIR}\" && ~/codeplain/plaintext-scripts/stop-postgres.sh; exit"
-    set targetWindow to window 1
-    repeat
-        delay 2
-        try
-            if not busy of newTab then
-                close targetWindow saving no
-                exit repeat
-            end if
-        end try
-    end repeat
+tell application "iTerm"
+    create window with default profile command "cd \"${SCRIPT_DIR}\" && ~/codeplain/plaintext-scripts/stop-postgres.sh; exit"
 end tell
 EOF
-            STATUS_MSG="Stop Postgres opened in new Terminal"
+            STATUS_MSG="Stop Postgres opened in new iTerm"
             STATUS_COLOR="$FG_GREEN"
             ;;
         8) # Flyway Version Nr.
-            osascript -e "tell application \"Terminal\" to do script \"cd \\\"${SCRIPT_DIR}\\\" && ./start flywaynr\"" 2>/dev/null || true
-            STATUS_MSG="Flyway Nr. opened in new Terminal"
+            osascript -e "tell application \"iTerm\" to create window with default profile command \"cd \\\"${SCRIPT_DIR}\\\" && ./start flywaynr\"" 2>/dev/null || true
+            STATUS_MSG="Flyway Nr. opened in new iTerm"
             STATUS_COLOR="$FG_GREEN"
             ;;
     esac
