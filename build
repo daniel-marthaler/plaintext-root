@@ -63,8 +63,8 @@ if [ -n "$COMMAND" ]; then
     # Restart on exit if it was stopped during NAS connectivity check
     trap 'restart_twingate_if_needed' EXIT
 
-    # Check if command is a sequence of digits (multi-command execution)
-    if [[ "$COMMAND" =~ ^[0-9]+$ ]] && [ ${#COMMAND} -gt 1 ]; then
+    # Check if command is a sequence of digits/s (multi-command execution)
+    if [[ "$COMMAND" =~ ^[0-9s]+$ ]] && [ ${#COMMAND} -gt 1 ]; then
         echo -e "${BLUE}=== Executing command sequence: ${COMMAND} ===${NC}"
 
         for (( i=0; i<${#COMMAND}; i++ )); do
@@ -145,6 +145,10 @@ if [ -n "$COMMAND" ]; then
 
         deploy-prod-healthcheck)
             deploy_to_prod "true" || exit 1
+            ;;
+
+        s|sonar)
+            do_sonar || exit 1
             ;;
 
         setup-bluegreen)
