@@ -2,6 +2,8 @@ name: Build And Deploy
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '0 3 * * 1'  # Weekly SonarQube analysis (Monday 3:00 UTC)
   push:
     branches: ['**']
   pull_request:
@@ -26,6 +28,7 @@ jobs:
       project-name: plaintext-root
       database-name: plaintext_root
       dev-url: 'http://192.168.1.224:1123'
+      sonar-enabled: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
     # Pass secrets explicitly. `secrets: inherit` only works when the caller
     # and the reusable workflow live under the same owner; this caller is in
     # Plaintext-Gmbh while the reusable workflow is in daniel-marthaler/* —
