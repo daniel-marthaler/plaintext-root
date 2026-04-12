@@ -49,7 +49,7 @@ The script generates a Unix timestamp, checks all existing migrations for confli
 
 ### SQL Syntax
 
-Write migrations in **PostgreSQL SQL syntax**:
+Write migrations in **HSQLDB-compatible syntax (H2 in PostgreSQL mode)**:
 
 ```sql
 -- Use IF NOT EXISTS for idempotent table creation

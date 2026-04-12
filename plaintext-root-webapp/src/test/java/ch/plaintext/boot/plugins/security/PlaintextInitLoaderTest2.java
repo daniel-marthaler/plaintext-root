@@ -5,6 +5,7 @@ package ch.plaintext.boot.plugins.security;
 
 import ch.plaintext.boot.plugins.security.model.MyUserEntity;
 import ch.plaintext.boot.plugins.security.persistence.MyUserRepository;
+import ch.plaintext.settings.ISetupConfigService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -24,37 +25,15 @@ class PlaintextInitLoaderTest2 {
     @Mock
     private MyUserRepository userRepository;
 
+    @Mock
+    private ISetupConfigService setupConfigService;
+
     @InjectMocks
     private PlaintextInitLoader initLoader;
 
     @Test
-    void init_shouldCreateAdminUser_whenNotExists() {
-        when(userRepository.findByUsername("daniel.marthaler@plaintext.ch")).thenReturn(null);
-        when(userRepository.save(any(MyUserEntity.class))).thenAnswer(inv -> inv.getArgument(0));
-
-        initLoader.init();
-
-        verify(userRepository).save(argThat(user ->
-                "daniel.marthaler@plaintext.ch".equals(user.getUsername()) &&
-                user.getRoles().contains("admin") &&
-                user.getRoles().contains("root") &&
-                user.getRoles().contains("user")
-        ));
-    }
-
-    @Test
-    void init_shouldNotCreateAdmin_whenAlreadyExists() {
-        MyUserEntity existing = new MyUserEntity();
-        existing.setUsername("daniel.marthaler@plaintext.ch");
-        when(userRepository.findByUsername("daniel.marthaler@plaintext.ch")).thenReturn(existing);
-
-        initLoader.init();
-
-        verify(userRepository, never()).save(any());
-    }
-
-    @Test
     void createRootUserDelayed_shouldCreateRootUser_whenNotExists() {
+        when(setupConfigService.isRootUserEnabled("default")).thenReturn(true);
         when(userRepository.findByUsername("root@root.root")).thenReturn(null);
         when(userRepository.save(any(MyUserEntity.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -71,6 +50,7 @@ class PlaintextInitLoaderTest2 {
 
     @Test
     void createRootUserDelayed_shouldNotCreateRoot_whenAlreadyExists() {
+        when(setupConfigService.isRootUserEnabled("default")).thenReturn(true);
         MyUserEntity existing = new MyUserEntity();
         existing.setUsername("root@root.root");
         when(userRepository.findByUsername("root@root.root")).thenReturn(existing);

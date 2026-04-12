@@ -38,6 +38,9 @@ public class SetupConfig {
     @Column(name = "PASSWORD_MANAGEMENT_ENABLED", nullable = false)
     private boolean passwordManagementEnabled = true;
 
+    @Column(name = "ROOT_USER_ENABLED", nullable = false)
+    private boolean rootUserEnabled = true;
+
     @CreatedBy
     @Column(name = "CREATED_BY")
     private String createdBy;

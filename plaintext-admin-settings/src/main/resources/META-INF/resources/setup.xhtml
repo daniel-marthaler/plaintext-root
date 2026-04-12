@@ -18,6 +18,9 @@
                 <div class="grid">
                     <div class="col-12 md:col-8">
                         <h:panelGrid columns="2" cellpadding="5" style="width:100%;">
+                            <h:outputText value="#{i18n.t('Root-Benutzer aktivieren')}:" style="font-weight:bold;"/>
+                            <p:toggleSwitch id="rootUserEnabled" value="#{setupBackingBean.rootUserEnabled}"/>
+
                             <h:outputText value="#{i18n.t('Auto-Login Link aktivieren')}:" style="font-weight:bold;"/>
                             <p:toggleSwitch id="autologinEnabled" value="#{setupBackingBean.autologinEnabled}"/>
 
@@ -46,10 +49,15 @@
                         <p:commandButton value="#{i18n.t('Speichern')}" icon="pi pi-save"
                                          actionListener="#{setupBackingBean.saveLoginSettings()}"
                                          update="messages"
-                                         process="autologinEnabled passwordManagementEnabled oidcAutoRedirectEnabled oidcAutoRedirectConfigId @this"
+                                         process="rootUserEnabled autologinEnabled passwordManagementEnabled oidcAutoRedirectEnabled oidcAutoRedirectConfigId @this"
                                          style="margin-top:10px;"/>
 
                         <div style="margin-top:15px;">
+                            <small style="color: var(--text-color-secondary, #6c757d);">
+                                <i class="pi pi-info-circle" style="margin-right:5px;"/>
+                                #{i18n.t('Root-Benutzer: Wenn deaktiviert, wird der Benutzer root@root.root sofort gelöscht. Beim Aktivieren wird er neu erstellt (Passwort: root).')}
+                            </small>
+                            <br/>
                             <small style="color: var(--text-color-secondary, #6c757d);">
                                 <i class="pi pi-info-circle" style="margin-right:5px;"/>
                                 #{i18n.t('Auto-Login Link: Wenn deaktiviert, funktionieren bestehende Login-Links nicht mehr und die Option verschwindet aus den Benutzereinstellungen.')}
