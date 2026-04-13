@@ -160,9 +160,19 @@
                         <p:ajax event="blur" update="messages" listener="#{myUserBackingBean.validateUsername()}"/>
                     </p:inputText>
 
-                    <h:outputText value="#{i18n.t('Passwort')}:" escape="false"/>
+                    <h:outputText value="#{i18n.t('Ohne Passwort (nur OIDC)')}:" escape="false"/>
                     <h:panelGroup>
-                        <p:password size="45" value="#{myUserBackingBean.selected.password}" required="#{myUserBackingBean.myUserPw == null or myUserBackingBean.myUserPw == ''}" requiredMessage="#{i18n.t('Passwort ist bei einem neuen Benutzer erforderlich')}"/>
+                        <p:selectBooleanCheckbox id="passwordlessChk" value="#{myUserBackingBean.selected.passwordless}">
+                            <p:ajax update="fm:dlg" process="@this"/>
+                        </p:selectBooleanCheckbox>
+                        <h:outputText value=" #{i18n.t('Login nur über OIDC möglich')}"
+                                      style="font-size: 0.85rem; color: var(--text-color-secondary);"/>
+                    </h:panelGroup>
+
+                    <h:outputText value="#{i18n.t('Passwort')}:" escape="false"
+                                  rendered="#{not myUserBackingBean.selected.passwordless}"/>
+                    <h:panelGroup rendered="#{not myUserBackingBean.selected.passwordless}">
+                        <p:password size="45" value="#{myUserBackingBean.selected.password}" required="#{(myUserBackingBean.myUserPw == null or myUserBackingBean.myUserPw == '') and not myUserBackingBean.selected.passwordless}" requiredMessage="#{i18n.t('Passwort ist bei einem neuen Benutzer erforderlich')}"/>
                         <h:outputText value="&#x2705; #{i18n.t('Passwort gesetzt')}"
                                       rendered="#{not empty myUserBackingBean.myUserPw and myUserBackingBean.myUserPw.startsWith('$2a$')}"
                                       style="display: block; margin-top: 4px; font-size: 0.85rem; color: var(--green-500);"/>

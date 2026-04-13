@@ -26,6 +26,8 @@ public class MyUserEntity {
     @Column(name = "OIDC_SUBJECT")
     private String oidcSubject;
 
+    private boolean passwordless;
+
     @Convert(converter = MyUserSetConverter.class)
     private Set<String> roles = new HashSet<>();
 
