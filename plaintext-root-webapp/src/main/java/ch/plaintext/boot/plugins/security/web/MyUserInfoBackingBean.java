@@ -56,9 +56,6 @@ public class MyUserInfoBackingBean implements Serializable {
             if (auth.getPrincipal() instanceof org.springframework.security.core.userdetails.User user) {
                 return user.getUsername();
             }
-            if (auth.getPrincipal() instanceof org.springframework.security.oauth2.core.oidc.user.OidcUser oidcUser) {
-                return oidcUser.getEmail() != null ? oidcUser.getEmail() : auth.getName();
-            }
             return auth.getName();
         }
         return "N/A";
