@@ -53,7 +53,7 @@
         <commons-beanutils.version>1.11.0</commons-beanutils.version>
         <guava.version>33.5.0-jre</guava.version>
         <commons-lang3.version>3.20.0</commons-lang3.version>
-        <commons-io.version>2.21.0</commons-io.version>
+        <commons-io.version>2.22.0</commons-io.version>
         <lombok.version>1.18.44</lombok.version>
 
         <!-- Web -->
