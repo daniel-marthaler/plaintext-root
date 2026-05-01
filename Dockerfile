@@ -1,6 +1,6 @@
 # Runtime-only Dockerfile for plaintext-root
 # JAR must be pre-built: mvn clean package -DskipTests
-FROM eclipse-temurin:25.0.2_10-jre-alpine
+FROM eclipse-temurin:26_35-jre-alpine
 
 # Install bash and wget for healthcheck
 RUN apk add --no-cache bash wget
