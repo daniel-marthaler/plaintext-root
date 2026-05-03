@@ -19,8 +19,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -222,13 +220,6 @@ public class PlaintextSecurityImpl implements PlaintextSecurity {
             if (auth == null || !auth.isAuthenticated()) {
                 log.debug("No authenticated user found, using SYSTEM");
                 return SYSTEM_USER;
-            }
-            // For OIDC users: return email from token instead of subject ID
-            if (auth instanceof OAuth2AuthenticationToken && auth.getPrincipal() instanceof OidcUser oidcUser) {
-                String email = oidcUser.getEmail();
-                if (email != null && !email.isBlank()) {
-                    return email;
-                }
             }
             return auth.getName();
         } catch (Exception e) {

@@ -15,8 +15,8 @@ Add this module as a dependency in your `pom.xml`:
 ```xml
 <dependency>
     <groupId>ch.plaintext</groupId>
-    <artifactId>plaintext-webapp-menu</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <artifactId>plaintext-root-menu</artifactId>
+    <version>1.154.0-SNAPSHOT</version>
 </dependency>
 ```
 

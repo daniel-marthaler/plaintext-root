@@ -4,6 +4,7 @@
 package ch.plaintext.settings.web;
 
 import ch.plaintext.PlaintextSecurity;
+import ch.plaintext.settings.RootUserToggleEvent;
 import ch.plaintext.settings.entity.BrandingLogo;
 import ch.plaintext.settings.entity.SetupConfig;
 import ch.plaintext.settings.service.BrandingService;
@@ -60,6 +61,7 @@ public class SetupBackingBean implements Serializable {
     private boolean oidcAutoRedirectEnabled;
     private Long oidcAutoRedirectConfigId;
     private boolean passwordManagementEnabled = true;
+    private boolean rootUserEnabled = true;
 
     private boolean root;
 
@@ -121,6 +123,7 @@ public class SetupBackingBean implements Serializable {
             oidcAutoRedirectEnabled = config.isOidcAutoRedirectEnabled();
             oidcAutoRedirectConfigId = config.getOidcAutoRedirectConfigId();
             passwordManagementEnabled = config.isPasswordManagementEnabled();
+            rootUserEnabled = config.isRootUserEnabled();
         });
     }
 
@@ -255,11 +258,16 @@ public class SetupBackingBean implements Serializable {
         try {
             String mandat = security.getMandat();
             SetupConfig config = setupConfigService.getOrCreate(mandat);
+            boolean rootUserChanged = config.isRootUserEnabled() != rootUserEnabled;
             config.setAutologinEnabled(autologinEnabled);
             config.setOidcAutoRedirectEnabled(oidcAutoRedirectEnabled);
             config.setOidcAutoRedirectConfigId(oidcAutoRedirectConfigId);
             config.setPasswordManagementEnabled(passwordManagementEnabled);
+            config.setRootUserEnabled(rootUserEnabled);
             setupConfigService.save(config);
+            if (rootUserChanged) {
+                applicationContext.publishEvent(new RootUserToggleEvent(this, rootUserEnabled));
+            }
             addMessage(FacesMessage.SEVERITY_INFO, "Erfolg", "Login-Einstellungen gespeichert");
         } catch (Exception e) {
             log.error("Error saving login settings", e);

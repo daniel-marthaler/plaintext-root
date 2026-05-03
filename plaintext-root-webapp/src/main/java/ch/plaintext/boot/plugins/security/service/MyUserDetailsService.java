@@ -30,6 +30,9 @@ public class MyUserDetailsService implements org.springframework.security.core.u
         if (user == null) {
             throw new UsernameNotFoundException("MyUserEntity not found");
         }
+        if (user.isPasswordless()) {
+            throw new UsernameNotFoundException("User is OIDC-only, password login disabled");
+        }
 
         List<SimpleGrantedAuthority> auth = new ArrayList<>();
         for (String role : user.getRoles()) {

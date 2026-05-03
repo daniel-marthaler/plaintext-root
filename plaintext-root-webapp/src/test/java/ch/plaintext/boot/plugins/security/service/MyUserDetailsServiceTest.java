@@ -282,6 +282,37 @@ class MyUserDetailsServiceTest {
     // ==================== loadUserByUsername() - Error Cases ====================
 
     @Test
+    void loadUserByUsername_shouldThrowExceptionForPasswordlessUser() {
+        // Given: User is marked as passwordless (OIDC-only)
+        testUser.setPasswordless(true);
+        testUser.setRoles(new HashSet<>(Arrays.asList("user")));
+        when(userRepository.findByUsername("test@example.com")).thenReturn(testUser);
+
+        // When & Then
+        UsernameNotFoundException exception = assertThrows(
+                UsernameNotFoundException.class,
+                () -> userDetailsService.loadUserByUsername("test@example.com")
+        );
+
+        assertTrue(exception.getMessage().contains("OIDC-only"));
+    }
+
+    @Test
+    void loadUserByUsername_shouldAllowNonPasswordlessUser() {
+        // Given: User is not passwordless
+        testUser.setPasswordless(false);
+        testUser.setRoles(new HashSet<>(Arrays.asList("user")));
+        when(userRepository.findByUsername("test@example.com")).thenReturn(testUser);
+
+        // When
+        UserDetails userDetails = userDetailsService.loadUserByUsername("test@example.com");
+
+        // Then
+        assertNotNull(userDetails);
+        assertEquals("test@example.com", userDetails.getUsername());
+    }
+
+    @Test
     void loadUserByUsername_shouldThrowExceptionWhenUserNotFound() {
         // Given: User doesn't exist
         when(userRepository.findByUsername("nonexistent@example.com")).thenReturn(null);

@@ -61,7 +61,7 @@ class PlaintextAuthenticationSuccessHandlerExtendedTest {
 
         handler.onAuthenticationSuccess(request, response, auth);
 
-        verify(response).sendRedirect("index.html");
+        verify(response).sendRedirect("/index.html");
     }
 
     @Test
@@ -75,7 +75,7 @@ class PlaintextAuthenticationSuccessHandlerExtendedTest {
 
         handler.onAuthenticationSuccess(request, response, auth);
 
-        verify(response).sendRedirect("dashboard.html");
+        verify(response).sendRedirect("/dashboard.html");
     }
 
     @Test
@@ -101,7 +101,7 @@ class PlaintextAuthenticationSuccessHandlerExtendedTest {
         // Should not throw even if event publishing fails
         handler.onAuthenticationSuccess(request, response, auth);
 
-        verify(response).sendRedirect("index.html");
+        verify(response).sendRedirect("/index.html");
     }
 
     @Test
@@ -157,7 +157,7 @@ class PlaintextAuthenticationSuccessHandlerExtendedTest {
 
         handler.onAuthenticationSuccess(request, response, auth);
 
-        verify(response).sendRedirect("index.html");
+        verify(response).sendRedirect("/index.html");
     }
 
     @Test
@@ -199,7 +199,7 @@ class PlaintextAuthenticationSuccessHandlerExtendedTest {
 
         handler.onAuthenticationSuccess(request, response, auth);
 
-        verify(response).sendRedirect("index.html");
+        verify(response).sendRedirect("/index.html");
     }
 
     @Test
@@ -214,6 +214,6 @@ class PlaintextAuthenticationSuccessHandlerExtendedTest {
 
         handler.onAuthenticationSuccess(request, response, auth);
 
-        verify(response).sendRedirect("first.html");
+        verify(response).sendRedirect("/first.html");
     }
 }

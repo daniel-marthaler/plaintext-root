@@ -11,8 +11,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
@@ -32,12 +30,6 @@ public class PlaintextAuthenticationSuccessHandler implements AuthenticationSucc
                                        Authentication authentication) throws IOException, ServletException {
 
         String userEmail = authentication.getName();
-        // For OIDC users: use email from token
-        if (authentication instanceof OAuth2AuthenticationToken && authentication.getPrincipal() instanceof OidcUser oidcUser) {
-            if (oidcUser.getEmail() != null && !oidcUser.getEmail().isBlank()) {
-                userEmail = oidcUser.getEmail();
-            }
-        }
         Long userId = extractUserId(authentication);
         String mandat = extractMandat(authentication);
 

@@ -33,4 +33,6 @@ public interface EmailConfigRepository extends JpaRepository<EmailConfig, Long> 
     boolean existsByMandatAndConfigName(String mandat, String configName);
 
     List<EmailConfig> findByImapEnabledTrue();
+
+    List<EmailConfig> findByMandatAndImapEnabledTrue(String mandat);
 }

@@ -186,11 +186,15 @@ public class MyUserBackingBean implements Serializable {
         boolean isNewUser = myUserPw == null || myUserPw.isEmpty();
         boolean passwordChanged = !selected.getPassword().isEmpty() && !selected.getPassword().equals(myUserPw);
 
-        if (isNewUser && selected.getPassword().isEmpty()) {
+        if (!selected.isPasswordless() && isNewUser && selected.getPassword().isEmpty()) {
             context.addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "Fehler", "Passwort darf bei einem neuen Benutzer nicht leer sein."));
             context.validationFailed();
             return;
+        }
+
+        if (selected.isPasswordless()) {
+            selected.setPassword("");
         }
 
         // Synchronize roles from chips component (List) back to entity (Set)

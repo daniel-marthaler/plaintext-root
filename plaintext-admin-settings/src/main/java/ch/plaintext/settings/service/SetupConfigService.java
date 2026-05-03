@@ -50,6 +50,13 @@ public class SetupConfigService implements ISetupConfigService {
                 .orElse(true);
     }
 
+    @Override
+    public boolean isRootUserEnabled(String mandat) {
+        return repository.findByMandat(mandat)
+                .map(SetupConfig::isRootUserEnabled)
+                .orElse(true);
+    }
+
     public Optional<SetupConfig> findByMandat(String mandat) {
         return repository.findByMandat(mandat);
     }
@@ -69,8 +76,8 @@ public class SetupConfigService implements ISetupConfigService {
     @Transactional
     public SetupConfig save(SetupConfig config) {
         SetupConfig saved = repository.save(config);
-        log.info("SetupConfig saved: id={}, mandat={}, autologin={}, oidcRedirect={}",
-                saved.getId(), saved.getMandat(), saved.isAutologinEnabled(), saved.isOidcAutoRedirectEnabled());
+        log.info("SetupConfig saved: id={}, mandat={}, autologin={}, oidcRedirect={}, rootUser={}",
+                saved.getId(), saved.getMandat(), saved.isAutologinEnabled(), saved.isOidcAutoRedirectEnabled(), saved.isRootUserEnabled());
         return saved;
     }
 
