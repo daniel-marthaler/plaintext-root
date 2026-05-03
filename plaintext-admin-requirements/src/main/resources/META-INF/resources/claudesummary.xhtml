@@ -142,6 +142,16 @@
     <!-- JavaScript for markdown rendering -->
     <script type="text/javascript">
         //<![CDATA[
+        // Render an error message into a target node *without* string-concatenating
+        // user-controlled values into innerHTML (CodeQL js/xss-through-dom and
+        // js/xss-through-exception findings, alerts #12, #13).
+        function renderErrorMessage(target, text) {
+            var p = document.createElement('p');
+            p.style.color = 'red';
+            p.textContent = text;          // textContent escapes any HTML
+            target.replaceChildren(p);
+        }
+
         function renderMarkdown() {
             console.log('renderMarkdown() called');
 
@@ -177,18 +187,22 @@
 
                     if (!markdownContent) {
                         console.error('No markdown content found!');
-                        markdownContentElement.innerHTML = '<p style="color: red;">Kein Markdown-Inhalt gefunden!</p>';
+                        renderErrorMessage(markdownContentElement, 'Kein Markdown-Inhalt gefunden!');
                         return;
                     }
 
-                    // Render markdown to HTML
+                    // Render markdown to HTML. The markdown comes from our own
+                    // backend (admin-only requirements summary), so trusted —
+                    // we still avoid string-concatenation of user-controlled
+                    // values into innerHTML (see renderErrorMessage below).
                     var html = marked.parse ? marked.parse(markdownContent) : marked(markdownContent);
                     console.log('Rendered HTML length:', html.length);
                     markdownContentElement.innerHTML = html;
                     console.log('Markdown rendered successfully');
                 } catch (e) {
                     console.error('Error rendering markdown:', e);
-                    markdownContentElement.innerHTML = '<p style="color: red;">Fehler beim Rendern des Markdown-Inhalts: ' + e.message + '</p>';
+                    renderErrorMessage(markdownContentElement,
+                        'Fehler beim Rendern des Markdown-Inhalts: ' + e.message);
                 }
             } else {
                 console.log('Elements not ready, retrying...');
