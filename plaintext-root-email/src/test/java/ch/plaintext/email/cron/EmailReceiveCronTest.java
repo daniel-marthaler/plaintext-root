@@ -5,8 +5,8 @@ package ch.plaintext.email.cron;
 
 import ch.plaintext.email.model.Email;
 import ch.plaintext.email.model.EmailConfig;
+import ch.plaintext.email.persistence.EmailConfigRepository;
 import ch.plaintext.email.service.EmailReceiveService;
-import ch.plaintext.email.service.EmailService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -15,16 +15,18 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class EmailReceiveCronTest {
 
+    private static final String MANDAT = "test";
+
     @Mock
-    private EmailService emailService;
+    private EmailConfigRepository emailConfigRepository;
 
     @Mock
     private EmailReceiveService emailReceiveService;
@@ -34,7 +36,6 @@ class EmailReceiveCronTest {
 
     @Test
     void isGlobalReturnsFalseByDefault() {
-        // EmailReceiveCron does not override isGlobal(), so default is false
         assertFalse(emailReceiveCron.isGlobal());
     }
 
@@ -49,47 +50,79 @@ class EmailReceiveCronTest {
     }
 
     @Test
-    void runReceivesEmailsWhenImapConfigured() {
-        EmailConfig config = new EmailConfig();
-        config.setImapEnabled(true);
-        config.setImapHost("imap.example.com");
-        config.setImapUsername("user");
-        config.setId(1L); // existing config
+    void runSkipsWhenNoConfigs() {
+        when(emailConfigRepository.findByMandatAndImapEnabledTrue(MANDAT))
+                .thenReturn(Collections.emptyList());
 
-        when(emailService.getConfigForMandate("test")).thenReturn(Optional.of(config));
-        when(emailReceiveService.receiveEmails("test")).thenReturn(List.of(new Email()));
+        emailReceiveCron.run(MANDAT);
 
-        emailReceiveCron.run("test");
-
-        verify(emailReceiveService).receiveEmails("test");
+        verify(emailReceiveService, never()).receiveEmailsFromConfig(any(EmailConfig.class));
     }
 
     @Test
-    void runSkipsWhenNoConfig() {
-        when(emailService.getConfigForMandate("test")).thenReturn(Optional.empty());
+    void runIteratesAllImapEnabledConfigs() {
+        EmailConfig c1 = fullImap("kalenderimport", 1L);
+        EmailConfig c2 = fullImap("postkonto", 2L);
 
-        emailReceiveCron.run("test");
+        when(emailConfigRepository.findByMandatAndImapEnabledTrue(MANDAT)).thenReturn(List.of(c1, c2));
+        when(emailReceiveService.receiveEmailsFromConfig(c1)).thenReturn(List.of(new Email()));
+        when(emailReceiveService.receiveEmailsFromConfig(c2)).thenReturn(List.of(new Email(), new Email()));
 
-        verify(emailReceiveService, never()).receiveEmails(anyString());
+        emailReceiveCron.run(MANDAT);
+
+        verify(emailReceiveService).receiveEmailsFromConfig(c1);
+        verify(emailReceiveService).receiveEmailsFromConfig(c2);
     }
 
     @Test
-    void runSkipsWhenImapNotConfigured() {
-        EmailConfig config = new EmailConfig();
-        config.setImapEnabled(false);
+    void runSkipsConfigsThatAreNotProperlyConfigured() {
+        EmailConfig incomplete = new EmailConfig();
+        incomplete.setImapEnabled(true);
+        incomplete.setImapHost(null); // missing host -> isImapConfigured() == false
+        incomplete.setConfigName("incomplete");
 
-        when(emailService.getConfigForMandate("test")).thenReturn(Optional.of(config));
+        when(emailConfigRepository.findByMandatAndImapEnabledTrue(MANDAT)).thenReturn(List.of(incomplete));
 
-        emailReceiveCron.run("test");
+        emailReceiveCron.run(MANDAT);
 
-        verify(emailReceiveService, never()).receiveEmails(anyString());
+        verify(emailReceiveService, never()).receiveEmailsFromConfig(any(EmailConfig.class));
     }
 
     @Test
-    void runHandlesException() {
-        when(emailService.getConfigForMandate("test"))
+    void runContinuesAfterIndividualConfigFailure() {
+        EmailConfig c1 = fullImap("kalenderimport", 1L);
+        EmailConfig c2 = fullImap("postkonto", 2L);
+
+        when(emailConfigRepository.findByMandatAndImapEnabledTrue(MANDAT)).thenReturn(List.of(c1, c2));
+        when(emailReceiveService.receiveEmailsFromConfig(c1))
+                .thenThrow(new RuntimeException("IMAP error"));
+
+        assertDoesNotThrow(() -> emailReceiveCron.run(MANDAT));
+
+        verify(emailReceiveService).receiveEmailsFromConfig(c2);
+    }
+
+    @Test
+    void runHandlesRepositoryException() {
+        when(emailConfigRepository.findByMandatAndImapEnabledTrue(MANDAT))
                 .thenThrow(new RuntimeException("DB error"));
 
-        assertDoesNotThrow(() -> emailReceiveCron.run("test"));
+        assertDoesNotThrow(() -> emailReceiveCron.run(MANDAT));
+
+        verify(emailReceiveService, never()).receiveEmailsFromConfig(any(EmailConfig.class));
+    }
+
+    private EmailConfig fullImap(String name, Long id) {
+        EmailConfig c = new EmailConfig();
+        c.setId(id);
+        c.setMandat(MANDAT);
+        c.setConfigName(name);
+        c.setImapEnabled(true);
+        c.setImapHost("imap.example.com");
+        c.setImapPort(993);
+        c.setImapUsername("user");
+        c.setImapPassword("pw");
+        c.setImapFolder("INBOX");
+        return c;
     }
 }
