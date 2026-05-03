@@ -58,6 +58,14 @@ joinfaces:
   primefaces:
     theme: none
 
+springdoc:
+  swagger-ui:
+    enabled: true
+  api-docs:
+    enabled: true
+  show-actuator: false
+  default-produces-media-type: application/json
+
 mad:
   autologin: true
 

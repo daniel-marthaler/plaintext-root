@@ -157,7 +157,7 @@
                     <!-- Chat Direct Messages Notification with Auto-Polling -->
                     <li class="topbar-item" style="display:inline;">
                         <h:form id="notificationPollingForm" style="display:inline; margin:0; padding:0;">
-                            <p:poll interval="2" update="chatNotificationPanel"/>
+                            <p:poll interval="15" update="chatNotificationPanel"/>
                             <h:panelGroup id="chatNotificationPanel">
                                 <ui:fragment rendered="#{directMessageNotificationBackingBean.hasUnreadMessages()}">
                                     <a href="chats.html"

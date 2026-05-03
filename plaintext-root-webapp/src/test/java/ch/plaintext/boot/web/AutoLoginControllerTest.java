@@ -163,7 +163,7 @@ class AutoLoginControllerTest {
         String result = autoLoginController.autoLogin("validKey123", request, response);
 
         // Then
-        assertEquals("redirect:/login", result);
+        assertEquals("redirect:/login.html", result);
 
         // Verify user was looked up but authentication was not completed
         verify(userRepository).findByAutologinKey("validKey123");
@@ -184,7 +184,7 @@ class AutoLoginControllerTest {
         String result = autoLoginController.autoLogin(null, request, response);
 
         // Then
-        assertEquals("redirect:/login", result);
+        assertEquals("redirect:/login.html", result);
 
         // Verify no user lookup was performed
         verify(userRepository, never()).findByAutologinKey(any());
@@ -200,7 +200,7 @@ class AutoLoginControllerTest {
         String result = autoLoginController.autoLogin("", request, response);
 
         // Then
-        assertEquals("redirect:/login", result);
+        assertEquals("redirect:/login.html", result);
 
         // Verify no user lookup was performed
         verify(userRepository, never()).findByAutologinKey(any());
@@ -217,7 +217,7 @@ class AutoLoginControllerTest {
         String result = autoLoginController.autoLogin("invalidKey", request, response);
 
         // Then
-        assertEquals("redirect:/login", result);
+        assertEquals("redirect:/login.html", result);
 
         // Verify user was looked up but not found
         verify(userRepository).findByAutologinKey("invalidKey");
@@ -242,7 +242,7 @@ class AutoLoginControllerTest {
         String result = autoLoginController.autoLogin("validKey123", request, response);
 
         // Then
-        assertEquals("redirect:/login", result);
+        assertEquals("redirect:/login.html", result);
 
         // Verify security context was not saved
         verify(securityContextRepository, never()).saveContext(any(), any(), any());
@@ -260,7 +260,7 @@ class AutoLoginControllerTest {
         String result = autoLoginController.autoLogin("validKey123", request, response);
 
         // Then
-        assertEquals("redirect:/login", result);
+        assertEquals("redirect:/login.html", result);
 
         // Verify no authentication was performed
         verify(userDetailsService, never()).loadUserByUsername(any());
@@ -280,7 +280,7 @@ class AutoLoginControllerTest {
         String result = autoLoginController.autoLogin("validKey123", request, response);
 
         // Then
-        assertEquals("redirect:/login", result);
+        assertEquals("redirect:/login.html", result);
     }
 
     // ==================== Security Context Tests ====================
@@ -402,7 +402,7 @@ class AutoLoginControllerTest {
         String result = autoLoginController.autoLogin("   ", request, response);
 
         // Then: Whitespace is not considered empty by isEmpty(), so it proceeds to lookup
-        assertEquals("redirect:/login", result);
+        assertEquals("redirect:/login.html", result);
         verify(userRepository).findByAutologinKey("   ");
     }
 

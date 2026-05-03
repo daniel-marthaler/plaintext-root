@@ -56,6 +56,17 @@ public class CronController implements Serializable {
         Set<String> mandanten = new HashSet<>(plaintextSecurity.getAllMandate());
         mandanten.add("global");
 
+        // Defensive: also pick up any mandat that already has a cron_config row.
+        // PlaintextSecurity.getAllMandate() has been observed to miss mandants on prod
+        // (cause not yet identified) which then silently disables all of their crons.
+        // Including stored cron_config mandants closes that gap until the discovery is fixed.
+        cronConfigRepository.findAll().forEach(cfg -> {
+            String m = cfg.getMandat();
+            if (m != null && !m.isBlank()) {
+                mandanten.add(m);
+            }
+        });
+
         Map<String, List<CronConfigEntity>> result = new HashMap<>();
         for (String mandant : mandanten) {
             result.put(mandant, new ArrayList<>());

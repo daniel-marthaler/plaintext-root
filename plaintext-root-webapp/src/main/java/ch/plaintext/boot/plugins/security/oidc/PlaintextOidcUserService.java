@@ -85,7 +85,7 @@ public class PlaintextOidcUserService implements OAuth2UserService<OidcUserReque
         // Build authorities matching local login format
         List<GrantedAuthority> authorities = buildAuthorities(localUser);
 
-        return new DefaultOidcUser(authorities, oidcUser.getIdToken(), oidcUser.getUserInfo());
+        return new DefaultOidcUser(authorities, oidcUser.getIdToken(), oidcUser.getUserInfo(), usernameAttr);
     }
 
     private String extractAttribute(OidcUser oidcUser, String attributeName) {
