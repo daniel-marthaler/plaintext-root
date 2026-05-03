@@ -140,7 +140,7 @@
         <dependency>
             <groupId>org.glassfish</groupId>
             <artifactId>jakarta.faces</artifactId>
-            <version>4.1.7</version>
+            <version>4.1.8</version>
         </dependency>
 
         <!-- === Database === -->
@@ -212,7 +212,7 @@
         <dependency>
             <groupId>com.microsoft.playwright</groupId>
             <artifactId>playwright</artifactId>
-            <version>1.58.0</version>
+            <version>1.59.0</version>
             <scope>test</scope>
         </dependency>
 

@@ -49,15 +49,15 @@
 
         <!-- Common Utilities -->
         <xstream.version>1.4.21</xstream.version>
-        <joda-time.version>2.14.1</joda-time.version>
+        <joda-time.version>2.14.2</joda-time.version>
         <commons-beanutils.version>1.11.0</commons-beanutils.version>
-        <guava.version>33.5.0-jre</guava.version>
+        <guava.version>33.6.0-jre</guava.version>
         <commons-lang3.version>3.20.0</commons-lang3.version>
-        <commons-io.version>2.21.0</commons-io.version>
+        <commons-io.version>2.22.0</commons-io.version>
         <lombok.version>1.18.44</lombok.version>
 
         <!-- Web -->
-        <jsoup.version>1.22.1</jsoup.version>
+        <jsoup.version>1.22.2</jsoup.version>
         <unirest-java.version>3.14.5</unirest-java.version>
 
         <!-- Misc -->
@@ -69,7 +69,7 @@
 
         <!-- Security -->
         <jakarta.enterprise.cdi-api.version>4.1.0</jakarta.enterprise.cdi-api.version>
-        <bcprov-jdk18on.version>1.83</bcprov-jdk18on.version>
+        <bcprov-jdk18on.version>1.84</bcprov-jdk18on.version>
         <jjwt.version>0.13.0</jjwt.version>
         <springdoc-openapi.version>3.0.2</springdoc-openapi.version>
 

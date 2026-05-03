@@ -61,7 +61,7 @@ class PlaintextAuthenticationSuccessHandlerTest {
 
         handler.onAuthenticationSuccess(request, response, auth);
 
-        verify(response).sendRedirect("index.html");
+        verify(response).sendRedirect("/index.html");
     }
 
     @Test
@@ -74,7 +74,7 @@ class PlaintextAuthenticationSuccessHandlerTest {
 
         handler.onAuthenticationSuccess(request, response, auth);
 
-        verify(response).sendRedirect("dashboard.html");
+        verify(response).sendRedirect("/dashboard.html");
     }
 
     @Test
@@ -218,7 +218,7 @@ class PlaintextAuthenticationSuccessHandlerTest {
         handler.onAuthenticationSuccess(request, response, auth);
 
         // Should still redirect
-        verify(response).sendRedirect("index.html");
+        verify(response).sendRedirect("/index.html");
     }
 
     @Test
@@ -232,7 +232,7 @@ class PlaintextAuthenticationSuccessHandlerTest {
         handler.onAuthenticationSuccess(request, response, auth);
 
         // Should still work, using the original port
-        verify(response).sendRedirect("index.html");
+        verify(response).sendRedirect("/index.html");
     }
 
     @Test
@@ -246,6 +246,6 @@ class PlaintextAuthenticationSuccessHandlerTest {
 
         handler.onAuthenticationSuccess(request, response, auth);
 
-        verify(response).sendRedirect("first.html");
+        verify(response).sendRedirect("/first.html");
     }
 }
