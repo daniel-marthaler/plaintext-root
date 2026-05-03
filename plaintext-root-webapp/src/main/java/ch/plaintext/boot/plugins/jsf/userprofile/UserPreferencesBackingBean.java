@@ -400,7 +400,9 @@ public class UserPreferencesBackingBean implements Serializable {
             Cookie cookie = new Cookie("plaintext-theme", theme);
             cookie.setPath("/");
             cookie.setMaxAge(365 * 24 * 60 * 60); // 1 year
-            cookie.setHttpOnly(false); // Allow JavaScript access
+            cookie.setHttpOnly(false); // theme is read client-side via JavaScript
+            cookie.setSecure(true);    // HTTPS only; harmless on http://localhost dev
+            cookie.setAttribute("SameSite", "Lax");
             response.addCookie(cookie);
             log.debug("Saved theme to cookie: {}", theme);
         } catch (Exception e) {

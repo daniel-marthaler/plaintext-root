@@ -336,7 +336,9 @@ public class UserPreferencesRestController {
             Cookie cookie = new Cookie(cookieName, value);
             cookie.setPath("/");
             cookie.setMaxAge(365 * 24 * 60 * 60); // 1 year
-            cookie.setHttpOnly(false); // Allow JavaScript access
+            cookie.setHttpOnly(false); // theme is read client-side via JavaScript
+            cookie.setSecure(true);    // HTTPS only; harmless on http://localhost dev
+            cookie.setAttribute("SameSite", "Lax");
             response.addCookie(cookie);
         } catch (Exception e) {
             log.error("Error saving cookie '{}': {}", cookieName, e.getMessage(), e);
