@@ -26,4 +26,13 @@ jobs:
       project-name: plaintext-root
       database-name: plaintext_root
       dev-url: 'http://192.168.1.224:1123'
-    secrets: inherit
+    # Pass secrets explicitly. `secrets: inherit` only works when the caller
+    # and the reusable workflow live under the same owner; this caller is in
+    # Plaintext-Gmbh while the reusable workflow is in daniel-marthaler/* —
+    # so GitHub refuses to inherit and the job dies with "Secret X is
+    # required, but not provided while calling".
+    secrets:
+      TWINGATE_SERVICE_KEY: ${{ secrets.TWINGATE_SERVICE_KEY }}
+      MVN_DEPLOY_TOKEN: ${{ secrets.MVN_DEPLOY_TOKEN }}
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
