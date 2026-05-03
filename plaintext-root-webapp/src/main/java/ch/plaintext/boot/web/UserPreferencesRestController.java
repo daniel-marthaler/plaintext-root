@@ -159,7 +159,7 @@ public class UserPreferencesRestController {
             return ResponseEntity.ok("OK");
         } catch (Exception e) {
             log.error("Error saving preferences", e);
-            return ResponseEntity.status(500).body("ERROR: " + e.getMessage());
+            return ResponseEntity.status(500).body("ERROR: Internal server error");
         }
     }
 
@@ -216,7 +216,7 @@ public class UserPreferencesRestController {
             return ResponseEntity.ok("OK");
         } catch (Exception e) {
             log.error("Error adding custom color", e);
-            return ResponseEntity.status(500).body("ERROR: " + e.getMessage());
+            return ResponseEntity.status(500).body("ERROR: Internal server error");
         }
     }
 
@@ -269,7 +269,7 @@ public class UserPreferencesRestController {
             return ResponseEntity.ok("OK");
         } catch (Exception e) {
             log.error("Error deleting color", e);
-            return ResponseEntity.status(500).body("ERROR: " + e.getMessage());
+            return ResponseEntity.status(500).body("ERROR: Internal server error");
         }
     }
 
@@ -310,7 +310,7 @@ public class UserPreferencesRestController {
             return ResponseEntity.ok("OK");
         } catch (Exception e) {
             log.error("Error restoring colors", e);
-            return ResponseEntity.status(500).body("ERROR: " + e.getMessage());
+            return ResponseEntity.status(500).body("ERROR: Internal server error");
         }
     }
 
